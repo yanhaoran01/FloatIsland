@@ -1,0 +1,13 @@
+{
+  "project": "EchoIsland",
+  "commit": "a7ebfff5887f7edae285f71fac049d025361880f",
+  "license": "MIT",
+  "included": [
+    "Required Rust crates",
+    "desktop-host and hook-bridge",
+    "terminal_focus reused by fusion-host"
+  ],
+  "modifications": [
+    "Source-only workspace excludes the unused standalone Tauri desktop member."
+  ]
+}
