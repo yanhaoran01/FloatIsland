@@ -65,7 +65,9 @@ export function downloadPreferences(raw: unknown): DownloadPreferences {
     ids.add(preset.id);
     return {id: preset.id, name: preset.name.trim(), options: mediaOptions(preset.options)};
   });
-  return {version: 1, concurrency: Number(row.concurrency), presets};
+  const limits:Record<string,number>={};
+  for(const [key,max] of [['downloadLimit',1e12],['uploadLimit',1e12],['seedMinutes',10080],['seedRatio',100]] as const){const value=row[key]??0;if(typeof value!=='number'||!Number.isFinite(value)||value<0||value>max)throw Error('media-invalid-options');limits[key]=value;}
+  return {version: 1, concurrency: Number(row.concurrency), presets,...limits};
 }
 
 /** Builds bounded argv from an analyzed entry and typed options. @param entry - Metadata. @param options - Choices. @param output - Owned staging folder. @returns Argv. */

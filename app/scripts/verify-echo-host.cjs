@@ -3,8 +3,9 @@ const {spawn} = require('node:child_process');
 const {createInterface} = require('node:readline');
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const assert = require('node:assert/strict');
-const root = path.resolve(__dirname,'../../../..','work','echo-host-verification-'+Date.now());
+const root = fs.mkdtempSync(path.join(os.tmpdir(),'float-echo-verification-'));
 fs.mkdirSync(root,{recursive:true});
 function host() {
   const child=spawn(path.resolve(__dirname,'../resources/echoisland/fusion-host.exe'),[root],{windowsHide:true,stdio:'pipe'});
@@ -36,6 +37,6 @@ async function until(app,predicate){for(let n=0;n<50;n++){const value=await app.
   assert(snap.sessions.every(s=>s.restored));assert.equal(snap.pending_permissions.length,0);assert.equal(snap.pending_questions.length,0);
   await app.close();
   const report={passed:true,checks:['source-isolation','blocking-approval','duplicate-answer-rejected','question-answer','peer-disconnect','restored-is-not-live'],approved,answered,profile:root};
-  fs.writeFileSync(path.resolve(__dirname,'../../validation/echo-host-1.1.0.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
+  fs.writeFileSync(path.join(root,'echo-host-verification.json'),JSON.stringify(report,null,2));console.log(JSON.stringify(report));
 })().catch(error=>{console.error(error);process.exit(1)});
 

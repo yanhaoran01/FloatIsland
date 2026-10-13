@@ -24,7 +24,8 @@
  * @author 鸡哥
  */
 
-import type { ReactElement } from 'react';
+import {useState,type ReactElement} from 'react';
+import {useTranslation} from 'react-i18next';
 import { useTodos } from '../hooks/useTodos';
 import { TodoHeader } from './TodoHeader';
 import { TodoInputBar } from './TodoInputBar';
@@ -35,8 +36,9 @@ import { TodoList } from './TodoList';
  * @description 最大展开模式下的待办事项面板：hook 调用 → 组件组合
  */
 export function TodoTab(): ReactElement {
+  const {t}=useTranslation(),[sort,setSort]=useState('created'),[filter,setFilter]=useState('all');
   const {
-    todos, expandedId,
+    setDue,todos, expandedId,
     input, setInput, priority, setPriority, size, setSize,
     editingDescId, descDraft, setDescDraft,
     subInput, setSubInput, subPriority, setSubPriority, subSize, setSubSize,
@@ -70,8 +72,10 @@ export function TodoTab(): ReactElement {
         onKeyDown={handleKeyDown}
       />
 
+      <div className="fusion-tool-row"><select aria-label={t('fusion.enhance.todos.filter')} value={filter} onChange={event=>setFilter(event.target.value)}>{['all','active','done'].map(id=><option key={id} value={id}>{t('fusion.enhance.todos.'+id)}</option>)}</select><select aria-label={t('fusion.enhance.todos.sort')} value={sort} onChange={event=>setSort(event.target.value)}>{['created','due','priority'].map(id=><option key={id} value={id}>{t('fusion.enhance.todos.'+id)}</option>)}</select></div>
       <TodoList
-        todos={todos}
+        onSetDue={setDue}
+        todos={todos.filter(todo=>filter==='all'||filter==='done'&&todo.done||filter==='active'&&!todo.done).sort((a,b)=>sort==='due'?(a.dueAt||Infinity)-(b.dueAt||Infinity):sort==='priority'?(a.priority||'Z').localeCompare(b.priority||'Z'):(b.createdAt||b.id)-(a.createdAt||a.id))}
         expandedId={expandedId}
         editingDescId={editingDescId}
         descDraft={descDraft}

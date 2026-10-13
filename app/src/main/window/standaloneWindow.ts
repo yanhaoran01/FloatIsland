@@ -27,6 +27,7 @@
 import type { WorkspaceTarget } from '../../preload/types/fusionWorkspace';
 import { BrowserWindow, shell, screen } from 'electron';
 import { fitViewSize } from './fusionViewLayout';
+import {workspaceViewportSize,saveWorkspaceViewportSize} from './fusionViewport';
 import { join } from 'path';
 import { is } from '@electron-toolkit/utils';
 
@@ -50,9 +51,10 @@ function openStandaloneWindow(target?: WorkspaceTarget): void {
   }
 
   standaloneWindow = new BrowserWindow({
-    ...fitViewSize({ mode: 'chat', width: 760, height: 560, page: 'workspace' }, screen.getPrimaryDisplay().workArea),
-    minWidth: 320,
-    minHeight: 280,
+    ...fitViewSize({ mode: 'chat', width: 760, height: 560, page: 'workspace' }, screen.getPrimaryDisplay().workArea,workspaceViewportSize()),
+    minWidth: Math.max(1,Math.min(560,screen.getPrimaryDisplay().workArea.width-24)),
+    minHeight: Math.max(1,Math.min(420,screen.getPrimaryDisplay().workArea.height-24)),
+    title:'FloatIsland',
     show: false,
     frame: false,
     transparent: false,
@@ -69,6 +71,9 @@ function openStandaloneWindow(target?: WorkspaceTarget): void {
       spellcheck: false,
     },
   });
+  let manuallyResizing=false;
+  standaloneWindow.on('will-resize',()=>{manuallyResizing=true;});
+  standaloneWindow.on('resized',()=>{if(manuallyResizing&&standaloneWindow){manuallyResizing=false;saveWorkspaceViewportSize(standaloneWindow.getBounds());}});
 
   standaloneWindow.on('ready-to-show', () => {
     standaloneWindow?.show();

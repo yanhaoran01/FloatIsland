@@ -20,7 +20,7 @@ export function LegacyTools({id}: {id:string}) {
  if(card?.sidebar==='download') return <DownloadToolSection downloadPage={download} setDownloadPage={setDownload} />;
  if(card?.sidebar==='fileCompression') return <FileCompressionToolSection fileCompressionPage={compression} setFileCompressionPage={setCompression} />;
  if(card?.sidebar==='formatFactory') return <FormatFactoryToolSection formatFactoryPage={format} setFormatFactoryPage={setFormat} />;
- if(card?.sidebar==='encodingService') return <div className={'fusion-encoding-entry '+(id.endsWith('json')?'only-json':'only-base64')}><EncodingServiceToolSection /></div>;
+ if(card?.sidebar==='encodingService') return <div className={'fusion-encoding-entry '+(id.endsWith('json')?'only-json':'only-base64')}><EncodingServiceToolSection compact={id.endsWith('json')?'json':'base64'} /></div>;
  if(card?.sidebar==='fileService') return <FileServiceToolSection />;
  if(card?.sidebar==='networkService') return <NetworkServiceToolSection />;
  if(card?.sidebar==='software') return <SoftwareToolSection onFeedbackNavigate={() => void window.api.openWorkspace({ tab: 'settings' })} />;

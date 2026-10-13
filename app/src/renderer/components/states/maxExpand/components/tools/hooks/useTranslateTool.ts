@@ -24,86 +24,58 @@
  * @author 鸡哥
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { fetchTranslate } from '../../../../../../api/tools/toolboxTranslateApi';
-import { readLocalToken } from '../../../../../../utils/userAccount';
 
-export interface UseTranslateToolResult {
-  sourceLang: string;
-  targetLang: string;
-  sourceText: string;
-  resultText: string;
-  translating: boolean;
-  setSourceLang: (lang: string) => void;
-  setTargetLang: (lang: string) => void;
-  setSourceText: (text: string) => void;
-  handleSwapLanguages: () => void;
-  handleTranslate: () => void;
-  handleCopyResult: () => void;
-  handleClearAll: () => void;
-}
-
-/** 复用工具箱翻译服务，并暴露 UI 状态与操作。 */
-export function useTranslateTool(): UseTranslateToolResult {
+/** Anonymous translation; stale responses never replace an edited draft. */
+export function useTranslateTool() {
   const { t } = useTranslation();
-  const [sourceLang, setSourceLang] = useState('auto');
-  const [targetLang, setTargetLang] = useState('en');
-  const [sourceText, setSourceText] = useState('');
+  const [sourceLang, updateSourceLang] = useState('auto');
+  const [targetLang, updateTargetLang] = useState('en');
+  const [sourceText, updateSourceText] = useState('');
   const [resultText, setResultText] = useState('');
   const [translating, setTranslating] = useState(false);
-
-  const handleSwapLanguages = useCallback((): void => {
-    if (sourceLang === 'auto') return;
-    const prevSource = sourceLang;
-    const prevTarget = targetLang;
-    setSourceLang(prevTarget);
-    setTargetLang(prevSource);
-    setSourceText(resultText);
-    setResultText(sourceText);
-  }, [sourceLang, targetLang, sourceText, resultText]);
-
-  const handleTranslate = useCallback((): void => {
-    if (!sourceText.trim() || translating) return;
-    const token = readLocalToken();
-    if (!token) {
-      setResultText(t('maxExpand.toolbox.translate.loginRequired', { defaultValue: '请先登录后再使用翻译服务' }));
-      return;
-    }
-    setTranslating(true);
-    fetchTranslate(token, sourceText, sourceLang, targetLang)
-      .then((result) => {
-        if (result.success && result.data) {
-          setResultText(result.data.targetText);
-        } else {
-          setResultText(result.message ?? t('maxExpand.toolbox.translate.error'));
-        }
-      })
-      .finally(() => setTranslating(false));
-  }, [sourceText, sourceLang, targetLang, translating, t]);
-
-  const handleCopyResult = useCallback((): void => {
-    if (!resultText) return;
-    navigator.clipboard.writeText(resultText).catch(() => {});
-  }, [resultText]);
-
-  const handleClearAll = useCallback((): void => {
-    setSourceText('');
-    setResultText('');
+  const [error, setError] = useState('');
+  const active = useRef<string | null>(null);
+  const cancelRequest = useCallback(() => {
+    const id = active.current;
+    active.current = null;
+    if (id) void window.api.fusionTranslateCancel(id).catch(() => {});
   }, []);
-
-  return {
-    sourceLang,
-    targetLang,
-    sourceText,
-    resultText,
-    translating,
-    setSourceLang,
-    setTargetLang,
-    setSourceText,
-    handleSwapLanguages,
-    handleTranslate,
-    handleCopyResult,
-    handleClearAll,
-  };
+  useEffect(() => cancelRequest, [cancelRequest]);
+  const handleCancel = useCallback(() => { cancelRequest(); setTranslating(false); }, [cancelRequest]);
+  const setSourceText = useCallback((value: string) => { handleCancel(); updateSourceText(value); setError(''); }, [handleCancel]);
+  const setSourceLang = useCallback((value: string) => { handleCancel(); updateSourceLang(value); setError(''); }, [handleCancel]);
+  const setTargetLang = useCallback((value: string) => { handleCancel(); updateTargetLang(value); setError(''); }, [handleCancel]);
+  const handleSwapLanguages = useCallback(() => {
+    if (sourceLang === 'auto') return;
+    handleCancel(); updateSourceLang(targetLang); updateTargetLang(sourceLang);
+    updateSourceText(resultText); setResultText(sourceText); setError('');
+  }, [handleCancel, sourceLang, targetLang, sourceText, resultText]);
+  const handleTranslate = useCallback(() => {
+    if (!sourceText.trim() || translating) return;
+    const id = crypto.randomUUID(); active.current = id;
+    setTranslating(true); setError(''); setResultText('');
+    void fetchTranslate(sourceText, sourceLang, targetLang, id).then(result => {
+      if (active.current !== id) return;
+      if (result.success && result.data) setResultText(result.data.targetText);
+      else {
+        const detail = result.message || '';
+        const key = detail.includes('quota-or-service') ? 'serviceUnavailable'
+          : detail.includes('invalid-text') ? 'invalidText'
+          : detail.includes('invalid-language') ? 'invalidLanguage' : 'networkError';
+        setError(t('maxExpand.toolbox.translate.' + key));
+      }
+    }).finally(() => { if (active.current === id) { active.current = null; setTranslating(false); } });
+  }, [sourceText, sourceLang, targetLang, translating, t]);
+  const handleCopyResult = useCallback(() => {
+    if (resultText) void navigator.clipboard.writeText(resultText).catch(() => setError(t('maxExpand.toolbox.translate.copyError')));
+  }, [resultText, t]);
+  const handleClearAll = useCallback(() => {
+    handleCancel(); updateSourceText(''); setResultText(''); setError('');
+  }, [handleCancel]);
+  return { sourceLang, targetLang, sourceText, resultText, translating, error,
+    setSourceLang, setTargetLang, setSourceText, handleSwapLanguages, handleTranslate,
+    handleCancel, handleCopyResult, handleClearAll };
 }

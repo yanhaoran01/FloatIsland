@@ -19,6 +19,8 @@ import { join } from 'path';
 import type { BrowserWindow } from 'electron';
 import type { FusionEchoCodexSessionsSnapshot, FusionEchoCodexSession } from '../../preload/types/fusion';
 import type { EchoCodexSessionCache } from '../types/system/EchoExternalCodexService';
+import {WorkBuddyObserver} from './workBuddyObserver';
+import {discoverWorkBuddy,workBuddyHistory,workBuddyAlive,openWorkBuddy} from './workBuddyConfig';
 
 interface Options {
   binaryPath: string;
@@ -72,8 +74,11 @@ export function createEchoRuntimeService(options: Options) {
   const waiters = new Map<number, Waiter>();
   const owners = new Map<string, symbol>();
   const sourceSequences = new Map<string, number>();
+  const workbuddy=new WorkBuddyObserver();
+  let workbuddySeenAt=0;
+  const combined=():FusionEchoCodexSessionsSnapshot=>({...snapshot,sessions:[...snapshot.sessions.filter(item=>item.source!=='workbuddy'),...workbuddy.snapshot()].sort((a,b)=>(b.lastActivity??'').localeCompare(a.lastActivity??''))});
   const publish = (): void => {
-    broadcastFusion('fusion:echo:codex-sessions:updated', snapshot);
+    broadcastFusion('fusion:echo:codex-sessions:updated', combined());
   };
   const request = (method: string, params: Raw = {}, timeout = 30_000): Promise<any> => new Promise((resolve, reject) => {
     if (!child || child.stdin.destroyed) { reject(new Error('echo-host-disconnected')); return; }
@@ -144,6 +149,13 @@ export function createEchoRuntimeService(options: Options) {
         if (typeof event.source !== 'string' || typeof event.session_id !== 'string' || typeof event.hook_event_name !== 'string') {
           res.writeHead(400).end(); return;
         }
+        if(event.source==='workbuddy') {
+          workbuddySeenAt=Date.now();
+          if(workbuddy.accept(event))publish();
+          const body=JSON.stringify({ok:true,error:null,decision:null,answer:null});
+          res.writeHead(200,{'Content-Type':'application/json','Content-Length':Buffer.byteLength(body),Connection:'close'}).end(body);
+          return;
+        }
         // One live channel owns this request. A dropped caller withdraws only its source/session.
         const key = event.source + ':' + event.session_id;
         if (typeof payload.sourceSeq === 'number') {
@@ -179,7 +191,8 @@ export function createEchoRuntimeService(options: Options) {
       if (!stopping) return;
       stopping = false; mkdirSync(options.dataDir, { recursive: true });
       snapshot = options.cache?.load() ?? snapshot; publish(); boot(); startIngress();
-      timer = setInterval(refreshPreferences, 1000);
+      void discoverWorkBuddy().then(()=>{workbuddy.restore(workBuddyHistory());publish();}).catch(()=>{});
+      timer = setInterval(()=>{refreshPreferences();if(workbuddySeenAt&&Date.now()-workbuddySeenAt>15000&&!workBuddyAlive()){workbuddySeenAt=0;workbuddy.disconnect();publish();}}, 1000);
     },
     stop: (): void => {
       stopping = true; if (timer) clearInterval(timer); if (restartTimer) clearTimeout(restartTimer);
@@ -187,9 +200,9 @@ export function createEchoRuntimeService(options: Options) {
       // EOF lets the host flush persistence before it exits.
       child?.stdin.end();
     },
-    getSnapshot: (): FusionEchoCodexSessionsSnapshot => structuredClone(snapshot),
-    rescan: async (): Promise<void> => { await request('discover', { enabled: enabled !== false }); },
-    focusSession: async (source: string, sessionId: string): Promise<boolean> => Boolean((await request('focus', { source, sessionId })).focused),
+    getSnapshot: (): FusionEchoCodexSessionsSnapshot => structuredClone(combined()),
+    rescan: async (): Promise<void> => { workbuddy.restore(workBuddyHistory());publish();await request('discover', { enabled: enabled !== false }); },
+    focusSession: async (source: string, sessionId: string): Promise<boolean> => source==='workbuddy' ? openWorkBuddy() : Boolean((await request('focus', { source, sessionId })).focused),
     focusCodexApp: async (): Promise<boolean> => {
       const session = snapshot.sessions.find((item) => item.source === 'codex');
       return session ? Boolean((await request('focus', { source: session.source, sessionId: session.sessionId })).focused) : false;

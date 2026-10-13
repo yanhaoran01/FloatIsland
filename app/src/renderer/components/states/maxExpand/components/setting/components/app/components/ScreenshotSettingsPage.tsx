@@ -33,7 +33,7 @@ import {
   SCREENSHOT_TRANSLATE_SOURCE_LANG_STORE_KEY,
   SCREENSHOT_TRANSLATE_TARGET_LANG_STORE_KEY,
   SCREENSHOT_ENGINE_STORE_KEY,
-  SCREENSHOT_OCR_ENGINE_STORE_KEY,
+  CAPTURE_SERVICE_STORE_KEY,
 } from '../../../config/settingsTabConfig';
 
 /** 翻译语言选项 */
@@ -141,7 +141,7 @@ export function ScreenshotSettingsPage(): ReactElement {
   const [sourceLang, setSourceLang] = useState('auto');
   const [targetLang, setTargetLang] = useState('en');
   const [screenshotEngine, setScreenshotEngine] = useState<'plugin' | 'js'>('plugin');
-  const [ocrEngine, setOcrEngine] = useState<'local' | 'server'>('server');
+  const [ocrEngine, setOcrEngine] = useState<'local' | 'server'>('local');
 
   useEffect(() => {
     let cancelled = false;
@@ -157,9 +157,8 @@ export function ScreenshotSettingsPage(): ReactElement {
       if (cancelled) return;
       setScreenshotEngine(value === 'js' ? 'js' : 'plugin');
     }).catch(() => {});
-    window.api.storeRead(SCREENSHOT_OCR_ENGINE_STORE_KEY).then((value) => {
-      if (cancelled) return;
-      setOcrEngine(value === 'local' ? 'local' : 'server');
+    window.api.storeRead(CAPTURE_SERVICE_STORE_KEY).then((value) => {
+      if (!cancelled) setOcrEngine(value === 'server' ? 'server' : 'local');
     }).catch(() => {});
     return () => {
       cancelled = true;
@@ -179,11 +178,6 @@ export function ScreenshotSettingsPage(): ReactElement {
   const handleScreenshotEngineChange = (engine: 'plugin' | 'js'): void => {
     setScreenshotEngine(engine);
     void window.api.storeWrite(SCREENSHOT_ENGINE_STORE_KEY, engine);
-  };
-
-  const handleOcrEngineChange = (engine: 'local' | 'server'): void => {
-    setOcrEngine(engine);
-    void window.api.storeWrite(SCREENSHOT_OCR_ENGINE_STORE_KEY, engine);
   };
 
   return (
@@ -229,22 +223,8 @@ export function ScreenshotSettingsPage(): ReactElement {
             </div>
           </div>
           <div className="settings-card-inline-row">
-            <label className="settings-card-check">
-              <input
-                type="radio"
-                name="screenshot-ocr-engine"
-                checked={ocrEngine === 'local'}
-                onChange={() => { handleOcrEngineChange('local'); }}
-              />
-              {t('settings.app.screenshotSettings.ocrEngineLocal')}
-            </label>
-            <label className="settings-card-check" style={{ whiteSpace: 'nowrap' }}>
-              <input
-                type="radio"
-                name="screenshot-ocr-engine"
-                checked={ocrEngine === 'server'}
-                onChange={() => { handleOcrEngineChange('server'); }}
-              />
+            <label className="settings-card-check"><input type="radio" name="captureService" checked={ocrEngine === 'local'} onChange={() => {setOcrEngine('local');void window.api.storeWrite(CAPTURE_SERVICE_STORE_KEY,'local');}}/>{t('settings.app.screenshotSettings.ocrEngineLocal')}</label>
+            <label className="settings-card-check"><input type="radio" name="captureService" checked={ocrEngine === 'server'} onChange={() => {setOcrEngine('server');void window.api.storeWrite(CAPTURE_SERVICE_STORE_KEY,'server');}}/>
               <img className="settings-inline-icon" src={ServiceIcon.ALIBABACLOUD} alt="" />
               <img className="settings-inline-icon" src={SvgIcon.PRO} alt="" />
               {t('settings.app.screenshotSettings.ocrEngineServer')}

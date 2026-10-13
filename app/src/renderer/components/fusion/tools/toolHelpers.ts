@@ -10,6 +10,9 @@
  */
 export function transformText(text: string, action: string, find = '', replacement = ''): string {
   if (action === 'dedupe') return [...new Set(text.split(/\r?\n/))].join('\n');
+  if (action === 'trim') return text.split(/\r?\n/).map(line=>line.trim()).join('\n');
+  if (action === 'sort') return text.split(/\r?\n/).sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).join('\n');
+  if (action === 'reverse') return text.split(/\r?\n/).reverse().join('\n');
   if (action === 'empty') return text.split(/\r?\n/).filter(line => line.trim()).join('\n');
   if (action === 'upper') return text.toUpperCase();
   if (action === 'lower') return text.toLowerCase();

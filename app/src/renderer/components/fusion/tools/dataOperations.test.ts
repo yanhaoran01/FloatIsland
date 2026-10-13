@@ -4,6 +4,11 @@ import { executeDataJob } from './dataOperations';
 import { drawNames,randomBelow } from './DailyTools';
 import { cropRect } from './ImageTool';
 describe('eight offline additions',()=>{
+ it('queries JSON data without evaluating expressions or traversing prototypes',()=>{
+  const text=JSON.stringify({items:[{name:'中文'},{name:'第二本'}]});expect(JSON.parse(executeDataJob({kind:'json',mode:'query',text,path:'$.items[*].name'}).text)).toEqual(['中文','第二本']);
+  for(const path of ['$.__proto__','$[constructor]','$.items[?(@.name)]'])expect(()=>executeDataJob({kind:'json',mode:'query',text,path})).toThrow();
+  expect(()=>executeDataJob({kind:'json',mode:'format',text:'{"broken":}',path:'$'})).toThrow();
+ });
  it.each([',',';','\t'])('roundtrips CSV with delimiter %s, leading zeros, Chinese, quotes and newlines',delimiter=>{
   const records=[{id:'0012',name:'中文',value:'a"b\nc'},{id:'0001',name:'另一行',value:'a,b;\tc'}];
   const csv=executeDataJob({kind:'csv',mode:'json-csv',text:JSON.stringify(records),delimiter});const decoded=executeDataJob({kind:'csv',mode:'csv-json',text:csv.text,delimiter});expect(JSON.parse(decoded.text)).toEqual(records);

@@ -24,6 +24,8 @@
  * @author 鸡哥
  */
 
+import {transitionIsland,islandTransitionActive} from '../../components/fusion/islandTransition';
+import {readWorkspaceNavigation,writeWorkspaceNavigation} from '../../components/fusion/workspaceNavigation';
 import type { StateCreator } from 'zustand';
 import type { IslandSlice } from '../types';
 import { emptyNotification } from '../constants/defaults';
@@ -63,7 +65,7 @@ export const createIslandSlice: StateCreator<
   musicProviderLogin: 'qishui',
   hoverTab: 'time',
   expandTab: 'overview',
-  maxExpandTab: 'fusionSessions',
+  maxExpandTab: readWorkspaceNavigation().page,
   cliProvider: readCliProvider(),
   notification: emptyNotification,
   sttText: '',
@@ -75,6 +77,7 @@ export const createIslandSlice: StateCreator<
   setIdle: (force?: boolean) => set((prev) => {
     if (prev.uiStateLocked && prev.state !== 'idle') return prev;
     if (!force && (prev.state === 'expanded' || prev.state === 'maxExpand' || prev.state === 'guide' || prev.state === 'login' || prev.state === 'register' || prev.state === 'resetPassword' || prev.state === 'setPassword' || prev.state === 'bindOAuth' || prev.state === 'bindEmail' || prev.state === 'payment' || prev.state === 'announcement' || prev.state === 'questionnaire' || prev.state === 'musicProvidersLogin')) return prev;
+    if(prev.state==='maxExpand'&&typeof window.api?.fusionGenie==='function'){transitionIsland('collapse',()=>{window.api?.collapseWindow(0);window.api?.enableMousePassthrough();set({state:'idle',authReturnState:null});});return prev;}
     window.api?.collapseWindow(getIslandWindowShrinkDelay(prev.state, 'idle', prev.animationSpeed));
     window.api?.enableMousePassthrough();
     return { state: 'idle' as const, authReturnState: null };
@@ -95,12 +98,11 @@ export const createIslandSlice: StateCreator<
     return { state: 'expanded', authReturnState: null };
   }),
 
-  setMaxExpand: () => set((prev) => {
-    if (prev.uiStateLocked && prev.state !== 'maxExpand') return prev;
-    window.api?.expandWindowSettings();
-    window.api?.disableMousePassthrough();
-    return { state: 'maxExpand', authReturnState: null };
-  }),
+  setMaxExpand: () => {
+    const previous=get();if(previous.uiStateLocked&&previous.state!=='maxExpand')return;
+    if(previous.state==='maxExpand'&&!islandTransitionActive()){window.api?.disableMousePassthrough();return;}
+    transitionIsland('expand',()=>{window.api?.expandWindowSettings();window.api?.disableMousePassthrough();set({state:'maxExpand',authReturnState:null});});
+  },
 
   setLogin: () => set((prev) => {
     if (prev.uiStateLocked && prev.state !== 'login') return prev;
@@ -306,7 +308,7 @@ export const createIslandSlice: StateCreator<
 
   setHoverTab: (tab) => set({ hoverTab: tab }),
   setExpandTab: (tab) => set({ expandTab: tab }),
-  setMaxExpandTab: (tab) => set({ maxExpandTab: tab }),
+  setMaxExpandTab: (tab) => {if(tab==='aiChat'||tab==='toolbox'||tab==='fusionSessions')writeWorkspaceNavigation({page:tab});set({ maxExpandTab: tab });},
   setCliProvider: (provider) => {
     try {
       window.localStorage.setItem('eisland-cli-provider', provider);

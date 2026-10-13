@@ -287,6 +287,7 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('starts a single-thread download for small files', async () => {
+      mockStat.mockImplementation(async (path:string)=>({size:path===TEMP_OUTPUT?500:0}));
       const smallSize = 500;
       fetchMock
         .mockResolvedValueOnce(makeFetchResult({ headers: { 'content-length': String(smallSize) } }))
@@ -312,6 +313,7 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('starts a multi-thread download for large files', async () => {
+      mockStat.mockImplementation(async (path:string)=>({size:path===TEMP_OUTPUT?FILE_SIZE:0}));
       const chunkSize = FILE_SIZE / 4;
       mockBuildChunks.mockReturnValue([
         { index: 0, start: 0, end: chunkSize - 1, partPath: `${TEMP_DIR}/chunk-0.part` },
@@ -326,7 +328,7 @@ describe('MultiThreadDownloadEngine', () => {
             headers: { 'content-length': String(FILE_SIZE), 'accept-ranges': 'bytes' },
           }),
         )
-        .mockResolvedValue(makeFetchResult({ bodyChunks: [new Uint8Array(chunkSize)] }));
+        .mockResolvedValue(makeFetchResult({status:206, bodyChunks: [new Uint8Array(chunkSize)] }));
 
       const engine = new MultiThreadDownloadEngine();
       const snap = await engine.startDownload({ url: FULL_URL, defaultDir: SAVE_DIR, threads: 4 });
@@ -519,6 +521,7 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('resumes a paused task when range is supported', async () => {
+      mockStat.mockImplementation(async (path:string)=>({size:path===TEMP_OUTPUT?FILE_SIZE:0}));
       // Start download
       fetchMock
         .mockResolvedValueOnce(
@@ -817,6 +820,7 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('sets totalBytes from content-length when initially unknown', async () => {
+      mockStat.mockImplementation(async (path:string)=>({size:path===TEMP_OUTPUT?500:0}));
       // Probe returns no content-length, but GET returns it
       fetchMock
         .mockResolvedValueOnce(makeFetchResult({ headers: {} }))
@@ -860,7 +864,7 @@ describe('MultiThreadDownloadEngine', () => {
             headers: { 'content-length': String(FILE_SIZE), 'accept-ranges': 'bytes' },
           }),
         )
-        .mockResolvedValue(makeFetchResult({ bodyChunks: [new Uint8Array(chunkSize)] }));
+        .mockResolvedValue(makeFetchResult({status:206, bodyChunks: [new Uint8Array(chunkSize)] }));
 
       const engine = new MultiThreadDownloadEngine();
       await engine.startDownload({ url: FULL_URL, defaultDir: SAVE_DIR, threads: 2 });
@@ -903,6 +907,7 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('progress callback receives correct snapshot shape', async () => {
+      mockStat.mockImplementation(async (path:string)=>({size:path===TEMP_OUTPUT?100:0}));
       const cb = vi.fn();
       fetchMock
         .mockResolvedValueOnce(makeFetchResult({ headers: { 'content-length': '100' } }))
@@ -969,7 +974,7 @@ describe('MultiThreadDownloadEngine', () => {
             headers: { 'content-length': String(FILE_SIZE), 'accept-ranges': 'bytes' },
           }),
         )
-        .mockResolvedValue(makeFetchResult({ bodyChunks: [new Uint8Array(chunkSize)] }));
+        .mockResolvedValue(makeFetchResult({status:206, bodyChunks: [new Uint8Array(chunkSize)] }));
 
       const engine = new MultiThreadDownloadEngine();
       await engine.startDownload({ url: FULL_URL, defaultDir: SAVE_DIR, threads: 2 });
@@ -984,7 +989,7 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('existing single-thread file triggers range request restart when server returns 200', async () => {
-      mockStat.mockResolvedValue({ size: 500 });
+      mockStat.mockResolvedValueOnce({size:500}).mockResolvedValueOnce({size:500}).mockResolvedValue({size:1000});
 
       // Probe says range is supported
       fetchMock
@@ -1003,7 +1008,7 @@ describe('MultiThreadDownloadEngine', () => {
         );
 
       const engine = new MultiThreadDownloadEngine();
-      await engine.startDownload({ url: FULL_URL, defaultDir: SAVE_DIR });
+      await engine.startDownload({ url: FULL_URL, defaultDir: SAVE_DIR, threads:1 });
       await flushN(5);
 
       const task = engine.listTasks()[0];
@@ -1077,9 +1082,10 @@ describe('MultiThreadDownloadEngine', () => {
     });
 
     it('publishes a new name without deleting an existing output', async () => {
+      mockStat.mockImplementation(async (path:string)=>({size:path===TEMP_OUTPUT?100:0}));
       const engine = new MultiThreadDownloadEngine();
       mockCopyFile.mockRejectedValueOnce(Object.assign(new Error('already exists'), {code: 'EEXIST'})).mockResolvedValue(undefined);
-      fetchMock.mockResolvedValue(makeFetchResult({headers: {'content-length': '100'}}));
+      fetchMock.mockResolvedValue(makeFetchResult({headers: {'content-length': '100'},bodyChunks:[new Uint8Array(100)]}));
       await engine.startDownload({url: FULL_URL, defaultDir: SAVE_DIR});
       await flushN(5);
       expect(engine.listTasks()[0].status).toBe('completed');

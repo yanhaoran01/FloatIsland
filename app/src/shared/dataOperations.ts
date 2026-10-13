@@ -1,11 +1,22 @@
 /* FusionIsland - Copyright (C) 2026 contributors. GPL-3.0. */
 /** @file dataOperations.ts @description Offline CSV and bounded regular expression operations. @author 鸡哥 */
 import Papa from 'papaparse';
-export type DataJob={kind:'csv';mode:'csv-json'|'json-csv';text:string;delimiter:string}|{kind:'regex';pattern:string;flags:string;text:string;replacement:string};
+export type DataJob={kind:'json';mode:'format'|'minify'|'query'|'stringify';text:string;path:string}|{kind:'csv';mode:'csv-json'|'json-csv';text:string;delimiter:string}|{kind:'regex';pattern:string;flags:string;text:string;replacement:string};
 export interface DataResult { text:string; rows:string[][]; }
 /** Runs inside a disposable worker; input is never executed as JavaScript. */
 export function executeDataJob(job:DataJob):DataResult {
  if(job.text.length>5_000_000)throw Error('text-too-large');
+ if(job.kind==='json'){
+  if(job.mode==='stringify')return {text:JSON.stringify(job.text),rows:[]};
+  const data=JSON.parse(job.text);
+  if(job.mode==='query'){
+   if(job.path.length>1000||!/^\$(?:\.[\w$-]+|\[(?:\d+|\*|"[^"\\]*"|'[^'\\]*')\])*$/.test(job.path))throw Error('invalid-json-path');
+   let values:unknown[]=[data];const tokens=job.path.slice(1).match(/\.[\w$-]+|\[(?:\d+|\*|"[^"\\]*"|'[^'\\]*')\]/g)||[];
+   for(const token of tokens){const key=token.startsWith('.')?token.slice(1):token.slice(1,-1).replace(/^["']|["']$/g,'');if(['__proto__','constructor','prototype'].includes(key))throw Error('invalid-json-path');values=values.flatMap(value=>{if(value===null||typeof value!=='object')return [];if(key==='*')return Object.values(value);return Object.hasOwn(value,key)?[(value as Record<string,unknown>)[key]]:[];});if(values.length>10000)throw Error('text-too-large');}
+   return {text:JSON.stringify(values,null,2),rows:[]};
+  }
+  return {text:JSON.stringify(data,null,job.mode==='format'?2:undefined),rows:[]};
+ }
  if(job.kind==='regex'){
   if(job.pattern.length>4096||job.text.length>200_000||!/^[dgimsuvy]*$/.test(job.flags))throw Error('invalid-expression');
   const regex=new RegExp(job.pattern,job.flags);const rows:string[][]=[];let match:RegExpExecArray|null;

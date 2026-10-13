@@ -15,13 +15,14 @@ import { isFusionView } from './fusionWindows';
 import { requireArtifact,readArtifact,createArtifact,grantArtifact,artifactMetadata,artifactOutput } from './productArtifacts';
 import { createProductTask,publishProductTask,productTasks,confirmProductTask,runProductFfmpeg,runProductWorker,type ProductTask } from './productJobs';
 import { fusionRenameCapability,fusionArchiveWorkerCode } from './fusionFileTools';
-import { recognizeCaptureTextLocally } from '../services/captureLocalOcrService';
+import { recognizeCaptureText } from '../services/captureOcrService';
 
 const requireModule=createRequire(__filename);
 let data:ProductData={version:1,revision:0,flows:structuredClone(PRODUCT_PRESETS),history:[],hotkey:'Ctrl+Alt+K'};
 let dataFile='';let registeredKey='';
 const num=(options:ProductOptions,key:string,fallback:number,min:number,max:number):number=>{const value=Number(options[key]??fallback);if(!Number.isFinite(value)||value<min||value>max)throw Error('invalid-number');return value;};
 const text=(options:ProductOptions,key:string,fallback=''):string=>String(options[key]??fallback);
+function readAccountToken():string {try{const value:unknown=JSON.parse(readFileSync(join(app.getPath('userData'),'eIsland_store','user-account-token.json'),'utf8'));return typeof value==='string'?value:'';}catch{return '';}}
 const persist=():void=>{mkdirSync(dirname(dataFile),{recursive:true});writeFileSync(dataFile+'.tmp',JSON.stringify(data));renameSync(dataFile+'.tmp',dataFile);};
 const remember=(task:ProductTask):void=>{data.history=[{id:task.value.id,kind:task.value.action??task.value.kind,time:Date.now(),name:task.value.result.map(x=>x.name).join(', '),state:task.value.state},...data.history].slice(0,100);data.revision++;persist();};
 /** Records each original ZIP task in its own versioned history. */
@@ -54,7 +55,7 @@ export async function executeProductAction(task:ProductTask,action:ProductAction
   }return result;
  }
  if(action==='ocr'){
-  const value=readArtifact(owner,ids[0]),result=await recognizeCaptureTextLocally('data:'+value.artifact.mime+';base64,'+Buffer.from(value.bytes).toString('base64'),controller.signal);if(!result.success)throw Error(result.code||result.message||'ocr-failed');return [createArtifact(owner,Buffer.from(result.text??''),'recognized.txt')];
+  const value=readArtifact(owner,ids[0]),result=await recognizeCaptureText(readAccountToken(),'data:'+value.artifact.mime+';base64,'+Buffer.from(value.bytes).toString('base64'),controller.signal);if(!result.success)throw Error(result.message||result.code||'ocr-failed');return [createArtifact(owner,Buffer.from(result.text??''),'recognized.txt')];
  }
  if(action==='pdf'){
   const mode=text(options,'mode','merge');if(!['merge','extract','rotate','images'].includes(mode))throw Error('invalid-action');

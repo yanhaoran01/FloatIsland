@@ -28,6 +28,7 @@
 export interface StartDownloadOptions {
   /** Coordinator-owned stable task identity and probe cancellation. */
   id?: string;
+  request?: typeof fetch;
   signal?: AbortSignal;
   /** 下载 URL */
   url: string;

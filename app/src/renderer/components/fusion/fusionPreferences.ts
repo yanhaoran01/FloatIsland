@@ -50,6 +50,8 @@ export async function initializeFusionPreferences(): Promise<void> {
   if (initialized) return;
   initialized = true;
   initializeAvatarConfiguration();
+  // 让全局样式层也能遵守「减少动效」设置。
+  useFusionPreferences.subscribe(state => { document.documentElement.dataset.fiReducedMotion = String(state.value.reducedMotion); });
   window.api.onFusionPreferences(value => {
     useFusionPreferences.setState({ value: { ...defaults, ...value }, ready: true });
     localStorage.setItem('fusion.pet-muted', String(value.muted));

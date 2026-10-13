@@ -29,6 +29,8 @@ export const SCREENSHOT_ENGINE_STORE_KEY = 'screenshot-engine';
 
 /** OCR 引擎配置键 */
 export const SCREENSHOT_OCR_ENGINE_STORE_KEY = 'screenshot-ocr-engine';
+/** Explicit FloatIsland service choice; ignore the legacy preference that forced cloud OCR. */
+export const CAPTURE_SERVICE_STORE_KEY = 'float-screenshot-service';
 
 /** 截图引擎类型 */
 export type ScreenshotEngine = 'plugin' | 'js';

@@ -90,9 +90,9 @@ export function useIslandHoverInteraction(options: UseIslandHoverInteractionOpti
     let lastCheckTime = 0;
     const CHECK_INTERVAL = 16;
 
-    if (state === 'maxExpand' || state === 'expanded' || state === 'announcement' || state === 'questionnaire') {
-      isHoveringRef.current = true;
-    }
+    clearAllTimers();
+    isHoveringRef.current = !STATE_CONFIGS[state].mousePassthrough;
+    if (!STATE_CONFIGS[state].mousePassthrough) window.api?.disableMousePassthrough();
 
     const checkMousePosition = async (): Promise<void> => {
       if (aborted) return;
@@ -142,6 +142,9 @@ export function useIslandHoverInteraction(options: UseIslandHoverInteractionOpti
       }
 
       if (inWindow) {
+        // Input must be restored even when a previous expanded state left the
+        // hover ref set. Hover state and native input ownership are independent.
+        window.api?.disableMousePassthrough();
         if (leaveTimerRef.current !== null) {
           clearTimeout(leaveTimerRef.current);
           leaveTimerRef.current = null;

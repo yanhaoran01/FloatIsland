@@ -30,10 +30,6 @@ import type { MaxExpandTab } from '../../../store/types';
 import { MaxExpandContentShell } from './MaxExpandContentShell';
 
 const AiChatTab = lazy(() => import('./components/agent/components/AiChatTab').then((module) => ({ default: module.AiChatTab })));
-const TodoTab = lazy(() => import('./components/todo/components/TodoTab').then((module) => ({ default: module.TodoTab })));
-const UrlFavoritesTab = lazy(() => import('./components/urlFavorites').then((module) => ({ default: module.UrlFavoritesTab })));
-const LocalFileSearchTab = lazy(() => import('./components/localFileSearch/components/LocalFileSearchTab').then((module) => ({ default: module.LocalFileSearchTab })));
-const ClipboardHistoryTab = lazy(() => import('./components/clipBoardHistory').then((module) => ({ default: module.ClipboardHistoryTab })));
 const AlbumTab = lazy(() => import('./components/album/components/AlbumTab').then((module) => ({ default: module.AlbumTab })));
 const MailTab = lazy(() => import('./components/mail').then((module) => ({ default: module.MailTab })));
 const SettingsTab = lazy(() => import('../../fusion/FusionSettings').then((module) => ({ default: module.FusionSettings })));
@@ -52,10 +48,10 @@ function renderLazyActiveTab(activeTab: MaxExpandTab, loadingFallback: ReactElem
   let content: ReactElement | null = null;
   if (activeTab === 'fusionSessions') content = <FusionSessionsTab />;
   if (activeTab === 'aiChat') content = <AiChatTab />;
-  if (activeTab === 'todo') content = <TodoTab />;
-  if (activeTab === 'urlFavorites') content = <UrlFavoritesTab />;
-  if (activeTab === 'localFileSearch') content = <LocalFileSearchTab />;
-  if (activeTab === 'clipboardHistory') content = <ClipboardHistoryTab />;
+  if (activeTab === 'todo') content = <FusionToolsTab request={{ id: 'todo', nonce: 1 }} />;
+  if (activeTab === 'urlFavorites') content = <FusionToolsTab request={{ id: 'urlFavorites', nonce: 1 }} />;
+  if (activeTab === 'localFileSearch') content = <FusionToolsTab request={{ id: 'localFileSearch', nonce: 1 }} />;
+  if (activeTab === 'clipboardHistory') content = <FusionToolsTab request={{ id: 'clipboardHistory', nonce: 1 }} />;
   if (activeTab === 'album') content = <AlbumTab />;
   if (activeTab === 'mail') content = <MailTab />;
   if (activeTab === 'memo') content = <MemoTab />;

@@ -13,7 +13,7 @@ export const PRIMARY_TABS = ['fusionSessions', 'aiChat', 'toolbox'] as const;
 
 /** Keeps native scrolling in text, form controls and tool lists, including at their scroll boundaries. */
 export function isIslandWheelContent(target: EventTarget | null): boolean {
-  return target instanceof Element && Boolean(target.closest('input, textarea, select, [contenteditable="true"], .fusion-chat-feed, .fusion-focus-reply, .fusion-chat-error, .fusion-inline-notice, .fusion-chat-attachments, .fusion-tool-content, .fusion-web-slot, .fusion-session-popover'));
+  return target instanceof Element && Boolean(target.closest('input, textarea, select, [contenteditable="true"], .fusion-chat-feed, .fusion-focus-reply, .fusion-chat-error, .fusion-inline-notice, .fusion-chat-attachments, .fusion-tool-content, .fusion-tool-directory, .fusion-web-slot, .fusion-session-popover'));
 }
 
 /** Accumulates normalized wheel input until a fresh gesture may switch a page. */

@@ -134,7 +134,7 @@ export function useTodos(): UseTodosReturn {
 
   /** 切换完成 */
   const toggleDone = (id: number): void => {
-    update(prev => prev.map(t => t.id === id ? { ...t, done: !t.done } : t));
+    update(prev => prev.map(t => t.id === id ? { ...t, done: !t.done,completedAt:!t.done?Date.now():undefined } : t));
   };
 
   /** 删除 */
@@ -195,6 +195,7 @@ export function useTodos(): UseTodosReturn {
     }));
   };
 
+  const setDue=(id:number,value:number|undefined):void=>{if(value!==undefined&&!Number.isFinite(value))return;update(old=>old.map(todo=>todo.id===id?{...todo,dueAt:value}:todo));};
   const doneCount = todos.filter(t => t.done).length;
   const undoneCount = todos.length - doneCount;
   const p0Count = todos.filter(t => !t.done && t.priority === 'P0').length;
@@ -202,6 +203,7 @@ export function useTodos(): UseTodosReturn {
   const p2Count = todos.filter(t => !t.done && t.priority === 'P2').length;
 
   return {
+    setDue,
     todos,
     input, setInput,
     priority, setPriority,

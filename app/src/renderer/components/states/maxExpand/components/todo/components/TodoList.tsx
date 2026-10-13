@@ -34,7 +34,7 @@ import { TodoItem } from './TodoItem';
  * @description 空状态时显示引导界面，有待办时渲染条目列表
  */
 export function TodoList({
-  todos, expandedId, editingDescId, descDraft, setDescDraft, descRef,
+  onSetDue,todos, expandedId, editingDescId, descDraft, setDescDraft, descRef,
   subInput, setSubInput, subPriority, setSubPriority, subSize, setSubSize, subInputRef,
   listRef,
   onToggleDone, onRemove, onToggleExpand, onStartEditDesc, onSaveDesc,
@@ -74,6 +74,7 @@ export function TodoList({
       {todos.map(todo => (
         <TodoItem
           key={todo.id}
+          onSetDue={onSetDue}
           todo={todo}
           isExpanded={expandedId === todo.id}
           editingDescId={editingDescId}

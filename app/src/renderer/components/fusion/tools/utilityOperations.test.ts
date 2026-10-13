@@ -5,6 +5,10 @@ import {PDFDocument} from 'pdf-lib';
 import {executeUtilityJob,parsePdfPages} from './utilityOperations';
 import {colorFormats,dateMilliseconds,generatePassword,transformText} from './toolHelpers';
 describe('offline utilities',()=>{
+ it('roundtrips binary Base64 and preserves NUL and non-UTF8 bytes',async()=>{
+  const bytes=new Uint8Array([0,255,192,128,13,10]);const encoded=await executeUtilityJob({kind:'base64',action:'encode',bytes,text:''});expect(await executeUtilityJob({kind:'base64',action:'decode',text:String(encoded)})).toEqual(bytes);
+  await expect(executeUtilityJob({kind:'base64',action:'decode',text:'%%%'})).rejects.toThrow();
+ });
  beforeAll(async()=>{await import('mathjs');},30000);
  it('evaluates scientific math and rejects assignment and imports',async()=>{
   expect(await executeUtilityJob({kind:'calculate',expression:'sqrt(3^2+4^2)'})).toBe('5');

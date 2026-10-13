@@ -30,6 +30,14 @@ const { handleMock, onMock } = vi.hoisted(() => ({
   handleMock: vi.fn(),
   onMock: vi.fn(),
 }));
+const dock = vi.hoisted(() => ({ ready: false, hidden: false, reveal: vi.fn(), snap: vi.fn() }));
+vi.mock('../../../window/fusionDock', () => ({
+  fusionDockReady: () => dock.ready,
+  fusionDockBounds: (rect: { x: number; y: number; width: number; height: number }) =>
+    dock.hidden ? { ...rect, width: 48, height: 5 } : rect,
+  revealFusionIsland: () => { dock.reveal(); dock.hidden = false; },
+  snapFusionDock: dock.snap,
+}));
 
 const { broadcastSettingChangeMock } = vi.hoisted(() => ({
   broadcastSettingChangeMock: vi.fn(),
@@ -80,6 +88,10 @@ describe('window ipc handlers', () => {
   };
 
   beforeEach(() => {
+    dock.ready = false;
+    dock.hidden = false;
+    dock.reveal.mockClear();
+    dock.snap.mockClear();
     handleHandlers.clear();
     onHandlers.clear();
     handleMock.mockReset();
@@ -179,6 +191,25 @@ describe('window ipc handlers', () => {
     win.setBounds.mockClear();
     fit({ sender: win.webContents }, 480);
     expect(win.setBounds).not.toHaveBeenCalled();
+
+    // A real handle recall must discard its old strip geometry before resizing.
+    dock.ready = true;
+    dock.hidden = true;
+    onHandlers.get('window:expand-settings')?.();
+    expect(dock.reveal).toHaveBeenCalledOnce();
+    expect(win.setBounds).toHaveBeenLastCalledWith({ x: 0, y: 0, width: 760, height: 560 });
+    expect(win.setIgnoreMouseEvents).toHaveBeenLastCalledWith(false);
+
+    // A delayed leave/init message must not disable any docked native controls.
+    onHandlers.get('window:enable-mouse-passthrough')?.();
+    expect(win.setIgnoreMouseEvents).toHaveBeenLastCalledWith(false);
+    onHandlers.get('window:collapse')?.();
+    onHandlers.get('window:enable-mouse-passthrough')?.();
+    expect(win.setIgnoreMouseEvents).toHaveBeenLastCalledWith(false);
+
+    // Auto-hide moves the window outside the resize handler; return live bounds.
+    win.getBounds.mockReturnValue({ x: 830, y: 0, width: 48, height: 38 });
+    expect(handleHandlers.get('window:get-bounds')?.()).toEqual({ x: 830, y: 0, width: 48, height: 38 });
   });
 
   it('broadcasts island display and position updates', () => {

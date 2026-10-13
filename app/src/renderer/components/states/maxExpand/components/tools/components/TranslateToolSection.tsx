@@ -131,6 +131,8 @@ export function TranslateToolSection(): ReactElement {
     sourceText,
     resultText,
     translating,
+    error,
+    handleCancel,
     setSourceLang,
     setTargetLang,
     setSourceText,
@@ -178,6 +180,7 @@ export function TranslateToolSection(): ReactElement {
                 value={sourceText}
                 onChange={(e) => setSourceText(e.target.value)}
                 rows={5}
+                maxLength={5000}
               />
               <div className="translate-textarea-footer">
                 <span className="translate-char-count">{sourceText.length}</span>
@@ -207,15 +210,16 @@ export function TranslateToolSection(): ReactElement {
             </div>
           </div>
 
+          {error && <div role="alert" className="fusion-tool-error">{error}</div>}
           <div className="settings-hotkey-row">
             <button
               className={`settings-lyrics-source-btn download-start-btn-full ${(!sourceText.trim() || translating) ? 'disabled' : ''}`}
               type="button"
-              disabled={!sourceText.trim() || translating}
-              onClick={handleTranslate}
+              disabled={!sourceText.trim()}
+              onClick={translating ? handleCancel : handleTranslate}
             >
               {translating
-                ? t('maxExpand.toolbox.translate.translating')
+                ? t('maxExpand.toolbox.translate.cancel')
                 : t('maxExpand.toolbox.translate.translateBtn')}
             </button>
           </div>

@@ -1,18 +1,37 @@
 /* FusionIsland - https://github.com/JNTMTMTM/eIsland
  * Copyright (C) 2026 FusionIsland contributors. GPL-3.0. */
 /** @file fusionBrowserService.ts @description 主进程保留隔离网页与媒体实例，跨页面不重新加载。 @author 鸡哥 */
+import {bindBrowserDownloads,markBookBrowser,clearBookBrowser} from '../core/browserDownloadEngine';
 import { app, BrowserWindow, dialog, ipcMain, protocol, session, shell, WebContentsView, type WebFrameMain } from 'electron';
 import { join, extname } from 'path';
 import { randomUUID } from 'crypto';
-import { createReadStream, statSync } from 'fs';
+import { createReadStream, statSync,readFileSync } from 'fs';
+import {createRequire} from 'node:module';
+import type {LibraryArticle} from '../../preload/types/fusionLibrary';
+import {getLibraryStore} from './libraryStore';
 import { Readable } from 'stream';
 import { FusionToolStore, normalizeWebUrl } from './fusionToolStore';
 import { broadcastFusion, isFusionView } from './fusionWindows';
 import { registerFusionColorPicker } from './fusionColorPicker';
+import { acquireFusionMedia, registerMediaParticipant, pauseAllFusionMedia, hasRegisteredFusionMedia } from './fusionMediaCoordinator';
 import type { WebKind, WebRect, WebSnapshot, MediaCommand, MediaControlResult } from '../../preload/types/fusionTools';
 
 interface Guest { view: WebContentsView; owner: BrowserWindow | null; state: WebSnapshot; pauseMute?: boolean; }
 const guests = new Map<WebKind, Guest>();
+/** Fixed extraction command: external sites never receive application preload or arbitrary IPC scripts. */
+async function extractArticle(contents:Electron.WebContents,url:string):Promise<LibraryArticle>{
+ const requireModule=createRequire(import.meta.url),core=readFileSync(requireModule.resolve('@mozilla/readability/Readability.js'),'utf8');
+ const raw:unknown=await withDeadline(contents.executeJavaScript('(()=>{'+core+';const a=new Readability(document.cloneNode(true),{maxElemsToParse:100000}).parse();if(!a)return null;return {title:a.title,html:a.content,excerpt:a.excerpt};})()'),15000);
+ if(!raw||typeof raw!=='object'||!('html'in raw)||typeof raw.html!=='string'||raw.html.length>5_000_000||!raw.html.trim())throw Error('article-unavailable');
+ return {id:randomUUID(),url,html:raw.html,title:'title'in raw&&typeof raw.title==='string'?raw.title.slice(0,200):new URL(url).hostname,excerpt:'excerpt'in raw&&typeof raw.excerpt==='string'?raw.excerpt.slice(0,300):'',progress:0,highlights:[],savedAt:Date.now()};
+}
+export async function readFusionWebArticle():Promise<LibraryArticle>{const guest=guests.get('browser');if(!guest||guest.view.webContents.isDestroyed())throw Error('article-unavailable');return extractArticle(guest.view.webContents,normalizeWebUrl(guest.view.webContents.getURL()));}
+/** Parses an already cleaned, inert document with the same Readability core. No app APIs or remote subresources. */
+export async function parseFusionArticleHtml(html:string,url:string,signal:AbortSignal):Promise<LibraryArticle>{
+ signal.throwIfAborted();const partition='float-reader-'+randomUUID(),sandbox=session.fromPartition(partition);sandbox.setPermissionRequestHandler((_w,_p,cb)=>cb(false));sandbox.setPermissionCheckHandler(()=>false);sandbox.webRequest.onBeforeRequest((details,cb)=>cb({cancel:!details.url.startsWith('data:')}));
+ const view=new WebContentsView({webPreferences:{partition,sandbox:true,contextIsolation:true,nodeIntegration:false,javascript:false}}),close=()=>{if(!view.webContents.isDestroyed())view.webContents.close();};signal.addEventListener('abort',close,{once:true});
+ try{await withDeadline(view.webContents.loadURL('data:text/html;charset=utf-8,'+encodeURIComponent(html)),15000);signal.throwIfAborted();return await extractArticle(view.webContents,url);}finally{signal.removeEventListener('abort',close);close();}
+}
 const withDeadline = async <T>(work: Promise<T>, timeout = 1200): Promise<T> => {
   let timer: ReturnType<typeof setTimeout>;
   try { return await Promise.race([work, new Promise<T>((_, reject) => { timer = setTimeout(() => reject(new Error('media-timeout')), timeout); timer.unref(); })]); } finally { clearTimeout(timer!); }
@@ -26,7 +45,7 @@ const publish = (): void => broadcastFusion('fusion:web:changed', snapshot());
 /** 播放实例存在时，收起仍保留可操作的播放条。
  * @returns 是否存在尚未关闭的媒体来源。
  */
-export function hasFusionMedia(): boolean { return activeKind !== null && Boolean(guests.get(activeKind)?.state.active); }
+export function hasFusionMedia(): boolean { return hasRegisteredFusionMedia() || activeKind !== null && Boolean(guests.get(activeKind)?.state.active); }
 
 const readMediaScript = `(() => {
   const items = [...document.querySelectorAll('video,audio')];
@@ -63,12 +82,13 @@ export async function pauseFusionMedia(): Promise<MediaControlResult> {
 function activate(kind: WebKind): void {
   activeKind = kind;
   guests.forEach((guest, key) => {
-    guest.view.webContents.setAudioMuted(key !== kind || guest.state.muted);
+    guest.view.webContents.setAudioMuted(true);
     guest.state.active = key === kind;
     guest.view.webContents.backgroundThrottling = key !== kind;
   });
   app.emit('fusion-media-active');
   publish();
+  void acquireFusionMedia('web').then(()=>{if(activeKind===kind){const guest=guests.get(kind);if(guest&&!guest.view.webContents.isDestroyed())guest.view.webContents.setAudioMuted(guest.state.muted);}}).catch(()=>{});
 }
 function detach(guest: Guest): void {
   if (guest.owner && !guest.owner.isDestroyed()) guest.owner.contentView.removeChildView(guest.view);
@@ -105,9 +125,11 @@ function createGuest(kind: WebKind): Guest {
     try { const target = normalizeWebUrl(url); void contents.loadURL(target).catch(error => { guest.state.error = String(error); publish(); }); } catch { /* 非网页协议不能创建窗口。 */ }
     return { action: 'deny' };
   });
-  contents.session.on('will-download', event => event.preventDefault());
+  bindBrowserDownloads(contents.session);
   return guest;
 }
+
+export async function openBookWebsite(url:string,sourceId:string):Promise<void>{const guest=createGuest('browser');markBookBrowser(guest.view.webContents,sourceId);guest.state.url=normalizeWebUrl(url);guest.state.title=new URL(url).hostname;guest.state.error='';await guest.view.webContents.loadURL(guest.state.url);publish();}
 
 /** 注册工具数据和有限网页命令。
  * @returns 无返回值；资源在应用退出时释放。
@@ -115,6 +137,7 @@ function createGuest(kind: WebKind): Guest {
 export let playFusionNativeFile:(host:BrowserWindow,requested?:string,autoplay?:boolean)=>Promise<boolean>=async()=>{throw Error('media-service-not-ready');};
 
 export function registerFusionBrowser(): void {
+  registerMediaParticipant('web',{pause:async()=>{const result=await pauseFusionMedia();guests.forEach(guest=>{guest.state.active=false;});publish();return result;}});
   registerFusionColorPicker();
   const store = new FusionToolStore(join(app.getPath('userData'), 'fusion-workspace', 'tools-v1.json'));
   const browserSession = session.fromPartition('persist:fusion-browser');
@@ -137,11 +160,17 @@ export function registerFusionBrowser(): void {
   });
   const trusted = (event: Electron.IpcMainInvokeEvent): void => { if (!isFusionView(event.sender)) throw new Error('untrusted-view'); };
   const kindOf = (kind: WebKind): WebKind => { if (kind !== 'browser' && kind !== 'video') throw new Error('invalid-web-kind'); return kind; };
-  ipcMain.handle('fusion:tools:data', event => { trusted(event); return store.snapshot(); });
-  ipcMain.handle('fusion:tools:write', (event, kind: string, value: unknown) => { trusted(event); const data = store.write(kind, value); broadcastFusion('fusion:tools:data-changed', data); return data; });
+  const toolSnapshot=()=>({...store.snapshot(),bookmarks:getLibraryStore().data.items.filter(item=>item.kind==='url').map(item=>({id:item.id,title:item.title,url:item.url!}))});
+  ipcMain.handle('fusion:tools:data', event => { trusted(event); return toolSnapshot(); });
+  ipcMain.handle('fusion:tools:write', (event, kind: string, value: unknown) => { trusted(event);
+    if(kind==='bookmark'){const bookmark=value as {url:string;title:string;id:string};getLibraryStore().write({type:'url',...bookmark});getLibraryStore().save();broadcastFusion('fusion:library:changed',getLibraryStore().snapshot());}
+    else if(kind==='deleteBookmark'){getLibraryStore().write({type:'remove',id:String(value)});getLibraryStore().save();broadcastFusion('fusion:library:changed',getLibraryStore().snapshot());}
+    else store.write(kind,value);
+    const data=toolSnapshot();broadcastFusion('fusion:tools:data-changed', data);return data;
+  });
   ipcMain.handle('fusion:web:state', event => { trusted(event); return snapshot(); });
   ipcMain.handle('fusion:web:navigate', async (event, kind: WebKind, raw: string) => {
-    trusted(event); const url = normalizeWebUrl(raw); const guest = createGuest(kindOf(kind));
+    trusted(event); const url = normalizeWebUrl(raw); const guest = createGuest(kindOf(kind));clearBookBrowser(guest.view.webContents);
     guest.state.url = url; guest.state.title = new URL(url).hostname; guest.state.error = '';
     if (kind === 'video') activate(kind);
     try { await withDeadline(guest.view.webContents.loadURL(url), 30000); } catch (error) { guest.view.webContents.stop(); guest.state.loading = false; guest.state.error = String(error); publish(); }
@@ -183,7 +212,8 @@ export function registerFusionBrowser(): void {
   };
   ipcMain.handle('fusion:web:file',async(event,requested?:string)=>{trusted(event);return playFusionNativeFile(BrowserWindow.fromWebContents(event.sender)!,requested);});
   ipcMain.handle('fusion:web:media', async (event, command: MediaCommand, value?: number) => {
-    trusted(event); if (!['play', 'pause', 'toggle', 'mute', 'seek', 'rate', 'close'].includes(command)) throw new Error('invalid-media-command');
+    trusted(event); if (!['play', 'pause', 'pause-all', 'toggle', 'mute', 'seek', 'rate', 'close'].includes(command)) throw new Error('invalid-media-command');
+    if (command === 'pause-all') return pauseAllFusionMedia();
     if (command === 'pause') return pauseFusionMedia();
     if (!activeKind) return { paused: true, muted: false, controllable: false }; const guest = guests.get(activeKind)!;
     if (command === 'close') { detach(guest); guest.view.webContents.close(); guests.delete(activeKind); activeKind = null; mediaFiles.clear(); publish(); return { paused: true, muted: false, controllable: false }; }
@@ -217,5 +247,8 @@ export function registerFusionBrowser(): void {
 
 /** 必须在 app.ready 之前登记流式媒体协议。 */
 export function registerFusionMediaScheme(): void {
-  protocol.registerSchemesAsPrivileged([{ scheme: 'fusion-file', privileges: { standard: true, secure: true, stream: true, supportFetchAPI: true } }]);
+  protocol.registerSchemesAsPrivileged(['fusion-file','fusion-music'].map(scheme=>({scheme,privileges:{standard:true,secure:true,stream:true,supportFetchAPI:true}})));
 }
+
+/** Captures only the currently attached isolated native views, without destroying their sessions. */
+export async function captureFusionGuestViews(host:BrowserWindow):Promise<import('../../preload/types/genie').GenieFrame[]>{const result:import('../../preload/types/genie').GenieFrame[]=[];for(const guest of guests.values()){if(guest.owner!==host||guest.view.webContents.isDestroyed())continue;const image=await guest.view.webContents.capturePage();if(image.isEmpty())throw Error('native-capture-unavailable');result.push({image:image.toDataURL(),rect:guest.view.getBounds()});}return result;}

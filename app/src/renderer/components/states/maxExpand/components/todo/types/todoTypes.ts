@@ -41,6 +41,8 @@ export interface SubTodo {
 
 /** 单条待办 */
 export interface TodoItem {
+  dueAt?:number;
+  completedAt?:number;
   id: number;
   text: string;
   done: boolean;
@@ -53,6 +55,7 @@ export interface TodoItem {
 
 /** useTodos hook 返回值类型 */
 export interface UseTodosReturn {
+  setDue:(id:number,value:number|undefined)=>void;
   todos: TodoItem[];
   input: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
@@ -115,6 +118,7 @@ export interface TodoInputBarProps {
 
 /** TodoItem 组件入参 */
 export interface TodoItemProps {
+  onSetDue?:(id:number,value:number|undefined)=>void;
   todo: TodoItem;
   isExpanded: boolean;
   editingDescId: number | null;
@@ -140,6 +144,7 @@ export interface TodoItemProps {
 
 /** TodoList 组件入参 */
 export interface TodoListProps {
+  onSetDue?:(id:number,value:number|undefined)=>void;
   todos: TodoItem[];
   expandedId: number | null;
   editingDescId: number | null;

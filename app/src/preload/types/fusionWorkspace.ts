@@ -1,3 +1,4 @@
+import type {GenieApi} from './genie';
 import type { AvatarConfig } from '../../shared/avatarConfig';
 /*
  * FusionIsland - https://github.com/JNTMTMTM/eIsland
@@ -10,7 +11,10 @@ import type { FusionCodexMessage } from './fusion';
 import type { FusionToolsApi } from './fusionTools';
 export type FusionProvider = 'codex' | 'dsh' | 'openai' | 'anthropic' | 'ollama';
 export interface FusionModel { id: string; name: string; provider?: string; }
-export interface FusionTimer { state: 'idle' | 'running' | 'paused' | 'finished'; duration: number; remaining: number; deadline: number | null; }
+export interface FocusOptions {work:number;rest:number;phase:'work'|'rest';todoId?:number;}
+export interface IndependentTimer {id:string;name:string;state:'idle'|'running'|'paused'|'finished';duration:number;remaining:number;deadline:number|null;finishedAt?:number;notificationError?:string;}
+export type TimerCommand={type:'create';name:string;seconds:number}|{type:'start'|'pause'|'resume'|'reset'|'remove';id:string}|{type:'rename';id:string;name:string};
+export interface FusionTimer {history?:Array<{finishedAt:number;duration:number;todoId?:number}>; state: 'idle' | 'running' | 'paused' | 'finished'; duration: number; remaining: number; deadline: number | null; focus?:FocusOptions; }
 export interface WorkspaceTarget {
   tab?: 'fusionSessions' | 'aiChat' | 'toolbox' | 'settings';
   sessionKey?: string;
@@ -44,7 +48,15 @@ export interface SpeechStatus {
 }
 export interface FusionDockConfig { edge: 'top' | 'left' | 'right'; position: number; autoHide: boolean; delayMs: number; shortcut: string; displayId: string; }
 export interface FusionDockState { config: FusionDockConfig; strip: boolean; preview: string | null; shortcutError: string; }
-export interface FusionWorkspaceApi extends FusionToolsApi {
+export type ResizeEdge = 'n'|'s'|'e'|'w'|'ne'|'nw'|'se'|'sw';
+export interface ViewportState { preferred:{width:number;height:number}; actual:{width:number;height:number}; revision:number; adjusting:boolean; token:string|null; }
+export interface WorkBuddyConfig { version:1; edition:'cn'|'intl'; executable:string; configDir:string; candidates:string[]; }
+export interface FusionWorkspaceApi extends FusionToolsApi, GenieApi {
+  fusionWorkBuddyGet:()=>Promise<WorkBuddyConfig>;
+  fusionWorkBuddySave:(config:WorkBuddyConfig)=>Promise<WorkBuddyConfig>;
+  fusionViewportGet:()=>Promise<ViewportState>;
+  fusionViewportControl:(command:'begin'|'move'|'end'|'cancel'|'reset',value?:ResizeEdge|string)=>Promise<ViewportState>;
+  onFusionViewport:(callback:(state:ViewportState)=>void)=>()=>void;
   fusionOnboardingGet: () => Promise<import('../../shared/onboarding').OnboardingState>;
   fusionOnboardingSave: (patch: import('../../shared/onboarding').OnboardingPatch) => Promise<import('../../shared/onboarding').OnboardingState>;
   fusionOnboardingFinish: (status: 'completed'|'skipped') => Promise<import('../../shared/onboarding').OnboardingState>;
@@ -61,10 +73,14 @@ export interface FusionWorkspaceApi extends FusionToolsApi {
   onFusionVoiceHidden: (callback: (reason:string)=>void) => ()=>void;
 
   fusionModels: (provider: FusionProvider) => Promise<FusionModel[]>;
-  fusionIntegrationsList: () => Promise<Array<{ source: 'codex' | 'claude' | 'dsh'; installed: boolean; configured: boolean; configPath: string }>>;
-  fusionIntegrationChange: (source: 'codex' | 'claude' | 'dsh', remove?: boolean) => Promise<{ backup: string; restartRequired: boolean }>;
-  fusionIntegrationOpen: (source: 'codex' | 'claude' | 'dsh') => Promise<void>;
+  fusionIntegrationsList: () => Promise<Array<{ source: 'codex' | 'claude' | 'dsh' | 'workbuddy'; installed: boolean; configured: boolean; configPath: string }>>;
+  fusionIntegrationChange: (source: 'codex' | 'claude' | 'dsh' | 'workbuddy', remove?: boolean) => Promise<{ backup: string; restartRequired: boolean }>;
+  fusionIntegrationOpen: (source: 'codex' | 'claude' | 'dsh' | 'workbuddy') => Promise<void>;
+  fusionTimersGet:()=>Promise<IndependentTimer[]>;
+  fusionTimersCommand:(command:TimerCommand)=>Promise<IndependentTimer[]>;
+  onFusionTimers:(callback:(value:IndependentTimer[])=>void)=>()=>void;
   fusionTimerGet: () => Promise<FusionTimer>;
+  fusionTimerFocus:(options:FocusOptions)=>Promise<FusionTimer>;
   fusionTimerControl: (action: 'start' | 'pause' | 'resume' | 'reset', seconds?: number) => Promise<FusionTimer>;
   onFusionTimer: (callback: (value: FusionTimer) => void) => () => void;
   fusionAvatarGet: () => Promise<AvatarConfig>;

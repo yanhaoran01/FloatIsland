@@ -26,6 +26,9 @@
 
 import { app } from 'electron';
 import { randomUUID } from 'crypto';
+import {captureEngine} from './captureEngine';
+import {recognizeLocalCapture} from './localCaptureOcr';
+import {translateText} from './textTranslationService';
 
 const API_BASE = process.env.NODE_ENV === 'development'
   ? 'https://test.server.pyisland.com/api'
@@ -62,6 +65,7 @@ export const IMAGE_TRANSLATE_ERROR = {
 export type CaptureTranslationResult = {
   success: boolean;
   translatedImage?: string;
+  translatedText?: string;
   code?: string;
   message?: string;
 };
@@ -137,6 +141,16 @@ export async function translateCaptureImage(
   targetLanguage: string,
   signal: AbortSignal,
 ): Promise<CaptureTranslationResult> {
+  if(captureEngine()==='local'){
+    const recognized=await recognizeLocalCapture(dataUrl,signal);
+    if(!recognized.success)return recognized;
+    if(!recognized.text?.trim())return {success:false,code:'noTextFound'};
+    try{
+      const source=sourceLanguage==='auto'?(/[\u3400-\u9fff]/u.test(recognized.text)?'zh':'en'):sourceLanguage;
+      const result=await translateText(recognized.text,source,targetLanguage,AbortSignal.any([signal,AbortSignal.timeout(30000)]));
+      return {success:true,translatedText:result.targetText};
+    }catch(reason){return {success:false,code:signal.aborted?IMAGE_TRANSLATE_ERROR.ABORTED:IMAGE_TRANSLATE_ERROR.TRANSLATION_FAILED,message:String(reason)};}
+  }
   if (!token.trim()) return { success: false, code: IMAGE_TRANSLATE_ERROR.LOGIN_REQUIRED, message: '请先登录 Pro 账号后再使用图片翻译' };
   if (!dataUrl.startsWith('data:image/')) return { success: false, code: IMAGE_TRANSLATE_ERROR.INVALID_DATA, message: '无效的截图数据' };
 

@@ -50,12 +50,15 @@ interface DownloadEngineOptions {
 }
 
 interface DownloadProbeResult {
+  validator:string;
   fileName: string;
   totalBytes: number;
   supportsRange: boolean;
 }
 
 interface InternalTask extends DownloadTaskSnapshot {
+  validator:string;
+  request: typeof fetch;
   tempDir: string;
   tempOutputPath: string;
   partPaths: string[];
@@ -71,6 +74,7 @@ function toTaskSnapshot(task: InternalTask): DownloadTaskSnapshot {
     id: task.id,
     engine: 'http',
     phase: task.status === 'completed' ? 'completed' : task.phase ?? 'downloading',
+    canResume: task.supportsRange && ['paused', 'failed'].includes(task.status),
     canPause: task.status === 'downloading' && task.phase !== 'merging',
     url: task.url,
     savePath: task.savePath,
@@ -117,7 +121,7 @@ export class MultiThreadDownloadEngine {
       throw new Error('仅支持 HTTP/HTTPS 下载地址');
     }
 
-    const probe = await this.probeRemoteFile(parsedUrl, options.signal);
+    const probe = await this.probeRemoteFile(parsedUrl, options.signal, options.request);
     options.signal?.throwIfAborted();
     const threads = normalizeThreads(options.threads);
     const savePath = options.savePath && options.savePath.trim()
@@ -149,10 +153,12 @@ export class MultiThreadDownloadEngine {
       canPause: true,
       createdAt: now,
       updatedAt: now,
+      request: options.request ?? fetch,
       tempDir,
       tempOutputPath,
       partPaths: [],
       supportsRange: probe.supportsRange,
+      validator:probe.validator,
       abortControllers: new Set<AbortController>(),
       lastSampleTime: now,
       lastSampleBytes: 0,
@@ -183,6 +189,9 @@ export class MultiThreadDownloadEngine {
     return true;
   }
 
+  /** Waits for all writes from an acknowledged stop before the coordinator cleans its enclosing directory. */
+  async waitStopped(taskId:string):Promise<void>{await this.executions.get(taskId);}
+
   pauseDownload(taskId: string): boolean {
     const task = this.tasks.get(taskId);
     if (!task) return false;
@@ -199,7 +208,7 @@ export class MultiThreadDownloadEngine {
     return true;
   }
 
-  async resumeDownload(taskId: string, signal?: AbortSignal): Promise<DownloadTaskSnapshot> {
+  async resumeDownload(taskId: string, signal?: AbortSignal, source?:{url:string;request:typeof fetch}): Promise<DownloadTaskSnapshot> {
     const task = this.tasks.get(taskId);
     if (!task) {
       throw new Error('下载任务不存在');
@@ -212,14 +221,15 @@ export class MultiThreadDownloadEngine {
     signal?.throwIfAborted();
     if (this.tasks.get(taskId) !== task || !['paused', 'failed'].includes(task.status)) throw new Error('media-task-unavailable');
     const now = Date.now();
-    const probe = await this.probeRemoteFile(new URL(task.url), signal);
+    const previousUrl=task.url;if(source){task.url=source.url;task.request=source.request;}
+    const probe = await this.probeRemoteFile(new URL(task.url), signal, task.request);
     signal?.throwIfAborted();
     if (this.tasks.get(taskId) !== task || !['paused', 'failed'].includes(task.status)) throw new Error('media-task-unavailable');
 
     const canResume =
       probe.supportsRange &&
       probe.totalBytes > 0 &&
-      probe.totalBytes === task.totalBytes;
+      probe.totalBytes === task.totalBytes && (task.validator?probe.validator===task.validator:!probe.validator&&previousUrl===task.url);
 
     if (!canResume) {
       await this.cleanupTaskFiles(task);
@@ -235,7 +245,7 @@ export class MultiThreadDownloadEngine {
     task.phase = 'downloading';
     task.errorMessage = undefined;
     task.totalBytes = probe.totalBytes;
-    task.supportsRange = probe.supportsRange;
+    task.supportsRange = probe.supportsRange;task.validator=probe.validator;
     task.speedBytesPerSecond = 0;
     task.estimatedFinishAt = null;
     task.abortControllers.clear();
@@ -261,14 +271,15 @@ export class MultiThreadDownloadEngine {
     return true;
   }
 
-  private async probeRemoteFile(url: URL, signal?: AbortSignal): Promise<DownloadProbeResult> {
+  private async probeRemoteFile(url: URL, signal?: AbortSignal, request: typeof fetch = fetch): Promise<DownloadProbeResult> {
     let fileName = inferFileNameFromUrl(url);
     let totalBytes = 0;
-    let supportsRange = false;
+    let supportsRange = false,validator='';
 
     try {
-      const headResponse = await fetch(url.toString(), { method: 'HEAD', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000) });
+      const headResponse = await request(url.toString(), { method: 'HEAD', signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000) });
       if (headResponse.ok) {
+        validator=headResponse.headers.get('etag')||headResponse.headers.get('last-modified')||'';
         const contentLength = headResponse.headers.get('content-length');
         totalBytes = Number(contentLength || 0) || 0;
         const acceptRanges = (headResponse.headers.get('accept-ranges') || '').toLowerCase();
@@ -286,7 +297,7 @@ export class MultiThreadDownloadEngine {
     return {
       fileName: safeFileName(fileName),
       totalBytes,
-      supportsRange,
+      supportsRange,validator,
     };
   }
 
@@ -346,6 +357,8 @@ export class MultiThreadDownloadEngine {
     }
 
     if (task.status !== 'downloading') return;
+    const completedSize = (await stat(task.tempOutputPath)).size;
+    if (task.totalBytes > 0 && completedSize !== task.totalBytes) throw Error('download-size-mismatch');
     task.phase = 'merging'; this.emitTask(task, true);
     const outputName = task.savePath, outputExt = extname(outputName);
     for (let suffix = 0; ; suffix++) {
@@ -395,7 +408,7 @@ export class MultiThreadDownloadEngine {
         headers['Range'] = `bytes=${existingSize}-`;
       }
 
-      const response = await fetch(task.url, { signal: controller.signal, headers });
+      const response = await task.request(task.url, { signal: controller.signal, headers });
       if (existingSize > 0 && response.status !== 206) {
         // Server doesn't support range for this request, restart
         existingSize = 0;
@@ -454,13 +467,13 @@ export class MultiThreadDownloadEngine {
     task.abortControllers.add(controller);
     try {
       const rangeStart = chunk.start + existingSize;
-      const response = await fetch(task.url, {
+      const response = await task.request(task.url, {
         signal: controller.signal,
         headers: {
           Range: `bytes=${rangeStart}-${chunk.end}`,
         },
       });
-      if ((response.status !== 206 && response.status !== 200) || !response.body) {
+      if (response.status !== 206 || !response.body) {
         throw new Error(`分片下载失败: HTTP ${response.status}`);
       }
 

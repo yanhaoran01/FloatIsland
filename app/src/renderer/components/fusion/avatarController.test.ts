@@ -20,5 +20,5 @@ describe('complete local character', () => {
   const controller=new AvatarController();controller.sync('idle','comet',1,0);const error=controller.sync('error','comet',1,.2);expect(error.source).toBe('status');expect(error.state).toBe('exclaim');expect(controller.sync('error','burst',2,.3).id).toBe(error.id);
   expect(controller.sync('listening','burst',2,.4).source).toBe('status');expect(controller.sync('thinking',undefined,3,.5).state).toBe('thinking');controller.cancel(.6);expect(controller.sample(.6).state).toBe('idle');
  });
- it('rejects corrupt configuration and preserves valid choices',()=>{expect(normalizeAvatar({version:99,shape:'evil'})).toEqual(DEFAULT_AVATAR);expect(normalizeAvatar({version:1,shape:'nuage',expression:'curieux'})).toEqual({version:1,shape:'nuage',expression:'curieux'});});
+ it('rejects corrupt configuration and preserves valid choices',()=>{expect(normalizeAvatar({version:99,shape:'evil'})).toEqual(DEFAULT_AVATAR);expect(normalizeAvatar({version:1,shape:'nuage',expression:'curieux'})).toEqual({...DEFAULT_AVATAR,shape:'nuage',expression:'curieux'});});
 });

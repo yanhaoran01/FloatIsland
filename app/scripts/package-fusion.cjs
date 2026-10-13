@@ -26,11 +26,16 @@ config.electronDist = path.join(app,'node_modules/electron/dist');
 config.beforeBuild = path.join(__dirname,'fusion-before-build.cjs');
 config.directories = {buildResources:path.join(app,'resources'),output:path.resolve(process.env.FUSION_OUTPUT_DIR || path.join(stage,'package'))};
 config.files = ['package.json',{from:path.join(app,'out'),to:'out',filter:['**/*','!.vite/**/*']},{from:'node_modules',to:'node_modules',filter:['**/*','!**/obj/**']}];
-config.asarUnpack = ['node_modules/**/*.node','node_modules/**/*.dll','node_modules/**/*.exe','node_modules/@eisland/**/src/bin/Release/**/*','node_modules/koffi/**/*'];
+config.asarUnpack = ['node_modules/**/*.node','node_modules/**/*.dll','node_modules/**/*.exe','node_modules/@eisland/**/src/bin/Release/**/*','node_modules/koffi/**/*','node_modules/tesseract.js/**','node_modules/tesseract.js-core/**'];
 config.extraResources = config.extraResources.map(item=>({...item,from:path.resolve(item.from.startsWith('node_modules/') ? stage : app,item.from)}));
+config.extraResources.push({from:path.join(app,'resources/licenses/reading'),to:'licenses/reading'});
 config.extraResources.push({from:path.join(app,'resources/licenses'),to:'licenses'});
+config.extraResources.push({from:path.join(app,'resources/music'),to:'music'});
+
 config.extraResources.push({from:path.join(stage,'runtime-provenance.json'),to:'runtime-provenance.json'});
 config.win.icon = path.join(app,'resources/icon/float-island.ico');
+config.nsis.installerIcon = config.win.icon;
+config.nsis.uninstallerIcon = config.win.icon;
 delete config.win.artifactName;
 config.nsis.artifactName = '${productName}-${version}-Setup.${ext}';
 config.portable = {artifactName:'${productName}-${version}-portable.${ext}'};
@@ -59,6 +64,7 @@ config.afterPack = async context => {
   if(gui.error||gui.status!==0)throw Error('GUI native runtime failed: '+(gui.error||gui.status)+'. See '+guiOutput);
   report.gui=JSON.parse(fs.readFileSync(guiOutput));
   report.media=require('./verify-media-runtime.cjs')(path.join(context.appOutDir,'resources/download-runtime'));
+  report.music=require('./verify-music-runtime.cjs')(path.join(context.appOutDir,'resources/music'));
   report.compiledFilesMatch = checked;
   fs.writeFileSync(output,JSON.stringify(report,null,2));
 };

@@ -10,11 +10,18 @@
     "!out/renderer/.vite/**"
   ],
   "asarUnpack": [
+    "node_modules/tesseract.js/**",
+    "node_modules/tesseract.js-core/**",
     "node_modules/@eisland/**/src/bin/Release/**/*",
     "node_modules/@eisland/**/*.node",
     "node_modules/koffi/**/*"
   ],
   "extraResources": [
+    {
+      "from": "resources/ocr",
+      "to": "ocr",
+      "filter": ["**/*"]
+    },
     {
       "from": "resources/icon",
       "to": "icon",
@@ -124,6 +131,8 @@
     "artifactName": "${productName}-${version}-portable.${ext}"
   },
   "nsis": {
+    "installerIcon": "resources/icon/float-island.ico",
+    "uninstallerIcon": "resources/icon/float-island.ico",
     "oneClick": false,
     "perMachine": false,
     "allowToChangeInstallationDirectory": true,

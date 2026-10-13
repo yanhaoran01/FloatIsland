@@ -126,6 +126,10 @@ function blendPose(a: Pose, b: Pose, t: number): Pose {
  * donnent exactement la meme image, et le rendu est testable sans DOM.
  */
 export class BotEngine {
+  // FloatIsland adaptation: daily feedback keeps the selected silhouette; explicit previews remain upstream-faithful.
+  private stableBody = false
+  /** Selects stable daily rendering before sampling. */
+  setStableBody(stable: boolean) { if (this.stableBody !== stable) { this.stableBody = stable; this.prev = null; this.departFige = null } }
   /** rayon de la boule au repos, en unites de viewBox */
   readonly scale: number
 
@@ -261,6 +265,7 @@ export class BotEngine {
 
   /** Regard effectif a l'instant `now`, rattrapage en cours compris. */
   private lookAtTime(now: number): Look {
+    if (this.lookMorph <= 0) return this.look
     const k = (now - this.lookAt) / this.lookMorph
     if (k >= 1) return this.look
     return lerpLook(this.lookPrev, this.look, easings.easeOutQuint(clamp(k)))
@@ -279,6 +284,12 @@ export class BotEngine {
     }
     if (def.baseFace && expr) {
       pose = { ...pose, gaze: expr.gaze, split: expr.split, eyes: expr.eyes }
+    }
+    if (this.stableBody) {
+      const rest = STATE_BY_ID.get('idle')!.pose(t)
+      const face = pose.eyeAlpha > 0.01 ? pose : { ...rest, ...(expr ? { eyes: expr.eyes, gaze: expr.gaze, split: expr.split } : {}) }
+      pose = { ...pose, sil: { ...rest.sil, radii: shape ?? rest.sil.radii }, offX: 0, offY: 0, bodyAlpha: 1,
+        eyeAlpha: 1, eyes: face.eyes, split: face.split, gaze: { ...face.gaze, roll: rest.gaze.roll } }
     }
     return pose
   }
@@ -427,7 +438,7 @@ export class BotEngine {
     const shape = this.shapeAtTime(now)
     const expr = this.exprAtTime(now)
     let pose = this.posed(def, Math.max(0, now - this.tCur), shape, expr)
-    let decalage = this.decalageAtTime(now, this.cur)
+    let decalage = this.decalageAtTime(now, this.stableBody ? 'idle' : this.cur)
 
     // --- transition -------------------------------------------------------
     const since = now - this.tCur
@@ -448,7 +459,7 @@ export class BotEngine {
       // de l'etat quitte, que `setState` renseigne toujours en meme temps que l'origine —
       // le test est la pour le typage, pas pour un cas reel.
       const quitte = this.prev
-      if (quitte) {
+      if (quitte && !this.stableBody) {
         const avant = this.decalageAtTime(now, quitte)
         decalage = {
           x: lerp(avant.x, decalage.x, ratio),
@@ -479,15 +490,15 @@ export class BotEngine {
     const forcedLid = forced < 1 ? Math.abs(forced * 2 - 1) : 1
     const lid = Math.min(life.lid, forcedLid)
 
-    const offX = pose.offX + life.driftX
-    const offY = pose.offY + life.driftY
+    const offX = pose.offX + (this.stableBody ? 0 : life.driftX)
+    const offY = pose.offY + (this.stableBody ? 0 : life.driftY)
 
     // --- corps ------------------------------------------------------------
     const sil: Silhouette = {
       ...pose.sil,
       cx: pose.sil.cx + offX,
       cy: pose.sil.cy + offY,
-      sy: pose.sil.sy * life.breath
+      sy: pose.sil.sy * (this.stableBody ? 1 : life.breath)
     }
     const bodyPath = closedPath(toPoints(sil, R, this.pts))
 
@@ -555,4 +566,3 @@ export class BotEngine {
     }
   }
 }
-

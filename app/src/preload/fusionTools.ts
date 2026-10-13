@@ -4,13 +4,41 @@
 import { ipcRenderer, webUtils } from 'electron';
 import type { FusionToolsApi } from './types/fusionTools';
 import { fusionProductApi } from './fusionProduct';
+import {fusionLibraryApi} from './fusionLibrary';
 const listen = <T>(channel: string, callback: (value: T) => void): (() => void) => {
   const handler = (_event: Electron.IpcRendererEvent, value: T): void => callback(value);
   ipcRenderer.on(channel, handler);
   return () => ipcRenderer.removeListener(channel, handler);
 };
 export const fusionToolsApi: FusionToolsApi = {
+  fusionTranslateText:(text,source,target,id)=>ipcRenderer.invoke('fusion:translation:text',text,source,target,id),
+  fusionTranslateCancel:id=>ipcRenderer.invoke('fusion:translation:cancel',id),
+  fusionMusicDownload:(ids,options)=>ipcRenderer.invoke('fusion:music:download',ids,options),
+  fusionMusicQuality:(playback,download)=>ipcRenderer.invoke('fusion:music:quality',playback,download),
+  fusionMusicArtwork:id=>ipcRenderer.invoke('fusion:music:artwork',id),
+  fusionMusicRelocate:id=>ipcRenderer.invoke('fusion:music:relocate',id),
+  fusionMusicState:()=>ipcRenderer.invoke('fusion:music:state'),
+  fusionMusicSearch:(provider,query,page,requestId)=>ipcRenderer.invoke('fusion:music:search',provider,query,page,requestId),
+  fusionMusicCancelSearch:()=>ipcRenderer.invoke('fusion:music:cancel-search'),
+  fusionMusicControl:(command,value)=>ipcRenderer.invoke('fusion:music:control',command,value),
+  fusionMusicImport:()=>ipcRenderer.invoke('fusion:music:import'),
+  fusionMusicSources:()=>ipcRenderer.invoke('fusion:music:sources'),
+  fusionMusicSourceImport:url=>ipcRenderer.invoke('fusion:music:source-import',url),
+  fusionMusicSourceControl:(id,command,value)=>ipcRenderer.invoke('fusion:music:source-control',id,command,value),
+  fusionMusicCandidates:id=>ipcRenderer.invoke('fusion:music:candidates',id),
+  fusionMusicPlaylistFilePreview:()=>ipcRenderer.invoke('fusion:music:playlist-file-preview'),
+  fusionMusicPlaylistExport:id=>ipcRenderer.invoke('fusion:music:playlist-export',id),
+  fusionMusicPlaylistSearch:(id,query,page)=>ipcRenderer.invoke('fusion:music:playlist-search',id,query,page),
+  fusionMusicPlaylistDiscover: (id,category,page)=>ipcRenderer.invoke('fusion:music:playlist-discover',id,category,page),
+  fusionMusicPlaylistCategories: id=>ipcRenderer.invoke('fusion:music:playlist-categories',id),
+  fusionMusicPlaylistPreview: (id,reference)=>ipcRenderer.invoke('fusion:music:playlist-preview',id,reference),
+  fusionMusicPlaylistCommit: (id,selected)=>ipcRenderer.invoke('fusion:music:playlist-commit',id,selected),
+  fusionMusicPlaylistImport:(id,url)=>ipcRenderer.invoke('fusion:music:playlist-import',id,url),
+  onFusionMusicSearchBatch:callback=>listen('fusion:music:search-batch',callback),
+  onFusionMusicSources:callback=>listen('fusion:music:sources',callback),
+  onFusionMusicState:callback=>listen('fusion:music:changed',callback),
   ...fusionProductApi,
+  ...fusionLibraryApi,
   fusionColorPick: command => ipcRenderer.invoke('fusion:color:pick', command),
   fusionFilesSelect: kind=>ipcRenderer.invoke('fusion:files:select',kind),
   fusionRenamePreview: (ids,options)=>ipcRenderer.invoke('fusion:files:rename-preview',ids,options),

@@ -23,7 +23,8 @@
       "dsh": "DeepSeek Harness",
       "custom": "Custom API",
       "anthropic": "Anthropic",
-      "ollama": "Ollama"
+      "ollama": "Ollama",
+      "workbuddy": "WorkBuddy"
     },
     "attachments": {
       "add": "Attach text files",
@@ -102,7 +103,7 @@
       "requestSource": "{{agent}} · {{project}}"
     },
     "tools": {
-      "title": "Quick tools",
+      "title": "Tools",
       "subtitle": "Keep everyday actions close and find the rest under More.",
       "screenshot": "Screenshot & OCR",
       "clipboard": "Clipboard",
@@ -114,7 +115,8 @@
       "dates": "Date countdowns",
       "music": "Music and lyrics",
       "launcher": "Quick launch",
-      "translation": "Translation"
+      "translation": "Translation",
+      "functions": "Functions"
     },
     "actions": {
       "stop": "Stop",
@@ -396,7 +398,7 @@
         "clipboard": "Clipboard",
         "calculator": "Calculator & units",
         "qr": "QR codes",
-        "notes": "Quick notes",
+        "notes": "Notes",
         "browser": "Web browser",
         "video": "Video player",
         "music": "Music",
@@ -423,7 +425,9 @@
         "recording": "Record",
         "workflows": "Flows",
         "sharing": "Share",
-        "download": "Downloads"
+        "download": "Downloads",
+        "encoding": "Encoding",
+        "collections": "Collections"
       },
       "descriptions": {
         "screenshot": "Capture a region and recognize text",
@@ -451,7 +455,11 @@
         "zip": "ZIP archive",
         "csv": "CSV / JSON",
         "regex": "Regex",
-        "url-codec": "URL codec"
+        "url-codec": "URL codec",
+        "encoding": "JSON, Base64 and URL encoding",
+        "collections": "Save references, read articles and open workspaces",
+        "workflows": "Combine steps and automate tasks",
+        "sharing": "Transfer files, folders and text"
       },
       "units": {
         "length": "Length",
@@ -465,7 +473,10 @@
         "dedupe": "Deduplicate lines",
         "empty": "Remove blank lines",
         "upper": "UPPERCASE",
-        "lower": "lowercase"
+        "lower": "lowercase",
+        "trim": "Trim lines",
+        "sort": "Natural sort",
+        "reverse": "Reverse lines"
       },
       "pdfModes": {
         "merge": "Merge PDFs",
@@ -549,7 +560,7 @@
         "invalid-json-table": "Enter a JSON array of objects",
         "invalid-encoding": "The selected encoding does not match the file",
         "invalid-url-encoding": "Invalid or incomplete percent encoding",
-        "invalid-file-name": "Unsupported filename",
+        "invalid-file-name": "Invalid file name",
         "rename-conflict": "Conflicting target names; revise and preview again",
         "file-changed": "The file changed; select it again",
         "file-not-authorized": "Choose the files first",
@@ -601,14 +612,319 @@
         "media-site-login": "The site requires an account or existing subscription entitlement",
         "media-site-drm": "DRM-protected content cannot be downloaded as a playable file",
         "media-site-region": "The site restricts access from this region",
-        "media-site-rejected": "The site rejected or rate-limited the request; retry later"
+        "media-site-rejected": "The site rejected or rate-limited the request; retry later",
+        "music-track-missing": "Song is no longer available.",
+        "music-playlist-missing": "Playlist no longer exists.",
+        "music-invalid-name": "Enter a playlist name up to 120 characters.",
+        "music-invalid-value": "Invalid music control value.",
+        "music-empty-queue": "Add a song to the queue first.",
+        "music-local-missing": "Local file was moved or removed.",
+        "music-invalid-source": "The music source returned an unsupported address.",
+        "music-invalid-response": "The music source returned an unexpected response.",
+        "music-unavailable": "No anonymously playable source is available.",
+        "music-restricted": "This song requires platform authorization.",
+        "music-preview-only": "Only a preview is available.",
+        "music-timeout": "The music source timed out. Try again.",
+        "music-cancelled": "Cancelled.",
+        "music-host-crashed": "Audio player stopped unexpectedly. Play again to retry.",
+        "music-decode-2": "Audio could not be loaded.",
+        "music-decode-3": "Audio decoding failed.",
+        "music-decode-4": "Audio format is not supported.",
+        "music-seek-unavailable": "This source cannot seek yet.",
+        "music-login-required": "This platform requires sign-in or phone binding. Anonymous access is unavailable; try another source.",
+        "music-service-rejected": "The platform rejected this request. Retry later or try another source.",
+        "music-no-enabled-source": "No enabled music source. Open music sources to enable or import one.",
+        "music-source-missing": "Music source was removed.",
+        "music-plugin-invalid": "Invalid source file or manifest.",
+        "music-plugin-version": "This plugin protocol version is unsupported.",
+        "music-plugin-timeout": "Music source timed out and was stopped.",
+        "music-plugin-host-crashed": "Music source stopped unexpectedly. Retry or change source.",
+        "music-plugin-unsupported-capability": "This source does not provide this feature.",
+        "music-plugin-private-network": "The source requested an internal network address.",
+        "music-plugin-direct-network": "This plugin needs an unsupported network API.",
+        "music-plugin-request-denied": "The source request exceeded supported limits.",
+        "music-plugin-https-required": "Import sources using an HTTPS link.",
+        "music-plugin-permission": "The plugin has not declared this network permission.",
+        "music-plugin-cursor": "Search this source in page order.",
+        "music-source-no-backup": "No previous source version is saved.",
+        "music-source-not-updatable": "Re-import this source file to update it.",
+        "music-source-builtin": "Built-in sources can be disabled.",
+        "music-response-too-large": "The source response is too large.",
+        "invalid-library-data": "Invalid collection data",
+        "invalid-library-command": "Unsupported operation",
+        "invalid-workspace": "Workspace contains invalid items",
+        "invalid-reminder": "Invalid reminder",
+        "article-unavailable": "Cannot extract article; open the original page",
+        "duplicate-keep-one": "Keep at least one file per group",
+        "directory-entry-limit": "Too many entries; choose a smaller directory",
+        "timer-in-use": "Another timer is active; pause and reset it first",
+        "library-limit": "Collection limit reached",
+        "library-not-ready": "Collection service is not ready",
+        "redirect-limit": "Too many redirects",
+        "linked-or-special-file": "Linked or special files cannot be moved",
+        "protected-library-path": "This directory cannot be moved into the library",
+        "original-position-occupied": "The original location is occupied",
+        "unsupported-native-or-login-rule": "This source requires unsupported native or login features",
+        "book-content-empty": "The source returned no content",
+        "book-chapters-empty": "The source returned no chapters",
+        "book-rule-timeout": "Book source rule timed out",
+        "target-exists": "The target name already exists",
+        "library-migration-incomplete": "Library migration incomplete; check the operation log",
+        "invalid-library-root": "This library location cannot be used",
+        "bt-invalid-source": "Choose a .torrent or a valid magnet link",
+        "bt-invalid-selection": "Select at least one torrent file",
+        "bt-duplicate-task": "This torrent already has a task; resume it in history",
+        "bt-metadata-timeout": "Metadata unavailable; check network and peers, then retry",
+        "bt-runtime-unavailable": "BT engine could not start; check its runtime and retry",
+        "import-no-folders": "No imported folders yet; select a folder first",
+        "invalid-json-path": "Invalid JSON path. Use one of the displayed path formats.",
+        "invalid-base64": "Invalid Base64. Check the content and padding.",
+        "invalid-timezone": "Invalid time zone. Choose a zone from the list."
       },
       "groupNavigation": "Tool groups · scroll to switch",
       "previousPage": "Previous page",
       "nextPage": "Next page",
       "page": "Page {{page}}",
       "noResults": "No matching tools",
-      "run": "Run"
+      "run": "Run",
+      "workspace": {
+        "calculate": "Calculate",
+        "units": "Units",
+        "process": "Process",
+        "input": "Input",
+        "result": "Result",
+        "dates": "Dates",
+        "timestamp": "Timestamp",
+        "clock": "Time zones"
+      },
+      "clear": "Clear",
+      "directory": {
+        "subtitle": "Browse by category and open a tool directly",
+        "search": "Search tools or what they do…",
+        "count": "{{count}} tools"
+      },
+      "catalog": {
+        "screenshot-region": {
+          "name": "Screenshot",
+          "description": "Capture a region or the full screen"
+        },
+        "screenshot-ocr": {
+          "name": "OCR",
+          "description": "Extract text from screenshots or images"
+        },
+        "screenshot-scroll": {
+          "name": "Scrolling screenshot",
+          "description": "Capture and stitch a long page"
+        },
+        "screenshot-pin": {
+          "name": "Pin image",
+          "description": "Keep an image on your screen"
+        },
+        "clipboard-history": {
+          "name": "Clipboard history",
+          "description": "Find and reuse copied content"
+        },
+        "clipboard-templates": {
+          "name": "Text templates",
+          "description": "Save and reuse frequently used text"
+        },
+        "collections-files": {
+          "name": "File library",
+          "description": "Manage collected files and folders"
+        },
+        "collections-all": {
+          "name": "Bookmarks",
+          "description": "Save links, files and app references"
+        },
+        "collections-workspaces": {
+          "name": "Workspaces",
+          "description": "Group related files, links and apps"
+        },
+        "collections-feeds": {
+          "name": "Feed reader",
+          "description": "Browse RSS feeds and saved articles"
+        },
+        "collections-scopes": {
+          "name": "Local file search",
+          "description": "Index and search authorized folders"
+        },
+        "calculator-calculate": {
+          "name": "Calculator",
+          "description": "Everyday calculations and expressions"
+        },
+        "calculator-units": {
+          "name": "Unit converter",
+          "description": "Convert length, weight and other units"
+        },
+        "qr": {
+          "name": "QR codes",
+          "description": "Create QR codes or scan images"
+        },
+        "notes-notes": {
+          "name": "Notes",
+          "description": "Write notes with automatic saving"
+        },
+        "notes-todo": {
+          "name": "To-do list",
+          "description": "Track tasks and their completion"
+        },
+        "notes-reminders": {
+          "name": "Reminders",
+          "description": "Set reminders for important tasks"
+        },
+        "browser": {
+          "name": "Web browser",
+          "description": "Browse websites with persistent sessions"
+        },
+        "video-play": {
+          "name": "Video player",
+          "description": "Play web and local videos"
+        },
+        "video-record": {
+          "name": "Screen recorder",
+          "description": "Record your screen and selected audio"
+        },
+        "video-convert": {
+          "name": "Video converter",
+          "description": "Convert, trim or extract audio"
+        },
+        "timer-countdown": {
+          "name": "Countdown",
+          "description": "Set a duration and get notified"
+        },
+        "timer-stopwatch": {
+          "name": "Stopwatch",
+          "description": "Measure elapsed time and laps"
+        },
+        "timer-focus": {
+          "name": "Pomodoro",
+          "description": "Alternate focus and break sessions"
+        },
+        "dates-dates": {
+          "name": "Date calculator",
+          "description": "Calculate date differences and offsets"
+        },
+        "dates-timestamp": {
+          "name": "Timestamp converter",
+          "description": "Convert dates and Unix timestamps"
+        },
+        "dates-clock": {
+          "name": "World clock",
+          "description": "Compare time across time zones"
+        },
+        "dates-anniversary": {
+          "name": "Anniversaries",
+          "description": "Track important dates and days remaining"
+        },
+        "translation": {
+          "name": "Translation",
+          "description": "Translate text between languages"
+        },
+        "launcher-favorites": {
+          "name": "App launcher",
+          "description": "Quickly open your favorite apps"
+        },
+        "launcher-catalog": {
+          "name": "App catalog",
+          "description": "Browse the software catalog"
+        },
+        "pdf-preview": {
+          "name": "PDF reader",
+          "description": "Read PDFs with navigation and annotations"
+        },
+        "pdf-organize": {
+          "name": "PDF organizer",
+          "description": "Merge, extract or rotate pages"
+        },
+        "text-process": {
+          "name": "Text utilities",
+          "description": "Count, clean, replace and sort text"
+        },
+        "text-compare": {
+          "name": "Text comparison",
+          "description": "Compare two texts and see differences"
+        },
+        "text-regex": {
+          "name": "Regex tester",
+          "description": "Test expressions and inspect matches"
+        },
+        "colors": {
+          "name": "Color picker",
+          "description": "Pick colors, convert formats and save palettes"
+        },
+        "password": {
+          "name": "Passwords and UUIDs",
+          "description": "Generate secure passwords and identifiers"
+        },
+        "image-edit": {
+          "name": "Image editor",
+          "description": "Crop, rotate and annotate images"
+        },
+        "image-convert": {
+          "name": "Image converter",
+          "description": "Convert between image formats"
+        },
+        "image-compress": {
+          "name": "Image compressor",
+          "description": "Adjust image dimensions and quality"
+        },
+        "image-history": {
+          "name": "Image history",
+          "description": "Review previous image processing tasks"
+        },
+        "image-preview": {
+          "name": "Image viewer",
+          "description": "View images and processing results"
+        },
+        "random": {
+          "name": "Random picker",
+          "description": "Pick from a list or generate numbers"
+        },
+        "rename": {
+          "name": "Batch rename",
+          "description": "Preview changes before renaming files"
+        },
+        "zip": {
+          "name": "ZIP archives",
+          "description": "Inspect, create and extract ZIP archives"
+        },
+        "encoding-json": {
+          "name": "JSON formatter",
+          "description": "Format, validate and inspect JSON"
+        },
+        "encoding-csv": {
+          "name": "CSV and JSON",
+          "description": "Convert tables and JSON data"
+        },
+        "encoding-base64": {
+          "name": "Base64",
+          "description": "Encode and decode text and data"
+        },
+        "encoding-url": {
+          "name": "URL encoding",
+          "description": "Encode and decode URLs and parameters"
+        },
+        "workflows": {
+          "name": "Workflows",
+          "description": "Combine existing tools into steps"
+        },
+        "sharing": {
+          "name": "LAN transfer",
+          "description": "Send and receive files on your network"
+        },
+        "fileService-hash-hash": {
+          "name": "File checksums",
+          "description": "Compute hashes and verify file integrity"
+        },
+        "fileService-hash-duplicates": {
+          "name": "Duplicate finder",
+          "description": "Find identical files in authorized folders"
+        },
+        "networkService": {
+          "name": "Network tools",
+          "description": "Check connectivity and network information"
+        }
+      }
     },
     "web": {
       "back": "Back",
@@ -643,7 +959,8 @@
       "controls": "Playback controls"
     },
     "focus": {
-      "sessionMenu": "Session and settings"
+      "sessionMenu": "Session and settings",
+      "agent": "Agent"
     },
     "avatar": {
       "shape": "Shape",
@@ -696,6 +1013,21 @@
         "burst": "Burst",
         "comet": "Comet",
         "swirl": "Swirl"
+      },
+      "color": "Color",
+      "colors": {
+        "encre": "Ink",
+        "brun": "Brown",
+        "rouge": "Red",
+        "orange": "Orange",
+        "ambre": "Amber",
+        "vert": "Green",
+        "turquoise": "Turquoise",
+        "bleu": "Blue",
+        "violet": "Violet",
+        "rose": "Pink",
+        "gris": "Gray",
+        "creme": "Cream"
       }
     },
     "utilities": {
@@ -813,7 +1145,17 @@
         "preview": "Preview",
         "organize": "Organize",
         "favorites": "Favorites",
-        "catalog": "App catalog"
+        "catalog": "App catalog",
+        "json": "JSON",
+        "base64": "Base64",
+        "url": "URL",
+        "countdown": "Countdown",
+        "stopwatch": "Stopwatch",
+        "csv": "CSV",
+        "text": "Text",
+        "regex": "Regex",
+        "play": "Play",
+        "record": "Record"
       },
       "capture": {
         "region": "Region",
@@ -904,7 +1246,13 @@
       "settings": "Your preferences",
       "settingsHint": "Adjust your character, docking and shortcuts",
       "saveError": "Could not save. Please try again.",
+      "shortcutDeferred": "Some shortcuts are in use and were not enabled. You can use the app and change them later in Settings.",
       "reopen": "Show getting-started guide"
+    },
+    "shortcutInput": {
+      "record": "Record",
+      "recording": "Press keys",
+      "hint": "Edit directly, or click Record and press a key combination. Escape cancels."
     },
     "tray": {
       "show": "Show FloatIsland",
@@ -919,7 +1267,8 @@
       "tabs": {
         "file": "Files",
         "media": "Video / audio",
-        "history": "Tasks / history"
+        "history": "Tasks / history",
+        "torrent": "BT / Magnet"
       },
       "urls": "URLs",
       "urlsPlaceholder": "Paste URLs, one per line",
@@ -965,10 +1314,499 @@
         "downloading": "Downloading",
         "merging": "Merging streams",
         "converting": "Processing media",
-        "completed": "Completed"
+        "completed": "Completed",
+        "metadata": "Metadata",
+        "verifying": "Verify and commit",
+        "seeding": "Seeding"
       },
       "maxHeight": "Resolution limit",
-      "diagnostics": "Diagnostics"
+      "diagnostics": "Diagnostics",
+      "returnToSource": "Return to the source website to obtain a new download link; this task cannot resume directly.",
+      "defaultDirectory": "Default download folder",
+      "lyrics": "Save lyrics"
+    },
+    "workbuddy": {
+      "edition": "WorkBuddy edition",
+      "cn": "China",
+      "intl": "International",
+      "program": "Program path",
+      "config": "Configuration directory"
+    },
+    "viewport": {
+      "reset": "Reset window size"
+    },
+    "music": {
+      "search": "Search",
+      "library": "My music",
+      "playing": "Now playing",
+      "system": "System playback",
+      "source": "Music source",
+      "query": "Song or artist",
+      "local": "Local music",
+      "restricted": "Requires authorization",
+      "favorite": "Favorite",
+      "more": "More actions",
+      "addQueue": "Add to queue",
+      "up": "Move up",
+      "down": "Move down",
+      "remove": "Remove",
+      "addPlaylist": "Add to {{name}}",
+      "import": "Import music",
+      "newPlaylist": "New playlist",
+      "previousPage": "Previous page",
+      "nextPage": "Next page",
+      "collection": "Collection",
+      "favorites": "Favorites",
+      "rename": "Rename playlist",
+      "deletePlaylist": "Delete playlist",
+      "playlistName": "Playlist name",
+      "save": "Save",
+      "findMusic": "Find music",
+      "qualityUnknown": "Quality unknown",
+      "lyrics": "Lyrics",
+      "queue": "Queue",
+      "lyricsUnavailable": "Lyrics unavailable",
+      "noLyrics": "No lyrics",
+      "shuffle": "Shuffle",
+      "repeat": "Repeat",
+      "volume": "Volume",
+      "loading": "Loading audio…",
+      "noResults": "No matching songs",
+      "playTrack": "Play {{title}}",
+      "provider": {
+        "netease": "NetEase Music",
+        "qq": "QQ Music",
+        "migu": "Migu Music",
+        "local": "Local music",
+        "kuwo": "Kuwo",
+        "kugou": "Kugou",
+        "qianqian": "Qianqian"
+      },
+      "sources": {
+        "title": "Music sources",
+        "all": "All sources",
+        "builtin": "Built in",
+        "importFile": "Import source file",
+        "importLink": "Import source link",
+        "address": "HTTPS source or subscription URL",
+        "enable": "Enable {{name}}",
+        "search": "Search",
+        "playback": "Full playback",
+        "lyrics": "Lyrics",
+        "unknown": "Unverified",
+        "passed": "Verified",
+        "failed": "Unavailable",
+        "detect": "Check source",
+        "update": "Update",
+        "rollback": "Restore previous version",
+        "delete": "Remove source",
+        "partial": "{{count}} sources failed",
+        "choose": "Choose another source",
+        "playlist": "Playlists",
+        "download": "Download"
+      }
+    },
+    "library": {
+      "add": "Add",
+      "add-file": "Add file",
+      "add-folder": "Add folder",
+      "add-app": "Add app",
+      "addDirectory": "Add directory",
+      "directories": "Search directories",
+      "refresh": "Refresh",
+      "save": "Save",
+      "read": "Read",
+      "open": "Open",
+      "reveal": "Show in folder",
+      "rebind": "Relocate",
+      "title": "Name",
+      "url": "URL",
+      "group": "Group",
+      "note": "Notes",
+      "tags": "Tags (comma separated)",
+      "pin": "Pin",
+      "type": "Type",
+      "allGroups": "All groups",
+      "unavailable": "File unavailable; relocate it",
+      "saveArticle": "Save article",
+      "closeReader": "Close reader",
+      "highlight": "Highlight selection",
+      "highlights": "Highlights",
+      "cacheImages": "Cache images",
+      "import": "Import",
+      "export": "Export",
+      "openSelected": "Open selected",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "autoRefresh": "Refresh every 15 minutes",
+      "allFeeds": "All feeds",
+      "unread": "Unread only",
+      "markRead": "Mark read",
+      "markUnread": "Mark unread",
+      "templates": "Templates",
+      "fromHistory": "From history",
+      "untitled": "Untitled",
+      "templateText": "Template text",
+      "linkTodo": "Linked task",
+      "linkNote": "Linked note",
+      "due": "Reminder time",
+      "enableReminder": "Enable reminder",
+      "notified": "Notified",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "focus": "Focus",
+      "workMinutes": "Work (minutes)",
+      "restMinutes": "Rest (minutes)",
+      "nextPhase": "Start next phase",
+      "scan": "Find duplicates",
+      "trashSelected": "Move to recycle bin",
+      "trashConfirm": "Move {{count}} selected files to the recycle bin? At least one file per group will remain.",
+      "noDuplicates": "No identical files found",
+      "hash": "Hash",
+      "duplicates": "Duplicates",
+      "tabs": {
+        "all": "Saved",
+        "reading": "Reading",
+        "workspaces": "Workspaces",
+        "feeds": "Feeds",
+        "notes": "Notes",
+        "todo": "Tasks",
+        "reminders": "Reminders",
+        "files": "Library",
+        "books": "Books",
+        "sources": "Sources",
+        "scopes": "File search"
+      },
+      "kind": {
+        "all": "All",
+        "url": "Links",
+        "file": "Files",
+        "folder": "Folders",
+        "app": "Apps"
+      },
+      "phase": {
+        "work": "Work",
+        "rest": "Rest"
+      },
+      "saveTemplate": "Save as template",
+      "linkedTodo": "Linked task",
+      "recoveredData": "Collection data could not be read. Original preserved at {{path}}",
+      "none": "None",
+      "files": {
+        "up": "Parent folder",
+        "newFolder": "New folder",
+        "rename": "Rename",
+        "move": "Move",
+        "undo": "Undo move",
+        "export": "Move out of library",
+        "trash": "Move to recycle bin",
+        "root": "Library location",
+        "sort": "Sort",
+        "name": "Name",
+        "modified": "Modified",
+        "size": "Size",
+        "select": "Select {{name}}"
+      },
+      "edit": "Edit"
+    },
+    "reader": {
+      "theme": "Reading theme",
+      "dark": "Dark",
+      "warm": "Warm",
+      "light": "Light",
+      "settings": "Reading settings",
+      "lineHeight": "Line height",
+      "margin": "Margins",
+      "font": "Font",
+      "find": "Find in document",
+      "original": "Layout preview",
+      "pages": "Toggle pagination",
+      "remove": "Remove bookmark",
+      "focus": "Focus reading",
+      "document": "Document reader",
+      "systemOnly": "This format is saved. Open it in a system application.",
+      "chapters": "Chapters",
+      "search": "Search books",
+      "importSource": "Import source",
+      "sourceJson": "Source JSON or URL",
+      "downloadBook": "Save to library",
+      "enableSource": "Enable {{name}}",
+      "detect": "Check source",
+      "next": "Next page",
+      "health": {
+        "unverified": "Unverified",
+        "available": "Connected",
+        "failed": "Unavailable"
+      },
+      "sourceType": "Source type",
+      "originalSite": "Original website",
+      "websiteCapabilities": "Website browsing / login / downloads",
+      "aggregateCapabilities": "Aggregate source",
+      "note": "Note",
+      "page": "Page",
+      "zoom": "Zoom",
+      "fit": "Fit width",
+      "matches": "Matches",
+      "noMatches": "No matching text",
+      "searching": "Searching…",
+      "bookmark": "Bookmark / highlight"
+    },
+    "workspace": {
+      "pages": {
+        "chat": "Chat",
+        "tools": "Tools",
+        "music": "Music",
+        "reading": "Reading",
+        "download": "Downloads"
+      },
+      "reading": {
+        "search": "Find books",
+        "books": "Bookshelf",
+        "files": "Local reading",
+        "sources": "Sources"
+      },
+      "music": {
+        "search": "Search",
+        "library": "Playlists",
+        "local": "Local",
+        "playing": "Now playing",
+        "sources": "Sources"
+      }
+    },
+    "enhance": {
+      "import": {
+        "files": "Import files",
+        "folder": "Import folder",
+        "rescan": "Rescan folders",
+        "hint": "Drop files or folders here. Originals stay in place.",
+        "scanning": "Scanning · {{count}} files found",
+        "done": "Imported {{count}} files · originals preserved"
+      },
+      "result": {
+        "useWith": "Use with tool",
+        "dropInput": "Drop a file or paste content directly"
+      },
+      "bt": {
+        "hint": "Magnet or torrent → Get file list → Select files → Start. Drop a .torrent here.",
+        "magnet": "Magnet link or shared text",
+        "placeholder": "Paste magnet:?xt=urn:btih:… or shared text containing a magnet",
+        "import": "Import torrent",
+        "inspect": "Get file list",
+        "metadata": "Fetching metadata; reachable peers are required…",
+        "start": "Download selected files",
+        "noSeed": "Stops seeding on completion by default; adjust in download settings"
+      },
+      "download": {
+        "search": "Search tasks or links",
+        "filter": "Filter by status",
+        "all": "All statuses",
+        "files": "File list",
+        "peers": "peers",
+        "settings": "Download settings",
+        "downloadLimit": "BT download limit (KB/s)",
+        "uploadLimit": "BT upload limit (KB/s)",
+        "seed": "Continue seeding after completion",
+        "seedMinutes": "Maximum seeding (minutes)",
+        "seedRatio": "Target share ratio",
+        "limitHint": "0 means unlimited. Seeding stops when either time or ratio is reached.",
+        "batch": {
+          "pause": "Pause selected",
+          "resume": "Resume / Retry",
+          "cancel": "Cancel selected",
+          "remove": "Remove history"
+        },
+        "startHint": "Paste links or shared text to preview tasks and destination. Analyze media and select BT files before downloading.",
+        "placeholder": "Paste HTTP, shared video or magnet links…",
+        "new": "New download / Recognize links",
+        "startFiles": "Start {{count}} file downloads"
+      },
+      "music": {
+        "share": "Paste a NetEase or QQ playlist link / shared text",
+        "previewImport": "Preview import",
+        "category": "Playlist category",
+        "allCategories": "All categories",
+        "discover": "Discover playlists",
+        "mine": "My playlists",
+        "enableSource": "Enable selected source",
+        "previewCount": "{{count}} tracks · {{invalid}} invalid items",
+        "importSelected": "Import / update {{count}} tracks",
+        "filter": "Filter this playlist page",
+        "viewSongs": "View songs",
+        "startHint": "Choose Discover playlists, or paste a shared link to preview an import. Playback and downloads depend on actual track availability.",
+        "download": "Download",
+        "playQuality": "Playback quality",
+        "downloadQuality": "Download quality",
+        "downloadSettings": "Download settings",
+        "format": "Save format",
+        "original": "Original (no conversion)",
+        "queued": "{{count}} songs queued",
+        "viewDownloads": "View downloads",
+        "downloadPlaylist": "Download playlist",
+        "updatePlaylist": "Update playlist",
+        "fallback": "Requested quality unavailable; using the actual audio offered by the source",
+        "quality": {
+          "auto": "Auto",
+          "standard": "Standard",
+          "high": "High",
+          "lossless": "Lossless",
+          "hires": "Hi-Res"
+        },
+        "relocate": "Locate file again",
+        "importFile": "Import playlist file",
+        "exportPlaylist": "Export playlist",
+        "searchPlaylists": "Search online playlists",
+        "searchPlaylistHint": "Playlist keywords, e.g. ambient or running",
+        "librarySearch": "Search songs, artists or albums",
+        "sort": "Sort",
+        "originalOrder": "Playlist order",
+        "titleOrder": "Song title",
+        "artistOrder": "Artist",
+        "favoritePlaylist": "Favorite playlist",
+        "missing": "File unavailable — locate it"
+      },
+      "save": "Save settings",
+      "reading": {
+        "continue": "Continue reading",
+        "searchShelf": "Title, author or file name",
+        "sort": "Sort",
+        "recent": "Recently read",
+        "title": "Title",
+        "progress": "Reading progress",
+        "empty": "Use Import books or Import folder above, or drop files here. Original files stay in place.",
+        "cached": "Cached · available offline",
+        "selectChapter": "Select chapter: {{name}}",
+        "selectAll": "Select all chapters",
+        "cacheSelected": "Cache selected chapters"
+      },
+      "data": {
+        "format": "Format",
+        "minify": "Minify JSON",
+        "stringify": "JSON string",
+        "path": "JSON path",
+        "query": "Query",
+        "pathHint": "Supports $.name, $.items[*] and $[0]. Queries do not execute code.",
+        "base64Hint": "Enter text or Base64. Import or drop a file to encode its bytes.",
+        "decodedBytes": "Decoded {{count}} bytes",
+        "ignoreWhitespace": "Ignore leading and trailing whitespace"
+      },
+      "utility": {
+        "swap": "Swap units",
+        "favorite": "Save conversion",
+        "favorites": "Saved conversions",
+        "more": "More settings and history",
+        "precision": "Significant digits",
+        "noRepeat": "Draw without replacement",
+        "resetDraw": "Start a new round",
+        "history": "Draw history",
+        "quantity": "Quantity",
+        "entropy": "Estimated combination entropy: {{bits}} bit",
+        "paletteExport": "Export palette",
+        "imageColor": "Pick from image",
+        "imageColorHint": "Click a point in the image to pick its color",
+        "addZone": "Add time zone"
+      },
+      "qr": {
+        "generate": "Generate QR",
+        "recognize": "Read QR",
+        "template": "Content template",
+        "text": "Text",
+        "url": "URL",
+        "wifi": "Wi-Fi",
+        "password": "Wi-Fi password",
+        "security": "Security",
+        "open": "No password",
+        "hidden": "Hidden network",
+        "screenshot": "Read screenshot"
+      },
+      "timers": {
+        "independent": "Independent timers",
+        "timer": "Timer",
+        "name": "Timer name, e.g. tea",
+        "add": "Add timer",
+        "focusHistory": "Focus history"
+      },
+      "templates": {
+        "import": "Import templates",
+        "export": "Export templates",
+        "preview": "Import {{count}} templates. Matching IDs update; other templates are kept."
+      },
+      "notes": {
+        "empty": "Use New note to start. Supports Markdown, tags and automatic saving."
+      },
+      "reminders": {
+        "repeat": "Repeat",
+        "none": "Never",
+        "daily": "Daily",
+        "weekly": "Weekly",
+        "failed": "Notification failed",
+        "retry": "Retry notification"
+      },
+      "todos": {
+        "all": "All tasks",
+        "active": "Active",
+        "done": "Completed history",
+        "filter": "Status filter",
+        "sort": "Sort",
+        "created": "Recently created",
+        "due": "Due date",
+        "priority": "Priority",
+        "completed": "Completed at"
+      },
+      "image": {
+        "before": "Original",
+        "after": "Edited",
+        "resize": "Resize",
+        "width": "Width",
+        "height": "Height",
+        "keepRatio": "Keep aspect ratio",
+        "apply": "Apply size",
+        "format": "Output format",
+        "quality": "Quality"
+      }
+    },
+    "ui": {
+      "taskPreview": "Task preview",
+      "downloadPreviewHint": "Paste links and identify tasks, then confirm before downloading.",
+      "originalSites": "Original websites",
+      "musicSearchHint": "Search for a song or artist to play, save or download.",
+      "expand": "Expand workspace",
+      "backShelf": "Back to shelf",
+      "newDownload": "New download",
+      "mediaTitle": "Video, audio and playlists",
+      "mediaHint": "Paste a page link, analyze it, then choose quality, audio format, subtitles and cover.",
+      "mediaSettings": "Subtitles, cover and more settings",
+      "mediaPreviewHint": "Analyze a video or playlist, select the items you want, then start downloading.",
+      "importPlaylist": "Import playlist",
+      "playlistHint": "Choose a source and category, or search by keyword. You can also import a playlist link or file.",
+      "importImage": "Import image",
+      "preview": "Preview",
+      "captureEmpty": "Capture or import an image",
+      "captureHint": "Capture a region, screen or scrolling page, or drop an image. Copy, translate or save recognized text.",
+      "captureCancelled": "Capture cancelled. Select again or import an image.",
+      "pinControls": "Pinned images",
+      "customizeDock": "Dock & shortcuts",
+      "qrContent": "Content",
+      "qrResult": "Recognized text",
+      "qrTextPlaceholder": "Enter text or a link",
+      "qrUrlPlaceholder": "https://example.com",
+      "qrBytes": "{{count}} / 2000 bytes",
+      "emptyShelf": "No books yet",
+      "archiveInput": "Drop files or choose a ZIP"
+    },
+    "stage": {
+      "mood": {
+        "idle": "Ready",
+        "working": "Working on it",
+        "waiting": "Needs your call",
+        "finished": "Done",
+        "error": "Something went wrong",
+        "listening": "Listening",
+        "thinking": "Thinking",
+        "warning": "Heads up",
+        "curious": "Curious",
+        "thanks": "Thank you",
+        "surprised": "Found something"
+      }
     }
   },
   "standalone": {
@@ -2649,7 +3487,7 @@
       },
       "translate": {
         "title": "Text Translation",
-        "subtitle": "Machine translation powered by Tencent Cloud",
+        "subtitle": "Translate text online without an account.",
         "inputPlaceholder": "Enter text to translate...",
         "outputPlaceholder": "Translation result will appear here",
         "translateBtn": "Translate",
@@ -2669,7 +3507,13 @@
           "de": "German",
           "es": "Spanish",
           "ru": "Russian"
-        }
+        },
+        "serviceUnavailable": "The free translation service is unavailable or its allowance has been reached. Try again later.",
+        "invalidText": "Enter up to 5,000 characters.",
+        "invalidLanguage": "This language pair is not supported.",
+        "networkError": "Translation could not connect or timed out. Check your connection and retry.",
+        "copyError": "Could not copy the result.",
+        "cancel": "Cancel"
       },
       "fileService": {
         "hash": {
@@ -3184,11 +4028,11 @@
         "enginePlugin": "Plugin Mode",
         "engineJs": "JS Mode",
         "ocrEngineTitle": "OCR Engine",
-        "ocrEngineHint": "Local OCR uses Tesseract.js on this device without uploading images; server OCR uses cloud recognition and billing.",
-        "ocrEngineLocal": "Local OCR",
-        "ocrEngineServer": "Server OCR",
+        "ocrEngineHint": "Local Chinese/English OCR needs no login and keeps images on your device. Image translation sends recognized text only. Cloud services require their own account.",
+        "ocrEngineLocal": "Local OCR and text translation",
+        "ocrEngineServer": "Cloud OCR",
         "translateTitle": "Screenshot Translation Language",
-        "translateHint": "Configure source and target languages for screenshot translation."
+        "translateHint": "The screenshot is sent to the cloud service for OCR and translation."
       },
       "notifications": {
         "configChanged": {

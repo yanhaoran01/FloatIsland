@@ -25,17 +25,17 @@
  */
 
 import { useEffect, type ReactElement } from 'react';
-import { Maximize2, Minus, X } from 'lucide-react';
-import { useTranslation } from 'react-i18next';
 import { MaxExpandContent } from './states/maxExpand/MaxExpandContent';
 import { initializeFusionPreferences } from './fusion/fusionPreferences';
 import { subscribeFusionActivity } from './fusion/fusionActivity';
 import useIslandStore from '../store/slices';
 import type { WorkspaceTarget } from '../../preload/types/fusionWorkspace';
 import './fusion/fusionIsland.css';
+import './fusion/workspaceEnhancement.css';
+import './fusion/floatStage.css';
+import './fusion/compactWorkspace.css';
 /** Mounts the full workspace independently from the island's compact view. */
 export function StandaloneWindow(): ReactElement {
-  const { t } = useTranslation();
   useEffect(() => {
     void initializeFusionPreferences();
     const stopActivity = subscribeFusionActivity();
@@ -52,11 +52,6 @@ export function StandaloneWindow(): ReactElement {
     return () => { stopActivity(); stopRoute(); };
   }, []);
   return <main className="fusion-workbench">
-    <header className="fusion-titlebar"><div />
-      <button aria-label={t('standalone.controls.minimize')} onClick={() => window.api.windowMinimize()}><Minus size={14} /></button>
-      <button aria-label={t('standalone.controls.maximize')} onClick={() => window.api.windowMaximize()}><Maximize2 size={13} /></button>
-      <button aria-label={t('standalone.controls.close')} onClick={() => window.api.windowClose()}><X size={16} /></button>
-    </header>
     <MaxExpandContent />
   </main>;
 }

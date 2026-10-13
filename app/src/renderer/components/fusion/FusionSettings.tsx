@@ -17,6 +17,9 @@ import { AvatarSettings } from './AvatarSettings';
 import { FusionDockSettings } from './FusionDockSettings';
 import { FusionNativeSettings } from './FusionNativeSettings';
 import type { FusionAssistantProvider, FusionAssistantConfig } from '../../../preload/types/fusion';
+import { useSlidingIndicator } from './useSlidingIndicator';
+import {WorkBuddySettings} from './WorkBuddySettings';
+import {useContentWidth} from './useContentWidth';
 
 const SECTIONS = ['agents', 'models', 'pet', 'navigation', 'reminders', 'tools', 'about'] as const;
 type Section = typeof SECTIONS[number];
@@ -31,7 +34,7 @@ function AgentSettings(): JSX.Element {
     void window.api.fusionIntegrationsList().then(value => { if (active) setItems(value); }).catch(reason => setMessage(String(reason)));
     return () => { active = false; };
   }, []);
-  const change = async (source: 'codex' | 'claude' | 'dsh', remove: boolean): Promise<void> => {
+  const change = async (source: 'codex' | 'claude' | 'dsh'|'workbuddy', remove: boolean): Promise<void> => {
     setBusy(true); setMessage('');
     try {
       await window.api.fusionIntegrationChange(source, remove);
@@ -46,7 +49,7 @@ function AgentSettings(): JSX.Element {
     <div><button disabled={busy} onClick={() => void change(item.source, item.installed)}>
       {t(item.installed ? 'fusion.integrations.remove' : 'fusion.integrations.install')}</button>
       <button disabled={!item.configured} onClick={() => void window.api.fusionIntegrationOpen(item.source).catch(reason => setMessage(String(reason)))}>{t('fusion.integrations.configure')}</button></div>
-  </article>)}{message && <p role="status">{message}</p>}</div>;
+  </article>)}<WorkBuddySettings/>{message && <p role="status">{message}</p>}</div>;
 }
 
 /** Shares model configuration with the main process; never reads plaintext saved credentials. */
@@ -91,6 +94,9 @@ export function FusionSettings(): JSX.Element {
   const preferences = useFusionPreferences((s) => s.value);
   const save = useFusionPreferences((s) => s.save);
   const selection = useRef(0);
+  const aside = useRef<HTMLElement>(null);
+  const content=useContentWidth<HTMLElement>();
+  useSlidingIndicator(aside, 'button[aria-current=page]', section);
   useEffect(() => {
     let active=true;const initialSelection=selection.current;
     const target = (value: import('../../../preload/types/fusionWorkspace').WorkspaceTarget): void => { if(value.settingsSection) setSection(value.settingsSection); };
@@ -114,11 +120,12 @@ export function FusionSettings(): JSX.Element {
       setError(''); void save({ [key]: e.target.checked }).catch(() => setError(t('fusion.settings.saveError')));
     }} />
   </label>;
-  return <section className="fusion-settings">
-    <aside aria-label={t('fusion.navigation.settings')}>{SECTIONS.map((id) =>
+  return <section ref={content.ref} className="fusion-settings" data-narrow={content.narrow}>
+    <div className="fusion-settings-selector" hidden={!content.narrow}><select aria-label={t('fusion.navigation.settings')} value={section} onChange={event=>{selection.current++;setSection(event.target.value as Section);}}>{SECTIONS.map(id=><option key={id} value={id}>{t('fusion.settings.'+id)}</option>)}</select></div>
+    <aside ref={aside} hidden={content.narrow} aria-label={t('fusion.navigation.settings')}>{SECTIONS.map((id) =>
       <button type="button" key={id} aria-current={section === id ? 'page' : undefined}
         onClick={() => {selection.current++;setSection(id);}}>{t('fusion.settings.' + id)}</button>)}</aside>
-    <div className="fusion-settings-body">
+    <div className="fusion-settings-body" key={section}>
       <h2>{t('fusion.settings.' + section)}</h2>
       {section === 'agents' && <>{toggle('autoDiscover')}<p>{t('fusion.settings.discoveryHint')}</p><AgentSettings /></>}
       {section === 'models' && <>

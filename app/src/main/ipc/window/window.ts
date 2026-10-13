@@ -25,8 +25,9 @@
  * @author 鸡哥
  */
 
-import { fusionDockBounds, fusionDockReady, snapFusionDock } from '../../window/fusionDock';
+import { fusionDockBounds, fusionDockReady, revealFusionIsland, snapFusionDock } from '../../window/fusionDock';
 import { fitViewSize } from '../../window/fusionViewLayout';
+import { workspaceViewportSize, viewportAdjusting } from '../../window/fusionViewport';
 import { hasFusionMedia } from '../../system/fusionBrowserService';
 import { isFusionView } from '../../system/fusionWindows';
 import type { FitRequest } from '../../../preload/types/fusionTools';
@@ -152,11 +153,15 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
       width: visibleWidth,
       height: visibleHeight,
     }]);
+    if (fusionDockReady() && !mousePassthroughLocked) win.setIgnoreMouseEvents(false);
     win.webContents.invalidate();
   };
 
-  const resizeWindow = (getTargetBounds: (win: BrowserWindow) => Electron.Rectangle, delayMs = 0): void => {
-    chatExpanded = false;
+  const resizeWindow = (getTargetBounds: (win: BrowserWindow) => Electron.Rectangle, delayMs = 0, workspace = false): void => {
+    chatExpanded = workspace;
+    // Reveal before calculating geometry: a hidden handle must not override the
+    // requested workspace size or leave later measurements using the capsule.
+    if (workspace && fusionDockReady()) revealFusionIsland();
     const safeDelayMs = fusionDockReady() ? 0 : Number.isFinite(delayMs) ? Math.max(0, delayMs) : 0;
     if (pendingResizeTimer) {
       clearTimeout(pendingResizeTimer);
@@ -231,6 +236,12 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
 
   ipcMain.on('window:enable-mouse-passthrough', () => {
     withWindow((win) => {
+      // Dock windows already have a native shape matching their visible area.
+      // A stale renderer leave callback must not disable their buttons/handle.
+      if (fusionDockReady() && !mousePassthroughLocked) {
+        win.setIgnoreMouseEvents(false);
+        return;
+      }
       win.setIgnoreMouseEvents(true, { forward: true });
     });
   });
@@ -308,10 +319,9 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
       return {
         x: Math.round(centerX - options.sizes.settingsWidth / 2),
         y: getEffectiveY(win),
-        ...(fusionDockReady() ? fitViewSize({ mode: 'chat', width: 760, height: 560, page: 'workspace' }, screen.getDisplayMatching(win.getBounds()).workArea) : { width: options.sizes.settingsWidth, height: getHeight(options.sizes.settingsHeight, PILL_SETTINGS_HEIGHT) }),
+        ...(fusionDockReady() ? fitViewSize({ mode: 'chat', width: 760, height: 560, page: 'workspace' }, screen.getDisplayMatching(win.getBounds()).workArea,workspaceViewportSize()) : { width: options.sizes.settingsWidth, height: getHeight(options.sizes.settingsHeight, PILL_SETTINGS_HEIGHT) }),
       };
-    }, delayMs);
-    chatExpanded = true;
+    }, delayMs, true);
   });
 
   // Only the island can resize itself. Late measurements cannot reopen a collapsed window.
@@ -319,6 +329,7 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
     const win = options.getMainWindow();
     if (!win || win.isDestroyed() || event.sender !== win.webContents || !chatExpanded ||
         !Number.isFinite(desiredHeight) || desiredHeight <= 0 || !Number.isFinite(desiredWidth)) return null;
+    if(fusionDockReady()){const bounds=win.getBounds();return {width:bounds.width,height:bounds.height};}
     if (pendingResizeTimer) { clearTimeout(pendingResizeTimer); pendingResizeTimer = null; }
     const area = screen.getDisplayMatching(win.getBounds()).workArea;
     const width = Math.min(Math.max(320, Math.min(1120, Math.ceil(desiredWidth))), Math.max(1, area.width - 24));
@@ -344,6 +355,7 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
       fitSequences.set(event.sender.id, request.sequence);
     }
     const island = win === options.getMainWindow();
+    if(island&&viewportAdjusting()){const bounds=win.getBounds();return {width:bounds.width,height:bounds.height};}
     if (island && !chatExpanded && (request.mode !== 'strip' || !hasFusionMedia())) return null;
     if (island && chatExpanded && request.mode === 'strip') return null;
     if (!island) {
@@ -357,7 +369,7 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
       if (win.isMaximized() || state.manual) { const bounds = win.getBounds(); return { width: bounds.width, height: bounds.height }; }
     }
     const area = screen.getDisplayMatching(win.getBounds()).workArea;
-    const size = fitViewSize(request, area);
+    const size = fitViewSize(request, area,workspaceViewportSize());
     const bounds = win.getBounds();
     const x = Math.round(Math.max(area.x + 12, Math.min(area.x + area.width - size.width - 12, bounds.x + (bounds.width - size.width) / 2)));
     const y = Math.round(Math.max(area.y + 12, Math.min(area.y + area.height - size.height - 12, bounds.y)));
@@ -409,6 +421,7 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
     const win = options.getMainWindow();
     if (win && !win.isDestroyed()) {
       const bounds = win.getBounds();
+      if (fusionDockReady()) return bounds;
       if (!logicalWindowSize) return bounds;
       return {
         x: Math.round(bounds.x + (bounds.width - logicalWindowSize.width) / 2),

@@ -27,6 +27,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactElement } from 'react';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
+import {useProductFiles} from '../../../fusion/productStore';
 import { SvgIcon } from '../../../../utils/SvgIcon';
 import { resolveCountryIcon } from '../../../../utils/SvgIcon/country-icon';
 import { TRANSLATE_LANGUAGES, TRANSLATE_TARGET_LANGUAGES } from '../../maxExpand/components/tools/config/translateToolConfig';
@@ -153,6 +154,8 @@ export function TranslationTab(): ReactElement {
     sourceText,
     resultText,
     translating,
+    error,
+    handleCancel,
     setSourceLang,
     setTargetLang,
     setSourceText,
@@ -161,9 +164,11 @@ export function TranslationTab(): ReactElement {
     handleCopyResult,
     handleClearAll,
   } = useTranslateTool();
+  useProductFiles('translation',files=>{if(files[0])void files[0].text().then(setSourceText);});
 
   return (
     <div className="translation-tab expand-tab-panel">
+      {error && <div className="fusion-tool-error" role="alert">{error}</div>}
       <div className="translation-workspace">
         <section className="translation-pane translation-pane-source">
           <div className="translation-pane-toolbar">
@@ -174,6 +179,7 @@ export function TranslationTab(): ReactElement {
           <textarea
             className="translation-editor-textarea"
             placeholder={t('maxExpand.toolbox.translate.inputPlaceholder')}
+            maxLength={5000}
             value={sourceText}
             onWheelCapture={(event) => event.stopPropagation()}
             onWheel={(event) => event.stopPropagation()}
@@ -195,16 +201,16 @@ export function TranslationTab(): ReactElement {
           <button
             className="translation-primary-btn"
             type="button"
-            disabled={!sourceText.trim() || translating}
-            onClick={handleTranslate}
+            disabled={!sourceText.trim()}
+            onClick={translating ? handleCancel : handleTranslate}
             title={translating
-              ? t('maxExpand.toolbox.translate.translating')
+              ? t('maxExpand.toolbox.translate.cancel')
               : t('maxExpand.toolbox.translate.translateBtn')}
             aria-label={translating
-              ? t('maxExpand.toolbox.translate.translating')
+              ? t('maxExpand.toolbox.translate.cancel')
               : t('maxExpand.toolbox.translate.translateBtn')}
           >
-            <img className="translation-action-icon" src={SvgIcon.LANGUAGE} alt="" draggable={false} />
+            <img className="translation-action-icon" src={SvgIcon.LANGUAGE} alt="" draggable={false} /><span>{t(translating?'maxExpand.toolbox.translate.cancel':'maxExpand.toolbox.translate.translateBtn')}</span>
           </button>
           <button
             className="translation-secondary-btn"

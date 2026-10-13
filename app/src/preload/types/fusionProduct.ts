@@ -15,7 +15,13 @@ export interface RecordState { id:string; state:'idle'|'starting'|'recording'|'p
 export interface SharePeer { fingerprint:string; alias:string; address:string; port:number; protocol:'http'|'https'; }
 export interface ShareRequest { id:string; alias:string; files:Array<{id:string;name:string;size:number}>; }
 export interface ShareState { active:boolean; port:number; peers:SharePeer[]; requests:ShareRequest[]; jobs:ProductJob[]; error?:string; }
+export interface LocalImportRequest {requestId:string;domain:'music'|'reading'|'files';mode:'files'|'folder'|'drop'|'rescan';}
+export interface LocalImportProgress {requestId:string;state:'scanning'|'done'|'cancelled'|'error';count:number;}
+export interface LocalImportResult {requestId:string;artifacts:ProductArtifact[];items:string[];count?:number;errors:Array<{name:string;error:string}>;cancelled:boolean;}
 export interface FusionProductApi {
+  fusionLocalImport:(request:LocalImportRequest,files?:File[])=>Promise<LocalImportResult>;
+  fusionLocalImportCancel:(requestId:string)=>Promise<boolean>;
+  onFusionLocalImport:(callback:(progress:LocalImportProgress)=>void)=>()=>void;
  fusionProductPick:()=>Promise<ProductArtifact[]>;
  fusionProductImport:(files:File[])=>Promise<ProductArtifact[]>;
  fusionProductRead:(id:string)=>Promise<{artifact:ProductArtifact;bytes:Uint8Array}>;

@@ -5,6 +5,9 @@ import { ipcRenderer,webUtils } from 'electron';
 import type { FusionProductApi } from './types/fusionProduct';
 const listen=<T>(channel:string,callback:(value:T)=>void):(()=>void)=>{const handler=(_event:Electron.IpcRendererEvent,value:T):void=>callback(value);ipcRenderer.on(channel,handler);return ()=>ipcRenderer.removeListener(channel,handler);};
 export const fusionProductApi:FusionProductApi={
+ fusionLocalImport:(request,files)=>{const paths=files?.map(file=>{if(!(file instanceof File))throw Error('file-not-authorized');const path=webUtils.getPathForFile(file);if(!path)throw Error('file-not-authorized');return path;});return ipcRenderer.invoke('fusion:product:local-import',request,paths);},
+ fusionLocalImportCancel:id=>ipcRenderer.invoke('fusion:product:local-import-cancel',id),
+ onFusionLocalImport:callback=>listen('fusion:product:local-import-progress',callback),
  fusionProductPick:()=>ipcRenderer.invoke('fusion:product:pick'),
  fusionProductImport:files=>{if(!Array.isArray(files)||files.some(file=>!(file instanceof File)))throw Error('file-not-authorized');const paths=files.map(file=>webUtils.getPathForFile(file));if(paths.some(path=>!path))return Promise.reject(Error('file-not-authorized'));return ipcRenderer.invoke('fusion:product:import',paths);},
  fusionProductRead:id=>ipcRenderer.invoke('fusion:product:read',id),

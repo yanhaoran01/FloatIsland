@@ -11,9 +11,11 @@ import { dirname, join } from 'path';
 import { homedir } from 'os';
 import { createHash } from 'crypto';
 import { isFusionView } from './fusionWindows';
+import {discoverWorkBuddy,workBuddyRoot,registerWorkBuddyConfig} from './workBuddyConfig';
 
-type Integration = 'codex' | 'claude' | 'dsh';
+type Integration = 'codex' | 'claude' | 'dsh' | 'workbuddy';
 const events = {
+  workbuddy: ['SessionStart','SessionEnd','UserPromptSubmit','PreToolUse','PostToolUse','PostToolUseFailure','Stop','StopFailure','PermissionRequest','PermissionDenied','Elicitation','Notification','SubagentStart','SubagentStop'],
   codex: ['SessionStart', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'Stop'],
   claude: ['SessionStart', 'SessionEnd', 'UserPromptSubmit', 'PreToolUse', 'PostToolUse', 'PostToolUseFailure', 'Stop', 'PermissionRequest', 'PermissionDenied', 'Elicitation', 'Notification', 'SubagentStart', 'SubagentStop'],
 };
@@ -25,13 +27,14 @@ const atomic = (file: string, text: string): void => {
 
 /** Exposes explicit install/remove controls; discovery itself never modifies Agent configuration. */
 export function registerFusionIntegrations(): void {
+  registerWorkBuddyConfig();
   const data = join(app.getPath('userData'), 'integrations');
   const resources = app.isPackaged ? process.resourcesPath : join(app.getAppPath(), 'resources');
   const codexRoot = process.env.CODEX_HOME || join(homedir(), '.codex');
   const claudeRoot = process.env.CLAUDE_CONFIG_DIR || join(homedir(), '.claude');
   const dshRoot = process.env.DSH_HOME || join(homedir(), '.dsh');
-  const files: Record<Integration, string> = { codex: join(codexRoot, 'hooks.json'), claude: join(claudeRoot, 'settings.json'), dsh: join(dshRoot, 'profiles/desktop/cordis.patch.yml') };
-  const status = () => (['codex', 'claude', 'dsh'] as Integration[]).map(source => ({
+  const files: Record<Integration, string> = { codex: join(codexRoot, 'hooks.json'), claude: join(claudeRoot, 'settings.json'), dsh: join(dshRoot, 'profiles/desktop/cordis.patch.yml'), workbuddy:join(workBuddyRoot(),'settings.json') };
+  const status = () => (['codex', 'claude', 'dsh','workbuddy'] as Integration[]).map(source => ({
     source, installed: read(files[source]).includes(source === 'dsh' ? '# FUSIONISLAND:BEGIN managed bridge' : 'fusion-island-' + source + '-hook.cmd'),
     configured: existsSync(dirname(files[source])), configPath: files[source],
   }));
@@ -64,7 +67,7 @@ export function registerFusionIntegrations(): void {
       atomic(file, next);
       return { backup, restartRequired: true };
     }
-    const root = original.trim() ? JSON.parse(original) : {};
+    const root = original.trim() ? JSON.parse(original.replace(/^\uFEFF/,'')) : {};
     if (!root || typeof root !== 'object' || Array.isArray(root)) throw new Error('invalid-hooks-config');
     root.hooks ||= {};
     const runtime = join(data, source);
@@ -89,7 +92,7 @@ export function registerFusionIntegrations(): void {
       for (const event of events[source]) {
         root.hooks[event] ||= [];
         root.hooks[event].push({ ...(source === 'claude' ? { matcher: '' } : {}), hooks: [{ type: 'command', command,
-          timeout: ['PermissionRequest', 'Elicitation', 'Notification'].includes(event) ? 86400 : 5 }] });
+          timeout: source!=='workbuddy'&&['PermissionRequest', 'Elicitation', 'Notification'].includes(event) ? 86400 : 5 }] });
       }
     }
     if (read(file) !== original) throw new Error('integration-config-changed');
@@ -114,12 +117,13 @@ export function registerFusionIntegrations(): void {
     }
     return { backup, restartRequired: true };
   };
-  ipcMain.handle('fusion:integrations:list', event => { if (!isFusionView(event.sender)) throw new Error('untrusted-view'); return status(); });
+  ipcMain.handle('fusion:integrations:list', async event => { if (!isFusionView(event.sender)) throw new Error('untrusted-view'); await discoverWorkBuddy();files.workbuddy=join(workBuddyRoot(),'settings.json');return status(); });
   ipcMain.handle('fusion:integrations:change', (event, source: Integration, remove = false) => {
     if (!isFusionView(event.sender)) throw new Error('untrusted-view');
-    return install(source, remove);
+    files.workbuddy=join(workBuddyRoot(),'settings.json');return install(source, remove);
   });
   ipcMain.handle('fusion:integrations:open', async (event, source: Integration) => {
+    files.workbuddy=join(workBuddyRoot(),'settings.json');
     if (!isFusionView(event.sender) || !Object.hasOwn(files, source)) throw new Error('invalid-integration');
     const error = await shell.openPath(dirname(files[source]));
     if (error) throw new Error(error);

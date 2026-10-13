@@ -333,6 +333,10 @@ declare global {
       autostartSet: (mode: string) => Promise<boolean>;
       navOrderGet: () => Promise<NavOrderPayload>;
       navOrderSet: (payload: NavOrderPayload) => Promise<boolean>;
+      downloadTorrentInspect: MediaDownloadApi['downloadTorrentInspect'];
+      downloadTorrentCancel: MediaDownloadApi['downloadTorrentCancel'];
+      downloadTorrentStart: MediaDownloadApi['downloadTorrentStart'];
+      downloadFilesStart: MediaDownloadApi['downloadFilesStart'];
       downloadAnalyze: MediaDownloadApi['downloadAnalyze'];
       downloadInspect: MediaDownloadApi['downloadInspect'];
       downloadCancelAnalysis: MediaDownloadApi['downloadCancelAnalysis'];

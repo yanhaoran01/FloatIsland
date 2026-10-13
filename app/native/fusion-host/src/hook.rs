@@ -36,13 +36,15 @@ async fn run() -> anyhow::Result<()> {
     use tokio::io::{self, AsyncReadExt};
     let mut stdin = io::stdin();
     let mut raw = Vec::new();
-    stdin.read_to_end(&mut raw).await?;
+    (&mut stdin).take(1024 * 1024 + 1).read_to_end(&mut raw).await?;
+    if raw.len() > 1024 * 1024 { return Ok(()); }
     if raw.is_empty() {
         append_bridge_log("empty stdin; exiting");
         return Ok(());
     }
 
-    let value = match serde_json::from_slice::<Value>(&raw) {
+    let input = raw.strip_prefix(&[0xef,0xbb,0xbf]).unwrap_or(&raw);
+    let value = match serde_json::from_slice::<Value>(input) {
         Ok(value) => value,
         Err(error) => {
             append_bridge_log(&format!("failed to parse stdin json: {error}"));
@@ -101,7 +103,8 @@ async fn run() -> anyhow::Result<()> {
 
     let payload =
         serde_json::to_vec(&Value::Object(obj.clone())).context("failed to encode payload")?;
-    let response = match send_fusion(&payload).await {
+    let response = match tokio::time::timeout(std::time::Duration::from_secs(if source == "workbuddy" { 1 } else { 31 * 60 }), send_fusion(&payload)).await {
+        Ok(result) => match result {
         Ok(response) => {
             append_bridge_log(&format!(
                 "sent to ipc source={source} event={event_name} session_id={session_id} ok={}",
@@ -115,7 +118,12 @@ async fn run() -> anyhow::Result<()> {
             ));
             return Ok(()); // Withdraw the island channel; leave the original client in control.
         }
+        },
+        Err(_) => return Ok(()),
     };
+
+    // WorkBuddy hooks observe only. Never emit approval instructions or wait for island input.
+    if source == "workbuddy" { return Ok(()); }
 
     if let Some(output) = format_output(&source, &raw_event_name, &obj, &response) {
         println!("{}", serde_json::to_string(&output)?);

@@ -32,7 +32,7 @@ export function FusionTimerPanel(): JSX.Element {
     <p>{t('fusion.timer.' + (timer?.state || 'idle'))}</p>
     <output className="fusion-timer-clock">{clock}</output>
     {timer?.state !== 'running' && timer?.state !== 'paused' && <label>{t('fusion.timer.minutes')}
-      <input type="number" min="0.1" max="5999" step="0.5" value={minutes} onChange={event => setMinutes(Number(event.target.value))} />
+      <input type="number" min="0.1" max="5999" step="0.1" value={minutes} onChange={event => setMinutes(Number(event.target.value))} />
     </label>}
     <div className="fusion-timer-presets">{[5, 15, 25].map(value => <button key={value} disabled={timer?.state === 'running'}
       onClick={() => setMinutes(value)}>{t('fusion.timer.preset', { count: value })}</button>)}</div>

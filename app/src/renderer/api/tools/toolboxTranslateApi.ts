@@ -20,7 +20,7 @@
 
 /**
  * @file toolboxTranslateApi.ts
- * @description 工具箱翻译接口 — 通过服务端转发腾讯云 TMT
+ * @description 工具箱翻译接口 — 免账号受限翻译桥
  * @author 鸡哥
  */
 
@@ -29,43 +29,16 @@ import type { TranslateApiResult } from './types/TranslateApiResult';
 
 export type { TranslateResponse, TranslateApiResult };
 
-const IS_DEV_RENDERER = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-
-const TOOLBOX_API_BASE = IS_DEV_RENDERER
-  ? 'https://test.server.pyisland.com/api'
-  : 'https://server.pyisland.com/api';
-
 export async function fetchTranslate(
-  token: string,
   text: string,
   source: string,
   target: string,
+  requestId: string = crypto.randomUUID(),
 ): Promise<TranslateApiResult> {
   try {
-    const response = await window.api.netFetch(`${TOOLBOX_API_BASE}/v1/toolbox/translate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ text, source, target }),
-      timeoutMs: 15000,
-    });
-    if (!response?.ok) {
-      return { success: false, message: `HTTP ${response?.status ?? 'unknown'}` };
-    }
-
-    const payload = JSON.parse(response.body) as {
-      code?: number;
-      message?: string;
-      data?: TranslateResponse;
-    };
-
-    if (payload?.code === 200 && payload.data) {
-      return { success: true, data: payload.data };
-    }
-    return { success: false, message: payload?.message ?? '翻译失败' };
+    const data = await window.api.fusionTranslateText(text, source, target, requestId);
+    return { success: true, data };
   } catch (err) {
-    return { success: false, message: '网络请求失败' };
+    return { success: false, message: err instanceof Error ? err.message : 'translation-failed' };
   }
 }

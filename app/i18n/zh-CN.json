@@ -6,7 +6,7 @@
     }
   },
   "fusion": {
-    "brand": "浮屿",
+    "brand": "FloatIsland",
     "openLegacy": "自定义 AI",
     "backToWorkspace": "返回 Codex 工作台",
     "codex": {
@@ -23,7 +23,8 @@
       "dsh": "DeepSeek Harness",
       "custom": "自定义 API",
       "anthropic": "Anthropic",
-      "ollama": "Ollama"
+      "ollama": "Ollama",
+      "workbuddy": "WorkBuddy"
     },
     "attachments": {
       "add": "添加文本附件",
@@ -92,7 +93,7 @@
       "working": "正在工作",
       "ready": "已就绪",
       "unavailable": "尚未连接",
-      "empty": "还没有会话。新建会话后即可在浮屿里直接对话。",
+      "empty": "还没有会话。新建会话后即可在FloatIsland里直接对话。",
       "project": "先选择项目文件夹",
       "externalFocus": "切回 Codex",
       "cachedSnapshot": "恢复的摘要 · 状态待刷新",
@@ -102,7 +103,7 @@
       "requestSource": "{{agent}} · {{project}}"
     },
     "tools": {
-      "title": "常用工具",
+      "title": "工具",
       "subtitle": "常用操作放在手边，其余功能收在更多工具中。",
       "screenshot": "截图与 OCR",
       "clipboard": "剪贴板",
@@ -114,7 +115,8 @@
       "dates": "日期倒数",
       "music": "音乐与歌词",
       "launcher": "快捷启动",
-      "translation": "翻译"
+      "translation": "翻译",
+      "functions": "功能"
     },
     "actions": {
       "stop": "停止",
@@ -153,11 +155,11 @@
       "off": "静音"
     },
     "pet": {
-      "idle": "浮屿角色，空闲中。点击互动。",
-      "working": "浮屿角色正在专注工作。点击互动。",
-      "waiting": "浮屿角色在等待你的选择。点击互动。",
-      "finished": "浮屿角色完成了任务。点击互动。",
-      "error": "浮屿角色遇到问题。点击互动。",
+      "idle": "FloatIsland角色，空闲中。点击互动。",
+      "working": "FloatIsland角色正在专注工作。点击互动。",
+      "waiting": "FloatIsland角色在等待你的选择。点击互动。",
+      "finished": "FloatIsland角色完成了任务。点击互动。",
+      "error": "FloatIsland角色遇到问题。点击互动。",
       "listening": "聆听中",
       "thinking": "思考中",
       "warning": "提醒",
@@ -305,7 +307,7 @@
       "configure": "打开配置目录"
     },
     "nativeSettings": {
-      "shape": "浮屿形态",
+      "shape": "FloatIsland形态",
       "pill": "胶囊",
       "notch": "贴顶",
       "display": "显示屏幕",
@@ -322,7 +324,7 @@
       "domain-only": "同时识别纯域名"
     },
     "island": {
-      "navigation": "浮屿视图",
+      "navigation": "FloatIsland视图",
       "chat": "对话",
       "tools": "工具",
       "wheelHint": "滚轮切换 · 正文自由滚动"
@@ -334,7 +336,7 @@
       "loading": "读取中…"
     },
     "dock": {
-      "reveal": "显示浮屿",
+      "reveal": "显示FloatIsland",
       "edge": "停靠位置",
       "top": "顶部",
       "left": "左侧",
@@ -396,7 +398,7 @@
         "clipboard": "剪贴板",
         "calculator": "计算与换算",
         "qr": "二维码",
-        "notes": "随手便签",
+        "notes": "笔记",
         "browser": "网页浏览",
         "video": "视频播放",
         "music": "音乐",
@@ -423,7 +425,9 @@
         "recording": "录屏",
         "workflows": "流程",
         "sharing": "互传",
-        "download": "下载"
+        "download": "下载",
+        "encoding": "编码工具",
+        "collections": "收藏"
       },
       "descriptions": {
         "screenshot": "区域截图与文字识别",
@@ -451,7 +455,11 @@
         "zip": "ZIP 整理",
         "csv": "CSV／JSON",
         "regex": "正则测试",
-        "url-codec": "URL 编解码"
+        "url-codec": "URL 编解码",
+        "encoding": "JSON、Base64 与 URL 编解码",
+        "collections": "收藏网址文件，阅读文章和打开工作空间",
+        "workflows": "组合步骤与自动执行",
+        "sharing": "文件、文件夹与文本互传"
       },
       "units": {
         "length": "长度",
@@ -465,7 +473,10 @@
         "dedupe": "去重行",
         "empty": "去空行",
         "upper": "大写",
-        "lower": "小写"
+        "lower": "小写",
+        "trim": "清理行首尾空白",
+        "sort": "自然排序",
+        "reverse": "倒序"
       },
       "pdfModes": {
         "merge": "合并 PDF",
@@ -549,7 +560,7 @@
         "invalid-json-table": "请输入 JSON 对象数组",
         "invalid-encoding": "文件编码不匹配",
         "invalid-url-encoding": "百分号编码不完整或无效",
-        "invalid-file-name": "文件名包含不支持的字符",
+        "invalid-file-name": "文件名无效",
         "rename-conflict": "目标文件名冲突，请调整后重新预览",
         "file-changed": "文件已改变，请重新选择",
         "file-not-authorized": "请先选择文件",
@@ -601,14 +612,319 @@
         "media-site-login": "网站要求账户或已有订阅权限",
         "media-site-drm": "内容受 DRM 保护，无法下载为可播放文件",
         "media-site-region": "网站限制当前地区访问",
-        "media-site-rejected": "网站拒绝请求或暂时限制访问，请稍后重试"
+        "media-site-rejected": "网站拒绝请求或暂时限制访问，请稍后重试",
+        "music-track-missing": "歌曲已不可用。",
+        "music-playlist-missing": "歌单已不存在。",
+        "music-invalid-name": "请输入不超过 120 字的歌单名称。",
+        "music-invalid-value": "音乐操作参数无效。",
+        "music-empty-queue": "请先添加歌曲。",
+        "music-local-missing": "本地文件已移动或删除。",
+        "music-invalid-source": "音源返回了不支持的地址。",
+        "music-invalid-response": "音源返回的数据异常。",
+        "music-unavailable": "没有可匿名播放的音源。",
+        "music-restricted": "此歌曲需要平台授权。",
+        "music-preview-only": "此歌曲仅提供试听。",
+        "music-timeout": "音源请求超时，请重试。",
+        "music-cancelled": "已取消。",
+        "music-host-crashed": "音频播放器意外停止，请重新播放。",
+        "music-decode-2": "音频加载失败。",
+        "music-decode-3": "音频解码失败。",
+        "music-decode-4": "音频格式不受支持。",
+        "music-seek-unavailable": "此音源暂不可调整进度。",
+        "music-login-required": "该平台要求登录或绑定手机，当前匿名搜索不可用。可切换其他音源。",
+        "music-service-rejected": "平台拒绝了当前请求，请稍后重试或切换音源。",
+        "music-no-enabled-source": "暂无启用音源，请在音源管理中启用或导入。",
+        "music-source-missing": "音源已移除。",
+        "music-plugin-invalid": "音源文件或清单无效。",
+        "music-plugin-version": "不支持此插件协议版本。",
+        "music-plugin-timeout": "音源超时，已停止。",
+        "music-plugin-host-crashed": "音源运行异常，请重试或更换。",
+        "music-plugin-unsupported-capability": "此音源未提供这项能力。",
+        "music-plugin-private-network": "音源请求了不支持的内网地址。",
+        "music-plugin-direct-network": "此插件使用了不支持的网络接口。",
+        "music-plugin-request-denied": "音源请求超出支持范围。",
+        "music-plugin-https-required": "请使用 HTTPS 音源链接。",
+        "music-plugin-permission": "插件未声明所需网络权限。",
+        "music-plugin-cursor": "请按顺序翻页搜索此音源。",
+        "music-source-no-backup": "没有可恢复的旧音源版本。",
+        "music-source-not-updatable": "请重新导入文件更新此音源。",
+        "music-source-builtin": "内置音源可以停用。",
+        "music-response-too-large": "音源响应过大。",
+        "invalid-library-data": "收藏数据无效",
+        "invalid-library-command": "操作不受支持",
+        "invalid-workspace": "工作空间包含无效项目",
+        "invalid-reminder": "提醒设置无效",
+        "article-unavailable": "无法提取正文，可打开原网页",
+        "duplicate-keep-one": "每组至少保留一个文件",
+        "directory-entry-limit": "目录项目过多，请缩小搜索范围",
+        "timer-in-use": "已有计时正在进行，请先暂停并重置",
+        "library-limit": "收藏数量已达上限",
+        "library-not-ready": "收藏服务尚未就绪",
+        "redirect-limit": "网页重定向次数过多",
+        "linked-or-special-file": "链接或特殊文件无法入库",
+        "protected-library-path": "此目录不能移动到收藏库",
+        "original-position-occupied": "原位置已有文件，无法撤销",
+        "unsupported-native-or-login-rule": "书源依赖原生或登录功能，暂不支持",
+        "book-content-empty": "书源未返回正文",
+        "book-chapters-empty": "书源未返回目录",
+        "book-rule-timeout": "书源规则超时",
+        "target-exists": "目标名称已存在",
+        "library-migration-incomplete": "收藏库迁移未完成，请查看操作记录",
+        "invalid-library-root": "无法使用这个收藏库位置",
+        "bt-invalid-source": "请选择 .torrent 或有效的磁力链接",
+        "bt-invalid-selection": "请至少选择一个种子文件",
+        "bt-duplicate-task": "相同种子已有任务，请在历史中继续",
+        "bt-metadata-timeout": "未获取到元数据，请检查网络及节点后重试",
+        "bt-runtime-unavailable": "BT 引擎未能启动，请检查运行文件后重试",
+        "import-no-folders": "尚未导入文件夹，请先选择文件夹",
+        "invalid-json-path": "无效的 JSON 路径；请使用界面提示的路径格式。",
+        "invalid-base64": "Base64 格式无效，请检查内容和填充字符。",
+        "invalid-timezone": "时区无效，请选择列表中的时区。"
       },
       "groupNavigation": "工具分组 · 滚轮切页",
       "previousPage": "上一页",
       "nextPage": "下一页",
       "page": "第 {{page}} 页",
       "noResults": "无匹配工具",
-      "run": "运行"
+      "run": "运行",
+      "workspace": {
+        "calculate": "计算",
+        "units": "换算",
+        "process": "处理",
+        "input": "输入",
+        "result": "结果",
+        "dates": "日期",
+        "timestamp": "时间戳",
+        "clock": "时区"
+      },
+      "clear": "清空",
+      "directory": {
+        "subtitle": "按分类浏览，点击即可使用",
+        "search": "搜索工具名称或用途…",
+        "count": "{{count}} 项"
+      },
+      "catalog": {
+        "screenshot-region": {
+          "name": "截图",
+          "description": "选择区域或截取整个屏幕"
+        },
+        "screenshot-ocr": {
+          "name": "OCR文字识别",
+          "description": "从截图或图片提取文字"
+        },
+        "screenshot-scroll": {
+          "name": "长截图",
+          "description": "分段捕获并拼接长页面"
+        },
+        "screenshot-pin": {
+          "name": "贴屏",
+          "description": "把图片固定在屏幕上"
+        },
+        "clipboard-history": {
+          "name": "剪贴板历史",
+          "description": "查找并复用复制过的内容"
+        },
+        "clipboard-templates": {
+          "name": "文字模板",
+          "description": "保存常用文字，随时复用"
+        },
+        "collections-files": {
+          "name": "收藏文件库",
+          "description": "管理拖入的文件与文件夹"
+        },
+        "collections-all": {
+          "name": "网址与收藏",
+          "description": "保存网址、文件和应用引用"
+        },
+        "collections-workspaces": {
+          "name": "工作空间",
+          "description": "组合常用文件、网址和应用"
+        },
+        "collections-feeds": {
+          "name": "订阅阅读",
+          "description": "浏览 RSS 订阅与保存文章"
+        },
+        "collections-scopes": {
+          "name": "本地文件搜索",
+          "description": "索引已授权目录并查找文件"
+        },
+        "calculator-calculate": {
+          "name": "计算器",
+          "description": "日常计算与科学表达式"
+        },
+        "calculator-units": {
+          "name": "单位换算",
+          "description": "换算长度、重量等常用单位"
+        },
+        "qr": {
+          "name": "二维码生成与识别",
+          "description": "生成二维码或识别图片"
+        },
+        "notes-notes": {
+          "name": "笔记",
+          "description": "记录想法，自动保存"
+        },
+        "notes-todo": {
+          "name": "待办清单",
+          "description": "记录任务并跟踪完成状态"
+        },
+        "notes-reminders": {
+          "name": "提醒",
+          "description": "为重要事项设置提醒"
+        },
+        "browser": {
+          "name": "网页浏览",
+          "description": "打开网址，保留网站会话"
+        },
+        "video-play": {
+          "name": "视频播放",
+          "description": "播放网页视频和本地视频"
+        },
+        "video-record": {
+          "name": "录屏",
+          "description": "录制屏幕和所选音频"
+        },
+        "video-convert": {
+          "name": "视频格式转换",
+          "description": "转换格式、裁剪或提取音频"
+        },
+        "timer-countdown": {
+          "name": "倒计时",
+          "description": "设置时长，到时提醒"
+        },
+        "timer-stopwatch": {
+          "name": "秒表",
+          "description": "计时与分段记录"
+        },
+        "timer-focus": {
+          "name": "番茄钟",
+          "description": "安排专注与休息时段"
+        },
+        "dates-dates": {
+          "name": "日期计算",
+          "description": "计算日期间隔与日期偏移"
+        },
+        "dates-timestamp": {
+          "name": "时间戳转换",
+          "description": "转换日期与 Unix 时间戳"
+        },
+        "dates-clock": {
+          "name": "世界时钟",
+          "description": "查看不同地区的当前时间"
+        },
+        "dates-anniversary": {
+          "name": "纪念日",
+          "description": "记录重要日子与倒数天数"
+        },
+        "translation": {
+          "name": "文本翻译",
+          "description": "选择语言并翻译文字"
+        },
+        "launcher-favorites": {
+          "name": "应用启动",
+          "description": "快速打开常用应用"
+        },
+        "launcher-catalog": {
+          "name": "应用目录",
+          "description": "浏览现有软件目录"
+        },
+        "pdf-preview": {
+          "name": "PDF阅读",
+          "description": "查看文档、目录与阅读标注"
+        },
+        "pdf-organize": {
+          "name": "PDF页面整理",
+          "description": "合并、提取或旋转页面"
+        },
+        "text-process": {
+          "name": "文本处理",
+          "description": "统计、清理、替换和排序"
+        },
+        "text-compare": {
+          "name": "文本对比",
+          "description": "查看两段文字的差异"
+        },
+        "text-regex": {
+          "name": "正则测试",
+          "description": "测试表达式并查看匹配结果"
+        },
+        "colors": {
+          "name": "取色与色板",
+          "description": "屏幕取色、格式换算与色板"
+        },
+        "password": {
+          "name": "密码与UUID",
+          "description": "生成安全随机密码和标识"
+        },
+        "image-edit": {
+          "name": "图片编辑",
+          "description": "裁剪、旋转与标注图片"
+        },
+        "image-convert": {
+          "name": "图片格式转换",
+          "description": "转换常用图片格式"
+        },
+        "image-compress": {
+          "name": "图片压缩",
+          "description": "调整尺寸与输出质量"
+        },
+        "image-history": {
+          "name": "图片处理记录",
+          "description": "查看之前的图片处理任务"
+        },
+        "image-preview": {
+          "name": "图片查看",
+          "description": "查看图片与处理产物"
+        },
+        "random": {
+          "name": "抽签与随机",
+          "description": "随机选择名单或生成数值"
+        },
+        "rename": {
+          "name": "批量重命名",
+          "description": "先预览，再修改文件名称"
+        },
+        "zip": {
+          "name": "ZIP压缩与解压",
+          "description": "查看、打包或解压文件"
+        },
+        "encoding-json": {
+          "name": "JSON格式化",
+          "description": "格式化、校验与查看 JSON"
+        },
+        "encoding-csv": {
+          "name": "CSV与JSON转换",
+          "description": "转换表格与 JSON 数据"
+        },
+        "encoding-base64": {
+          "name": "Base64编解码",
+          "description": "编码或解码文字与数据"
+        },
+        "encoding-url": {
+          "name": "URL编解码",
+          "description": "处理网址与参数中的转义"
+        },
+        "workflows": {
+          "name": "自动化流程",
+          "description": "组合已有工具执行步骤"
+        },
+        "sharing": {
+          "name": "局域网互传",
+          "description": "在同一网络中发送与接收文件"
+        },
+        "fileService-hash-hash": {
+          "name": "文件指纹",
+          "description": "计算哈希并核对文件一致性"
+        },
+        "fileService-hash-duplicates": {
+          "name": "重复文件查找",
+          "description": "在授权目录中查找相同文件"
+        },
+        "networkService": {
+          "name": "网络工具",
+          "description": "检测连接并查看网络信息"
+        }
+      }
     },
     "web": {
       "back": "后退",
@@ -643,7 +959,8 @@
       "controls": "播放控制"
     },
     "focus": {
-      "sessionMenu": "会话与设置"
+      "sessionMenu": "会话与设置",
+      "agent": "Agent"
     },
     "avatar": {
       "shape": "形态",
@@ -696,6 +1013,21 @@
         "burst": "绽放",
         "comet": "彗星",
         "swirl": "过渡"
+      },
+      "color": "颜色",
+      "colors": {
+        "encre": "墨黑",
+        "brun": "棕色",
+        "rouge": "红色",
+        "orange": "橙色",
+        "ambre": "琥珀",
+        "vert": "绿色",
+        "turquoise": "青绿",
+        "bleu": "蓝色",
+        "violet": "紫色",
+        "rose": "粉色",
+        "gris": "灰色",
+        "creme": "奶白"
       }
     },
     "utilities": {
@@ -813,7 +1145,17 @@
         "preview": "预览",
         "organize": "整理",
         "favorites": "收藏",
-        "catalog": "应用目录"
+        "catalog": "应用目录",
+        "json": "JSON",
+        "base64": "Base64",
+        "url": "URL",
+        "countdown": "倒计时",
+        "stopwatch": "秒表",
+        "csv": "CSV",
+        "text": "文本",
+        "regex": "正则",
+        "play": "播放",
+        "record": "录屏"
       },
       "capture": {
         "region": "区域",
@@ -886,7 +1228,7 @@
     },
     "onboarding": {
       "title": "首次使用",
-      "welcome": "欢迎来到浮屿",
+      "welcome": "欢迎来到FloatIsland",
       "intro": "在桌面边缘，留一处对话、工具与灵感的空间。",
       "skip": "稍后设置",
       "back": "返回",
@@ -904,22 +1246,29 @@
       "settings": "按你习惯",
       "settingsHint": "角色、停靠与快捷键自由调整",
       "saveError": "保存未成功，请重试。",
+      "shortcutDeferred": "部分快捷键被占用，暂未启用。你可以正常使用应用，稍后到设置中更换快捷键。",
       "reopen": "重新查看使用引导"
     },
+    "shortcutInput": {
+      "record": "录入",
+      "recording": "按下组合键",
+      "hint": "可直接编辑，或点击录入后按下组合键；Escape 取消。"
+    },
     "tray": {
-      "show": "显示浮屿",
-      "hide": "隐藏浮屿",
+      "show": "显示FloatIsland",
+      "hide": "隐藏FloatIsland",
       "settings": "打开设置",
       "top": "窗口置顶",
       "logs": "打开日志文件夹",
-      "restart": "重启浮屿",
+      "restart": "重启FloatIsland",
       "quit": "退出"
     },
     "download": {
       "tabs": {
         "file": "文件",
         "media": "视频 / 音频",
-        "history": "任务与历史"
+        "history": "任务与历史",
+        "torrent": "BT／磁力"
       },
       "urls": "网址",
       "urlsPlaceholder": "粘贴网址，每行一个",
@@ -965,10 +1314,499 @@
         "downloading": "下载",
         "merging": "合并音画",
         "converting": "处理媒体",
-        "completed": "完成"
+        "completed": "完成",
+        "metadata": "获取元数据",
+        "verifying": "校验与提交",
+        "seeding": "做种"
       },
       "maxHeight": "画质上限",
-      "diagnostics": "诊断信息"
+      "diagnostics": "诊断信息",
+      "returnToSource": "请返回原站重新获取下载链接；此任务无法直接续传。",
+      "defaultDirectory": "默认下载目录",
+      "lyrics": "保存歌词"
+    },
+    "workbuddy": {
+      "edition": "WorkBuddy 版本",
+      "cn": "国内版",
+      "intl": "国际版",
+      "program": "程序路径",
+      "config": "配置目录"
+    },
+    "viewport": {
+      "reset": "恢复默认窗口大小"
+    },
+    "music": {
+      "search": "搜索",
+      "library": "我的音乐",
+      "playing": "正在播放",
+      "system": "系统播放",
+      "source": "音乐来源",
+      "query": "歌曲或歌手",
+      "local": "本地音乐",
+      "restricted": "需要授权",
+      "favorite": "收藏",
+      "more": "更多操作",
+      "addQueue": "加入队列",
+      "up": "上移",
+      "down": "下移",
+      "remove": "移除",
+      "addPlaylist": "加入「{{name}}」",
+      "import": "导入音乐",
+      "newPlaylist": "新建歌单",
+      "previousPage": "上一页",
+      "nextPage": "下一页",
+      "collection": "音乐分类",
+      "favorites": "收藏",
+      "rename": "重命名歌单",
+      "deletePlaylist": "删除歌单",
+      "playlistName": "歌单名称",
+      "save": "保存",
+      "findMusic": "找些音乐",
+      "qualityUnknown": "音质未知",
+      "lyrics": "歌词",
+      "queue": "队列",
+      "lyricsUnavailable": "歌词暂不可用",
+      "noLyrics": "暂无歌词",
+      "shuffle": "随机播放",
+      "repeat": "循环播放",
+      "volume": "音量",
+      "loading": "正在加载音频…",
+      "noResults": "没有匹配的歌曲",
+      "playTrack": "播放 {{title}}",
+      "provider": {
+        "netease": "网易云音乐",
+        "qq": "QQ 音乐",
+        "migu": "咪咕音乐",
+        "local": "本地音乐",
+        "kuwo": "酷我",
+        "kugou": "酷狗",
+        "qianqian": "千千"
+      },
+      "sources": {
+        "title": "音源管理",
+        "all": "全部音源",
+        "builtin": "内置",
+        "importFile": "导入音源文件",
+        "importLink": "导入音源链接",
+        "address": "HTTPS 音源或订阅地址",
+        "enable": "启用 {{name}}",
+        "search": "搜索",
+        "playback": "完整播放",
+        "lyrics": "歌词",
+        "unknown": "未验证",
+        "passed": "已验证",
+        "failed": "不可用",
+        "detect": "检测音源",
+        "update": "更新",
+        "rollback": "恢复上一版本",
+        "delete": "移除音源",
+        "partial": "{{count}} 个音源未响应",
+        "choose": "选择其他音源",
+        "playlist": "歌单",
+        "download": "下载"
+      }
+    },
+    "library": {
+      "add": "添加",
+      "add-file": "收藏文件",
+      "add-folder": "收藏文件夹",
+      "add-app": "收藏应用",
+      "addDirectory": "添加目录",
+      "directories": "搜索目录",
+      "refresh": "刷新",
+      "save": "保存",
+      "read": "阅读",
+      "open": "打开",
+      "reveal": "所在位置",
+      "rebind": "重新定位",
+      "title": "名称",
+      "url": "网址",
+      "group": "分组",
+      "note": "备注",
+      "tags": "标签（逗号分隔）",
+      "pin": "置顶",
+      "type": "类型",
+      "allGroups": "全部分组",
+      "unavailable": "文件不可用，可重新定位",
+      "saveArticle": "保存文章",
+      "closeReader": "关闭阅读",
+      "highlight": "高亮选中内容",
+      "highlights": "高亮摘录",
+      "cacheImages": "缓存图片",
+      "import": "导入",
+      "export": "导出",
+      "openSelected": "打开选中项",
+      "moveUp": "上移",
+      "moveDown": "下移",
+      "autoRefresh": "每 15 分钟刷新",
+      "allFeeds": "全部订阅",
+      "unread": "仅未读",
+      "markRead": "标为已读",
+      "markUnread": "标为未读",
+      "templates": "模板",
+      "fromHistory": "从历史创建",
+      "untitled": "未命名",
+      "templateText": "模板内容",
+      "linkTodo": "关联待办",
+      "linkNote": "关联便签",
+      "due": "提醒时间",
+      "enableReminder": "启用提醒",
+      "notified": "已提醒",
+      "enabled": "已启用",
+      "disabled": "未启用",
+      "focus": "专注",
+      "workMinutes": "工作（分钟）",
+      "restMinutes": "休息（分钟）",
+      "nextPhase": "开始下一阶段",
+      "scan": "查找重复",
+      "trashSelected": "移入回收站",
+      "trashConfirm": "将选中的 {{count}} 个文件移入回收站？每组至少保留一个。",
+      "noDuplicates": "未发现内容相同的文件",
+      "hash": "指纹",
+      "duplicates": "重复文件",
+      "tabs": {
+        "all": "收藏",
+        "reading": "阅读",
+        "workspaces": "工作空间",
+        "feeds": "订阅",
+        "notes": "便签",
+        "todo": "待办",
+        "reminders": "提醒",
+        "files": "文件库",
+        "books": "书架",
+        "sources": "书源",
+        "scopes": "文件搜索"
+      },
+      "kind": {
+        "all": "全部",
+        "url": "网址",
+        "file": "文件",
+        "folder": "文件夹",
+        "app": "应用"
+      },
+      "phase": {
+        "work": "工作",
+        "rest": "休息"
+      },
+      "saveTemplate": "保存为模板",
+      "linkedTodo": "关联待办",
+      "recoveredData": "收藏数据无法读取，原文件已保留：{{path}}",
+      "none": "不关联",
+      "files": {
+        "up": "上一级",
+        "newFolder": "新建文件夹",
+        "rename": "重命名",
+        "move": "移动",
+        "undo": "撤销入库",
+        "export": "移出收藏库",
+        "trash": "移入回收站",
+        "root": "收藏库位置",
+        "sort": "排序",
+        "name": "名称",
+        "modified": "修改时间",
+        "size": "大小",
+        "select": "选择 {{name}}"
+      },
+      "edit": "编辑"
+    },
+    "reader": {
+      "theme": "阅读主题",
+      "dark": "深色",
+      "warm": "暖色",
+      "light": "浅色",
+      "settings": "阅读设置",
+      "lineHeight": "行距",
+      "margin": "边距",
+      "font": "字体",
+      "find": "文内查找",
+      "original": "版式预览",
+      "pages": "切换分页",
+      "remove": "删除书签",
+      "focus": "专注阅读",
+      "document": "文档阅读器",
+      "systemOnly": "此格式已保存，可用系统应用打开。",
+      "chapters": "目录",
+      "search": "搜索书籍",
+      "importSource": "导入书源",
+      "sourceJson": "书源 JSON 或地址",
+      "downloadBook": "保存到书架",
+      "enableSource": "启用 {{name}}",
+      "detect": "检测书源",
+      "next": "下一页",
+      "health": {
+        "unverified": "未验证",
+        "available": "已连接",
+        "failed": "不可用"
+      },
+      "sourceType": "来源类型",
+      "originalSite": "原站浏览",
+      "websiteCapabilities": "原站浏览／登录／下载",
+      "aggregateCapabilities": "聚合书源",
+      "note": "备注",
+      "page": "页",
+      "zoom": "缩放",
+      "fit": "适合宽度",
+      "matches": "查找结果",
+      "noMatches": "没有找到匹配文字",
+      "searching": "正在查找…",
+      "bookmark": "书签／高亮"
+    },
+    "workspace": {
+      "pages": {
+        "chat": "对话",
+        "tools": "工具",
+        "music": "音乐",
+        "reading": "阅读",
+        "download": "下载"
+      },
+      "reading": {
+        "search": "搜书",
+        "books": "书架",
+        "files": "本地阅读",
+        "sources": "书源"
+      },
+      "music": {
+        "search": "搜歌",
+        "library": "歌单",
+        "local": "本地音乐",
+        "playing": "正在播放",
+        "sources": "音源"
+      }
+    },
+    "enhance": {
+      "import": {
+        "files": "导入文件",
+        "folder": "导入文件夹",
+        "rescan": "重新扫描",
+        "hint": "拖入文件或文件夹即可导入，原文件保留在原处",
+        "scanning": "正在扫描 · 已找到 {{count}} 个文件",
+        "done": "已导入 {{count}} 个文件 · 原文件保留"
+      },
+      "result": {
+        "useWith": "交给工具",
+        "dropInput": "也可拖入文件，或直接粘贴内容"
+      },
+      "bt": {
+        "hint": "磁力链接或种子 → 获取文件目录 → 勾选文件 → 开始下载。也可拖入 .torrent。",
+        "magnet": "磁力链接或分享文本",
+        "placeholder": "粘贴 magnet:?xt=urn:btih:… 或包含磁力链接的分享文本",
+        "import": "导入种子",
+        "inspect": "获取文件目录",
+        "metadata": "正在获取元数据，需要可连接的节点…",
+        "start": "下载所选文件",
+        "noSeed": "默认完成后停止做种；可在下载设置中调整"
+      },
+      "download": {
+        "search": "搜索任务或链接",
+        "filter": "按状态筛选",
+        "all": "全部状态",
+        "files": "文件目录",
+        "peers": "连接",
+        "settings": "下载设置",
+        "downloadLimit": "BT 下载限速（KB/s）",
+        "uploadLimit": "BT 上传限速（KB/s）",
+        "seed": "完成后继续做种",
+        "seedMinutes": "最长做种（分钟）",
+        "seedRatio": "目标分享比例",
+        "limitHint": "0 表示不限速。做种时长或比例达到任一条件即停止。",
+        "batch": {
+          "pause": "暂停所选",
+          "resume": "继续／重试",
+          "cancel": "取消所选",
+          "remove": "移除记录"
+        },
+        "startHint": "粘贴多行链接或分享文本，先预览任务与保存位置。视频先分析，BT 先选文件。",
+        "placeholder": "粘贴 HTTP 链接、视频分享链接或 magnet 链接…",
+        "new": "新建下载／识别链接",
+        "startFiles": "开始 {{count}} 个文件下载"
+      },
+      "music": {
+        "share": "粘贴网易云、QQ 歌单链接或分享文本",
+        "previewImport": "预览导入",
+        "category": "歌单分类",
+        "allCategories": "全部分类",
+        "discover": "发现歌单",
+        "mine": "我的歌单",
+        "enableSource": "启用所选音源",
+        "previewCount": "{{count}} 首歌曲 · {{invalid}} 项异常",
+        "importSelected": "导入／更新 {{count}} 首",
+        "filter": "筛选本页歌单",
+        "viewSongs": "查看歌曲",
+        "startHint": "点击“发现歌单”获取目录，或粘贴分享链接预览导入。播放和下载按歌曲实际可用能力提供。",
+        "download": "下载",
+        "playQuality": "播放音质",
+        "downloadQuality": "下载音质",
+        "downloadSettings": "下载设置",
+        "format": "保存格式",
+        "original": "原格式（不转码）",
+        "queued": "{{count}} 首歌曲已加入下载任务",
+        "viewDownloads": "查看下载任务",
+        "downloadPlaylist": "下载歌单",
+        "updatePlaylist": "更新歌单",
+        "fallback": "未达到所选音质，已使用来源实际提供的音频",
+        "quality": {
+          "auto": "自动",
+          "standard": "标准",
+          "high": "高品质",
+          "lossless": "无损",
+          "hires": "Hi-Res"
+        },
+        "relocate": "重新定位文件",
+        "importFile": "导入歌单文件",
+        "exportPlaylist": "导出歌单",
+        "searchPlaylists": "搜索网上歌单",
+        "searchPlaylistHint": "歌单关键词，例如轻音乐、夜跑",
+        "librarySearch": "搜索歌曲、歌手或专辑",
+        "sort": "排序",
+        "originalOrder": "歌单顺序",
+        "titleOrder": "歌曲名称",
+        "artistOrder": "歌手",
+        "favoritePlaylist": "收藏歌单",
+        "missing": "文件不可用，重新定位"
+      },
+      "save": "保存设置",
+      "reading": {
+        "continue": "继续阅读",
+        "searchShelf": "书名、作者或文件名",
+        "sort": "排序",
+        "recent": "最近阅读",
+        "title": "书名",
+        "progress": "阅读进度",
+        "empty": "选择上方“导入书籍”或“导入文件夹”，也可以直接拖入。原文件保留在原位置。",
+        "cached": "已缓存 · 离线可读",
+        "selectChapter": "选择章节：{{name}}",
+        "selectAll": "全选章节",
+        "cacheSelected": "缓存所选章节"
+      },
+      "data": {
+        "format": "格式化",
+        "minify": "压缩 JSON",
+        "stringify": "转为 JSON 字符串",
+        "path": "JSON 路径",
+        "query": "查询",
+        "pathHint": "支持 $.name、$.items[*]、$[0]；查询不会执行代码。",
+        "base64Hint": "输入文字或 Base64；编码文件请直接导入或拖入。",
+        "decodedBytes": "已解码 {{count}} 字节",
+        "ignoreWhitespace": "忽略行首尾空白"
+      },
+      "utility": {
+        "swap": "交换单位",
+        "favorite": "收藏换算",
+        "favorites": "常用换算",
+        "more": "更多设置与历史",
+        "precision": "有效数字",
+        "noRepeat": "不重复抽取",
+        "resetDraw": "重新开始本轮",
+        "history": "抽取历史",
+        "quantity": "生成数量",
+        "entropy": "估算组合熵：{{bits}} bit",
+        "paletteExport": "导出色板",
+        "imageColor": "图片取色",
+        "imageColorHint": "点击图片中的位置取色",
+        "addZone": "添加时区"
+      },
+      "qr": {
+        "generate": "生成二维码",
+        "recognize": "识别二维码",
+        "template": "内容模板",
+        "text": "文字",
+        "url": "网址",
+        "wifi": "Wi-Fi",
+        "password": "Wi-Fi 密码",
+        "security": "加密类型",
+        "open": "无密码",
+        "hidden": "隐藏网络",
+        "screenshot": "截图识别"
+      },
+      "timers": {
+        "independent": "独立计时",
+        "timer": "计时器",
+        "name": "计时名称，例如煮茶",
+        "add": "添加计时",
+        "focusHistory": "专注记录"
+      },
+      "templates": {
+        "import": "导入模板",
+        "export": "导出模板",
+        "preview": "待导入 {{count}} 个模板；相同 ID 更新，其他模板保留。"
+      },
+      "notes": {
+        "empty": "点击“新建便签”开始记录。支持 Markdown、标签和自动保存。"
+      },
+      "reminders": {
+        "repeat": "重复提醒",
+        "none": "不重复",
+        "daily": "每天",
+        "weekly": "每周",
+        "failed": "通知发送失败",
+        "retry": "重试通知"
+      },
+      "todos": {
+        "all": "全部待办",
+        "active": "未完成",
+        "done": "完成历史",
+        "filter": "状态筛选",
+        "sort": "排序",
+        "created": "最近创建",
+        "due": "截止时间",
+        "priority": "优先级",
+        "completed": "完成时间"
+      },
+      "image": {
+        "before": "原图",
+        "after": "编辑结果",
+        "resize": "调整尺寸",
+        "width": "宽度",
+        "height": "高度",
+        "keepRatio": "保持比例",
+        "apply": "应用尺寸",
+        "format": "输出格式",
+        "quality": "质量"
+      }
+    },
+    "ui": {
+      "taskPreview": "任务预览",
+      "downloadPreviewHint": "粘贴链接后识别，确认任务再开始下载。",
+      "originalSites": "原站入口",
+      "musicSearchHint": "输入歌曲或歌手，搜索后即可播放、收藏或下载。",
+      "expand": "展开工作区",
+      "backShelf": "返回书架",
+      "newDownload": "新建下载",
+      "mediaTitle": "视频、音频与播放列表",
+      "mediaHint": "粘贴网页链接，分析后选择画质、音频格式、字幕和封面。",
+      "mediaSettings": "字幕、封面与更多设置",
+      "mediaPreviewHint": "单个视频和播放列表均可分析，选择需要的项目后开始下载。",
+      "importPlaylist": "导入歌单",
+      "playlistHint": "选择音源和分类，或输入关键词搜索。也可以导入歌单链接或文件。",
+      "importImage": "导入图片",
+      "preview": "预览",
+      "captureEmpty": "截图或导入图片",
+      "captureHint": "区域、全屏或长截图；可直接拖入图片，识别后复制、翻译或保存。",
+      "captureCancelled": "已取消截图，可以重新选择或导入图片。",
+      "pinControls": "贴屏管理",
+      "customizeDock": "停靠与快捷键",
+      "qrContent": "内容",
+      "qrResult": "识别结果",
+      "qrTextPlaceholder": "输入文字或链接",
+      "qrUrlPlaceholder": "https://example.com",
+      "qrBytes": "{{count}} / 2000 字节",
+      "emptyShelf": "书架暂无书籍",
+      "archiveInput": "拖入文件或选择 ZIP"
+    },
+    "stage": {
+      "mood": {
+        "idle": "准备好了",
+        "working": "正在处理",
+        "waiting": "等你确认",
+        "finished": "完成了",
+        "error": "出了点问题",
+        "listening": "在听",
+        "thinking": "思考中",
+        "warning": "提醒一下",
+        "curious": "有点好奇",
+        "thanks": "谢谢你",
+        "surprised": "有新发现"
+      }
     }
   },
   "standalone": {
@@ -1065,10 +1903,10 @@
       "system": "跟随系统"
     },
     "shape": {
-      "title": "浮屿形态",
-      "subtitle": "选择浮屿的外观形态",
+      "title": "FloatIsland形态",
+      "subtitle": "选择FloatIsland的外观形态",
       "notch": "刘海屏",
-      "pill": "浮屿",
+      "pill": "FloatIsland",
       "notchDesc": "贴于屏幕顶部，模拟刘海屏效果",
       "pillDesc": "悬浮于屏幕中，胶囊形状更灵动"
     },
@@ -1108,13 +1946,13 @@
     },
     "welcome": {
       "title": "欢迎使用 eIsland",
-      "subtitle": "配置完成，开始体验浮屿吧",
-      "desc": "一款灵感来自 Apple 浮屿的 Windows 桌面浮窗小组件，\n让你的桌面更加灵动、高效。"
+      "subtitle": "配置完成，开始体验FloatIsland吧",
+      "desc": "一款灵感来自 Apple FloatIsland的 Windows 桌面浮窗小组件，\n让你的桌面更加灵动、高效。"
     },
     "sections": {
       "basic": {
         "title": "基本交互",
-        "desc": "通过鼠标与浮屿进行交互，解锁不同状态。"
+        "desc": "通过鼠标与FloatIsland进行交互，解锁不同状态。"
       },
       "music": {
         "title": "音乐与歌词",
@@ -1126,7 +1964,7 @@
       },
       "settings": {
         "title": "个性化设置",
-        "desc": "在扩展面板的设置中自定义你的浮屿体验。"
+        "desc": "在扩展面板的设置中自定义你的FloatIsland体验。"
       },
       "auth": {
         "title": "账号服务",
@@ -1138,19 +1976,19 @@
     "interactionCards": {
       "scroll": {
         "title": "基本交互",
-        "desc": "在浮屿顶部滚动鼠标滚轮，切换浮屿状态。"
+        "desc": "在FloatIsland顶部滚动鼠标滚轮，切换FloatIsland状态。"
       },
       "hover": {
         "title": "悬停展开",
-        "desc": "将鼠标悬停在浮屿上方，即可展开预览面板。"
+        "desc": "将鼠标悬停在FloatIsland上方，即可展开预览面板。"
       },
       "click": {
         "title": "单击操作",
-        "desc": "单击浮屿，打开完整的操作面板。"
+        "desc": "单击FloatIsland，打开完整的操作面板。"
       },
       "retract": {
         "title": "自动收回",
-        "desc": "将鼠标移开浮屿，自动收回至待机状态。"
+        "desc": "将鼠标移开FloatIsland，自动收回至待机状态。"
       }
     },
     "musicCards": {
@@ -1192,23 +2030,23 @@
       },
       "opacity": {
         "title": "透明度调整",
-        "desc": "自定义浮屿的背景透明度。"
+        "desc": "自定义FloatIsland的背景透明度。"
       },
       "position": {
         "title": "位置微调",
-        "desc": "微调浮屿在屏幕顶部的水平与垂直偏移。"
+        "desc": "微调FloatIsland在屏幕顶部的水平与垂直偏移。"
       },
       "autostart": {
         "title": "开机自启",
-        "desc": "设置浮屿是否随系统启动自动运行。"
+        "desc": "设置FloatIsland是否随系统启动自动运行。"
       },
       "shortcut": {
         "title": "快捷键",
-        "desc": "通过全局快捷键快速控制浮屿。"
+        "desc": "通过全局快捷键快速控制FloatIsland。"
       }
     },
     "hints": {
-      "basicWheel": "在此区域附近滚动滚轮可切换浮屿状态",
+      "basicWheel": "在此区域附近滚动滚轮可切换FloatIsland状态",
       "musicWheel": "滚动查看更多音乐功能",
       "toolsWheel": "滚动查看更多实用工具",
       "settingsWheel": "滚动查看个性化设置"
@@ -1271,7 +2109,7 @@
         },
         "shortcut": {
           "toggleIsland": "隐藏/显示",
-          "quitIsland": "关闭浮屿",
+          "quitIsland": "关闭FloatIsland",
           "resetPosition": "还原默认位置快捷键",
           "screenshot": "选区截图",
           "switchSong": "切换歌曲"
@@ -1355,9 +2193,9 @@
       "switchToPage": "切换到{{label}}页面"
     },
     "actions": {
-      "hideIsland": "隐藏浮屿",
+      "hideIsland": "隐藏FloatIsland",
       "hide": "隐藏",
-      "quitIsland": "退出浮屿",
+      "quitIsland": "退出FloatIsland",
       "quit": "退出"
     },
     "tools": {
@@ -1558,7 +2396,7 @@
       "hide": "隐藏",
       "ignore": "忽略",
       "switch": "切换",
-      "switchCliState": "切换到浮屿",
+      "switchCliState": "切换到FloatIsland",
       "snooze5m": "稍后 5m",
       "snooze15m": "稍后 15m",
       "snooze1h": "稍后 1h",
@@ -2146,7 +2984,7 @@
       "mediaTypeVideo": "视频",
       "codec": "编码",
       "fps": "帧率",
-      "setAsIslandBackground": "设为浮屿背景",
+      "setAsIslandBackground": "设为FloatIsland背景",
       "exifTitle": "EXIF 信息",
       "exifEmpty": "未读取到 EXIF 信息",
       "make": "厂商",
@@ -2167,8 +3005,8 @@
       "saveAsCanceled": "已取消保存",
       "saveAsFailed": "保存 {{name}} 失败，请稍后重试",
       "removedSelected": "已删除 {{count}} 个媒体文件",
-      "setIslandBackgroundSuccess": "已将 {{name}} 设为浮屿背景",
-      "setIslandBackgroundFailed": "设置浮屿背景失败，请稍后重试"
+      "setIslandBackgroundSuccess": "已将 {{name}} 设为FloatIsland背景",
+      "setIslandBackgroundFailed": "设置FloatIsland背景失败，请稍后重试"
     }
   },
   "sliderCaptcha": {
@@ -2649,7 +3487,7 @@
       },
       "translate": {
         "title": "文本翻译",
-        "subtitle": "由腾讯云提供机器翻译服务",
+        "subtitle": "免账号在线文字翻译",
         "inputPlaceholder": "输入要翻译的文本…",
         "outputPlaceholder": "翻译结果将显示在此处",
         "translateBtn": "翻译",
@@ -2669,7 +3507,13 @@
           "de": "德语",
           "es": "西班牙语",
           "ru": "俄语"
-        }
+        },
+        "serviceUnavailable": "免费翻译服务暂不可用或额度已用完，请稍后重试。",
+        "invalidText": "请输入不超过 5,000 字的文本。",
+        "invalidLanguage": "暂不支持这组语言。",
+        "networkError": "翻译连接失败或超时，请检查网络后重试。",
+        "copyError": "复制失败，请重试。",
+        "cancel": "取消"
       },
       "fileService": {
         "hash": {
@@ -3184,11 +4028,11 @@
         "enginePlugin": "插件模式",
         "engineJs": "JS 模式",
         "ocrEngineTitle": "OCR 识别方案",
-        "ocrEngineHint": "本地 OCR 使用 Tesseract.js 在设备上识别，不上传图片；服务端 OCR 使用云端识别和计费。",
-        "ocrEngineLocal": "本地 OCR",
-        "ocrEngineServer": "服务端 OCR",
+        "ocrEngineHint": "本地中英文 OCR 无需登录，不上传图片；图片翻译仅发送识别出的文字。云端方案另需服务账号。",
+        "ocrEngineLocal": "本地 OCR 与文字翻译",
+        "ocrEngineServer": "云端 OCR",
         "translateTitle": "截图翻译语言",
-        "translateHint": "配置截图翻译的源语言和目标语言。"
+        "translateHint": "截图会发送到云端进行文字识别与翻译。"
       },
       "notifications": {
         "configChanged": {
@@ -3204,7 +4048,7 @@
       },
       "layout": {
         "previewTitle": "总览布局预览",
-        "previewHint": "实时显示左右控件组合后的 Expand 态浮屿样式，切换下方控件可即时预览。",
+        "previewHint": "实时显示左右控件组合后的 Expand 态FloatIsland样式，切换下方控件可即时预览。",
         "widgetPickerTitle": "控件组合",
         "widgetPickerHint": "分别选择左右两侧展示的控件，切换后自动保存。",
         "leftWidget": "左侧控件",
@@ -3316,9 +4160,9 @@
       },
       "hideProcess": {
         "title": "隐藏窗口管理",
-        "hint": "当下方黑名单进程对应窗口处于焦点状态时，将立即隐藏浮屿；失去焦点后自动显示。",
+        "hint": "当下方黑名单进程对应窗口处于焦点状态时，将立即隐藏FloatIsland；失去焦点后自动显示。",
         "fullscreenTitle": "全屏时自动隐藏",
-        "fullscreenHint": "检测到任意窗口进入全屏后自动隐藏浮屿，退出全屏后自动显示。",
+        "fullscreenHint": "检测到任意窗口进入全屏后自动隐藏FloatIsland，退出全屏后自动显示。",
         "fullscreenToggle": "启用全屏窗口自动隐藏",
         "runningTitle": "当前运行的窗口",
         "runningHint": "在列表中点击可将窗口加入 / 移出黑名单，支持按进程名搜索。",
@@ -3329,12 +4173,12 @@
         "removeWindow": "移除该窗口"
       },
       "position": {
-        "title": "浮屿位置偏移",
+        "title": "FloatIsland位置偏移",
         "hint": "调整后自动保存，重启后会按该位置校准。",
         "quickAdjustTitle": "快速微调",
-        "quickAdjustHint": "每次按钮点击以 10px 步进移动浮屿位置，并自动保存。",
+        "quickAdjustHint": "每次按钮点击以 10px 步进移动FloatIsland位置，并自动保存。",
         "displayTitle": "显示器选择",
-        "displayHint": "多显示器环境可指定浮屿显示器。",
+        "displayHint": "多显示器环境可指定FloatIsland显示器。",
         "displayLabel": "目标显示器",
         "displayPrimaryOption": "主显示器（推荐）",
         "displayOption": "显示器 {{index}}（{{width}}×{{height}}）",
@@ -3364,7 +4208,7 @@
         "light": "浅色模式",
         "system": "跟随系统",
         "builtinWallpaper": "内置壁纸",
-        "builtinWallpaperHint": "选择一张内置壁纸作为浮屿背景",
+        "builtinWallpaperHint": "选择一张内置壁纸作为FloatIsland背景",
         "customImage": "自定义图片",
         "customImageHint": "从本地选择图片，支持 jpg / png / gif / webp",
         "changeImage": "更换图片",
@@ -3388,7 +4232,7 @@
         "previewAlt": "背景预览",
         "previewLabel": "实时预览",
         "bgCardTitle": "壁纸背景",
-        "bgCardSubtitle": "选择内置壁纸，或从本地导入图片 / 视频作为浮屿背景",
+        "bgCardSubtitle": "选择内置壁纸，或从本地导入图片 / 视频作为FloatIsland背景",
         "effectCardTitle": "背景显示效果",
         "effectCardSubtitle": "调整背景的透明度与模糊度",
         "opacityTitle": "背景透明度",
@@ -3399,14 +4243,14 @@
         "videoPerfTitle": "性能",
         "imageOpacityHint": "背景图片透明度（0% - 100%），数值越高图片越明显",
         "imageBlurHint": "背景图片模糊度（0px - 20px），数值越高越模糊",
-        "islandOpacityTitle": "浮屿透明度",
+        "islandOpacityTitle": "FloatIsland透明度",
         "islandOpacityHint": "数值越低越透明（10% - 100%）",
         "autoDimTitle": "闲置自动降低不透明度",
-        "autoDimHint": "开启后，浮屿在指定时间内无鼠标操作时将自动降低不透明度，鼠标移入后恢复",
+        "autoDimHint": "开启后，FloatIsland在指定时间内无鼠标操作时将自动降低不透明度，鼠标移入后恢复",
         "autoDimToggle": "启用闲置自动降低不透明度",
         "autoDimDelayHint": "无操作多少秒后自动降低（1 - 120 秒）",
         "uiFontTitle": "界面字体",
-        "uiFontHint": "选择浮屿界面使用的字体",
+        "uiFontHint": "选择FloatIsland界面使用的字体",
         "lyricsFontTitle": "歌词字体",
         "lyricsFontHint": "选择歌词显示使用的字体",
         "fontDefault": "系统默认",
@@ -3423,15 +4267,15 @@
       },
       "behavior": {
         "mouseLeaveTitle": "鼠标移开自动收回",
-        "mouseLeaveHint": "启用后，鼠标离开浮屿时将自动回到空闲状态",
+        "mouseLeaveHint": "启用后，鼠标离开FloatIsland时将自动回到空闲状态",
         "expandLeaveToggle": "展开态（Expand）鼠标移开后自动收回",
         "maxExpandLeaveToggle": "最大展开态（MaxExpand）鼠标移开后自动收回",
         "idleClickExpandTitle": "空闲态点击展开",
-        "idleClickExpandHint": "启用后，鼠标悬停在浮屿上不会自动展开，需要点击才能展开，后续交互不受影响",
+        "idleClickExpandHint": "启用后，鼠标悬停在FloatIsland上不会自动展开，需要点击才能展开，后续交互不受影响",
         "idleClickExpandToggle": "空闲状态下点击展开（禁用悬停自动展开）",
         "windowModeTitle": "独立窗口模式",
-        "windowModeHint": "启用后，待办事项、倒数日、设置将在独立窗口中打开，而非浮屿内",
-        "integratedMode": "集成在浮屿中",
+        "windowModeHint": "启用后，待办事项、倒数日、设置将在独立窗口中打开，而非FloatIsland内",
+        "integratedMode": "集成在FloatIsland中",
         "standaloneMode": "独立窗口",
         "hoverScreenshotModeTitle": "悬停界面截图按钮模式",
         "hoverScreenshotModeHint": "配置 hover 界面的截图按钮触发选区截图或显示器截图",
@@ -3439,16 +4283,16 @@
         "hoverScreenshotModeRegion": "选区截图",
         "hoverScreenshotModeDisplay": "显示器截图",
         "shapeModeTitle": "岛屿形态",
-        "shapeModeHint": "切换浮屿的外观形态，刘海屏贴于屏幕顶部，浮屿为胶囊形状",
+        "shapeModeHint": "切换FloatIsland的外观形态，刘海屏贴于屏幕顶部，FloatIsland为胶囊形状",
         "shapeModeNotch": "刘海屏",
-        "shapeModePill": "浮屿"
+        "shapeModePill": "FloatIsland"
       },
       "animation": {
-        "springTitle": "浮屿弹性动画",
+        "springTitle": "FloatIsland弹性动画",
         "springHint": "关闭后，展开和收起动画将变得更加平滑内敛，消除弹跳感",
         "springToggle": "启用弹性动画",
-        "animSpeedTitle": "浮屿动画速度",
-        "animSpeedHint": "控制浮屿状态切换时的过渡动画快慢",
+        "animSpeedTitle": "FloatIsland动画速度",
+        "animSpeedHint": "控制FloatIsland状态切换时的过渡动画快慢",
         "animSpeed_slow": "慢",
         "animSpeed_medium": "中",
         "animSpeed_fast": "快",
@@ -3516,15 +4360,15 @@
       },
       "autostart": {
         "toolsHint": "常用应用操作与日志工具",
-        "quit": "关闭浮屿",
-        "restart": "重启浮屿",
+        "quit": "关闭FloatIsland",
+        "restart": "重启FloatIsland",
         "openLogs": "打开日志文件夹",
         "clearLogs": "清理日志缓存",
         "logsClearing": "清理中…",
         "logsCleared": "已清理 {{kb}} KB",
         "logsClearFailed": "清理失败",
         "title": "开机自启",
-        "hint": "设置系统启动时是否自动运行浮屿",
+        "hint": "设置系统启动时是否自动运行FloatIsland",
         "options": {
           "disabled": "禁用",
           "enabled": "启用",
@@ -3532,7 +4376,7 @@
         },
         "status": {
           "disabled": "当前已禁用开机自启。",
-          "enabled": "系统登录后将自动启动浮屿。",
+          "enabled": "系统登录后将自动启动FloatIsland。",
           "highPriority": "以高优先级启动，更早完成加载。"
         }
       }
@@ -3625,7 +4469,7 @@
     },
     "notification": {
       "pageTitle": "通知设置",
-      "pageHint": "配置浮屿通知提醒与展示行为。",
+      "pageHint": "配置FloatIsland通知提醒与展示行为。",
       "sound": {
         "title": "通知音效",
         "hint": "通知触发时播放一次提示音。",
@@ -3633,7 +4477,7 @@
       },
       "agentNotification": {
         "title": "Agent 启动通知",
-        "hint": "检测到桌面 Agent 启动或关闭时弹出浮屿通知。",
+        "hint": "检测到桌面 Agent 启动或关闭时弹出FloatIsland通知。",
         "toggle": "启用 Agent 启动通知"
       }
     },
@@ -3876,16 +4720,16 @@
           "hint": "点击“修改”后按下组合键（如 Alt+X、Ctrl+Shift+H）"
         },
         "quitApp": {
-          "title": "关闭浮屿快捷键",
-          "hint": "按下此快捷键将立即关闭浮屿应用（如 Alt+Q、Ctrl+Shift+Q）"
+          "title": "关闭FloatIsland快捷键",
+          "hint": "按下此快捷键将立即关闭FloatIsland应用（如 Alt+Q、Ctrl+Shift+Q）"
         },
         "resetPosition": {
           "title": "还原默认位置快捷键",
-          "hint": "按下此快捷键将把浮屿恢复到默认顶部居中位置"
+          "hint": "按下此快捷键将把FloatIsland恢复到默认顶部居中位置"
         },
         "toggleTray": {
           "title": "隐藏/显示托盘图标快捷键",
-          "hint": "按下此快捷键将隐藏或显示系统托盘中的浮屿图标"
+          "hint": "按下此快捷键将隐藏或显示系统托盘中的FloatIsland图标"
         },
         "showConfig": {
           "title": "显示配置窗口快捷键",
@@ -3893,11 +4737,11 @@
         },
         "openClipboardHistory": {
           "title": "打开剪贴板历史快捷键",
-          "hint": "按下后将打开浮屿并直接切换到剪贴板历史界面"
+          "hint": "按下后将打开FloatIsland并直接切换到剪贴板历史界面"
         },
         "togglePassthrough": {
           "title": "切换鼠标穿透快捷键",
-          "hint": "按下此快捷键将锁定或解锁鼠标穿透状态，锁定后浮屿不会拦截鼠标事件"
+          "hint": "按下此快捷键将锁定或解锁鼠标穿透状态，锁定后FloatIsland不会拦截鼠标事件"
         },
         "toggleUiLock": {
           "title": "切换 UI 状态锁定快捷键",
@@ -3909,7 +4753,7 @@
         },
         "toggleShapeMode": {
           "title": "切换形态模式快捷键",
-          "hint": "按下此快捷键将在刘海屏与浮屿形态之间快速切换"
+          "hint": "按下此快捷键将在刘海屏与FloatIsland形态之间快速切换"
         }
       },
       "capture": {
@@ -4575,7 +5419,7 @@
           "name": "Free",
           "price": "¥0 / 月",
           "desc": "基础功能可用，适合轻度日常使用。",
-          "feature1": "基础浮屿组件",
+          "feature1": "基础FloatIsland组件",
           "feature2": "常规设置与个性化",
           "feature3": "社区公开内容浏览"
         },
@@ -4745,7 +5589,7 @@
     "nav": {
       "guide": {
         "label": "使用教程",
-        "desc": "查看浮屿功能引导与操作说明。"
+        "desc": "查看FloatIsland功能引导与操作说明。"
       },
       "layout-preview": {
         "label": "布局预览",
@@ -4769,7 +5613,7 @@
       },
       "position": {
         "label": "位置校准",
-        "desc": "动态调整浮屿位置并保存"
+        "desc": "动态调整FloatIsland位置并保存"
       },
       "theme": {
         "label": "主题外观",
@@ -4785,7 +5629,7 @@
       },
       "animation": {
         "label": "软件动画",
-        "desc": "浮屿弹性动画与动画速度配置。"
+        "desc": "FloatIsland弹性动画与动画速度配置。"
       },
       "break-reminder": {
         "label": "休息提醒",
@@ -4813,7 +5657,7 @@
       },
       "notification": {
         "label": "通知设置",
-        "desc": "配置浮屿通知提醒与展示行为。"
+        "desc": "配置FloatIsland通知提醒与展示行为。"
       },
       "performance": {
         "label": "性能设置",
@@ -4869,7 +5713,7 @@
       },
       "music-whitelist": {
         "label": "播放器白名单",
-        "desc": "配置允许接入浮屿的播放器。"
+        "desc": "配置允许接入FloatIsland的播放器。"
       },
       "music-lyrics": {
         "label": "歌词源",

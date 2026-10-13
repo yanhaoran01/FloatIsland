@@ -4,9 +4,10 @@
 import { executeDataJob,type DataJob,type DataResult } from './dataOperations';
 export interface PdfInput { name: string; mime: string; bytes: Uint8Array; }
 export type UtilityJob = DataJob
-  | { kind: 'calculate'; expression: string }
+  | {kind:'base64';action:'encode'|'decode';text:string;bytes?:Uint8Array}
+  | { kind: 'calculate'; expression: string;precision?:number }
   | { kind: 'convert'; value: number; from: string; to: string }
-  | { kind: 'diff'; before: string; after: string }
+  | { kind: 'diff'; before: string; after: string;ignoreWhitespace?:boolean }
   | { kind: 'pdf'; mode: 'merge' | 'extract' | 'rotate' | 'images'; files: PdfInput[]; pages: string; rotation: number };
 export interface DiffPart { value: string; added?: boolean; removed?: boolean; count?: number; }
 
@@ -34,7 +35,12 @@ export function parsePdfPages(value: string, count: number): number[] {
  * @returns 计算文本、差异列表或导出的 PDF 字节。
  */
 export async function executeUtilityJob(job: UtilityJob): Promise<string | DiffPart[] | Uint8Array | DataResult> {
-  if(job.kind==='csv'||job.kind==='regex')return executeDataJob(job);
+  if(job.kind==='csv'||job.kind==='regex'||job.kind==='json')return executeDataJob(job);
+  if(job.kind==='base64'){
+   if(job.text.length>20_000_000||(job.bytes?.byteLength||0)>10_000_000)throw Error('text-too-large');
+   if(job.action==='decode'){const value=job.text.trim().replace(/^data:[^,]*;base64,/,'').replace(/\s/g,'');if(!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(value))throw Error('invalid-base64');return Uint8Array.from(atob(value),char=>char.charCodeAt(0));}
+   const bytes=job.bytes||new TextEncoder().encode(job.text),chunks:string[]=[];for(let i=0;i<bytes.length;i+=8192)chunks.push(String.fromCharCode(...bytes.subarray(i,i+8192)));return btoa(chunks.join(''));
+  }
   if (job.kind === 'calculate' || job.kind === 'convert') {
     const math = await import('mathjs');
     if (job.kind === 'convert') {
@@ -50,12 +56,13 @@ export async function executeUtilityJob(job: UtilityJob): Promise<string | DiffP
     });
     const result = node.compile().evaluate();
     if (typeof result !== 'number' || !Number.isFinite(result)) throw new Error('invalid-number');
-    return math.format(result, { precision: 14 });
+    if(job.precision!==undefined&&(!Number.isInteger(job.precision)||job.precision<1||job.precision>16))throw Error('invalid-number');
+    return math.format(result, { precision: job.precision||14 });
   }
   if (job.kind === 'diff') {
     if (job.before.length + job.after.length > 500_000) throw new Error('text-too-large');
     const { diffLines } = await import('diff');
-    const result = diffLines(job.before, job.after, { timeout: 2000 });
+    const result = diffLines(job.before, job.after, { timeout: 2000,ignoreWhitespace:job.ignoreWhitespace });
     if (!result) throw new Error('job-timeout');
     return result;
   }

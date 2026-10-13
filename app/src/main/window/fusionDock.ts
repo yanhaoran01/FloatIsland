@@ -1,5 +1,6 @@
 /* FusionIsland - Copyright (C) 2026 contributors. GPL-3.0. */
 /** @file fusionDock.ts @description 主进程管理贴边、自动隐藏、快捷键与位置恢复。 @author 鸡哥 */
+import {registerFusionGenie,genieTransitionActive} from './fusionGenie';
 import { app, BrowserWindow, globalShortcut, ipcMain, powerMonitor, screen } from 'electron';
 import { existsSync, mkdirSync, readFileSync, writeFileSync, renameSync, copyFileSync } from 'fs';
 import { join } from 'path';
@@ -7,6 +8,7 @@ import { broadcastFusion, isFusionView } from '../system/fusionWindows';
 import { hasFusionMedia } from '../system/fusionBrowserService';
 import { snapNativeDockEdge } from './nativeDockEdge';
 import { dockRect, type DockEdge, type DockRect } from './fusionDockGeometry';
+import { registerFusionViewport, viewportAdjusting } from './fusionViewport';
 export interface FusionDockConfig { edge: DockEdge; position: number; autoHide: boolean; delayMs: number; shortcut: string; displayId: string; }
 let getWindow: () => BrowserWindow | null = () => null;
 let config: FusionDockConfig = {edge:'top',position:.5,autoHide:true,delayMs:3000,shortcut:'Control+Alt+Space',displayId:'primary'};
@@ -46,7 +48,7 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
     const legacy=join(app.getPath('userData'),'eIsland_store','island-position-offset.json');if(existsSync(legacy))copyFileSync(legacy,legacy+'.fusion-backup-'+Date.now());persist();
   }
   const initial=getWindow()?.getBounds();if(initial)lastSize={width:initial.width,height:initial.height};
-  ready=true;
+  ready=true;registerFusionGenie(getWindow,()=>config);
   const mediaRecall=():void=>{if(hasFusionMedia() && strip){strip=false;lastOutside=Date.now();place();publish();}};
   (app as unknown as NodeJS.EventEmitter).on('fusion-media-active',mediaRecall);
   const recall=()=>{revealFusionIsland();getWindow()?.webContents.send('fusion:dock:reveal');};
@@ -54,6 +56,7 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
   const trusted=(event:Electron.IpcMainInvokeEvent)=>{if(!isFusionView(event.sender))throw Error('untrusted-view');};
   ipcMain.handle('fusion:dock:get',event=>{trusted(event);return snapshot();});
   ipcMain.handle('fusion:dock:save',(event,patch:Partial<FusionDockConfig>)=>{
+    if(viewportAdjusting())throw Error('resize-in-progress');
     trusted(event);const next={...config,...patch};
     if(patch?.edge && patch.edge!==config.edge && patch.position===undefined){positions[config.edge]=config.position;next.position=positions[patch.edge];}
     if(!patch || Object.keys(patch).some(k=>!Object.hasOwn(config,k)) || !['top','left','right'].includes(next.edge) || !Number.isFinite(next.position) || next.position<0 || next.position>1 || typeof next.autoHide!=='boolean' || !Number.isFinite(next.delayMs) || next.delayMs<1000 || next.delayMs>30000 || typeof next.shortcut!=='string' || next.shortcut.length>100 || typeof next.displayId!=='string')throw Error('invalid-dock-settings');
@@ -65,7 +68,7 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
   ipcMain.handle('fusion:dock:drag',(event,action:string)=>{
     trusted(event);const win=getWindow();if(!win || event.sender!==win.webContents)return;
     const point=screen.getCursorScreenPoint();
-    if(action==='start'){dragging={...point,bounds:win.getBounds(),moved:false};return;}
+    if(action==='start'){if(viewportAdjusting()||genieTransitionActive())return;dragging={...point,bounds:win.getBounds(),moved:false};return;}
     if(!dragging)return;
     if(action==='move'){
       if(Math.hypot(point.x-dragging.x,point.y-dragging.y)<6 && !dragging.moved)return;
@@ -79,7 +82,7 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
     if(moved){const display=screen.getDisplayNearestPoint(point),area=display.workArea;config.displayId=String(display.id);config.edge=preview||config.edge;config.position=Math.max(0,Math.min(1,config.edge==='top'?(point.x-area.x)/area.width:(point.y-area.y)/area.height));positions[config.edge]=config.position;persist();}
     preview=null;lastOutside=Date.now();place();publish();return moved;
   });
-  const timer=setInterval(()=>{const win=getWindow();if(!win||win.isDestroyed()||!win.isVisible()||dragging)return;
+  const timer=setInterval(()=>{const win=getWindow();if(!win||win.isDestroyed()||!win.isVisible()||dragging||viewportAdjusting()||genieTransitionActive())return;
     if(expanded || protectedActivity || hasFusionMedia() || !config.autoHide){lastOutside=Date.now();return;}
     const point=screen.getCursorScreenPoint(),bounds=strip ? dockRect(targetDisplay().workArea,config.edge==='top'?{width:48,height:5}:{width:5,height:48},config.edge,config.position,true) : win.getBounds();const inside=point.x>=bounds.x&&point.x<bounds.x+bounds.width&&point.y>=bounds.y&&point.y<bounds.y+bounds.height;
     if(inside){lastOutside=Date.now();}
@@ -89,5 +92,11 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
   screen.on('display-removed',resync);screen.on('display-metrics-changed',resync);powerMonitor.on('resume',resync);
   app.once('will-quit',()=>{(app as unknown as NodeJS.EventEmitter).removeListener('fusion-media-active',mediaRecall);clearInterval(timer);if(config.shortcut&&!shortcutError)globalShortcut.unregister(config.shortcut);screen.removeListener('display-removed',resync);screen.removeListener('display-metrics-changed',resync);powerMonitor.removeListener('resume',resync);});
   getWindow()?.on('hide',()=>getWindow()?.webContents.send('fusion:voice:hidden','window-hidden'));
+  registerFusionViewport({getWindow,dock:()=>({edge:config.edge,expanded,dragging:!!dragging}),commit:persist,apply:rect=>{
+    const area=targetDisplay().workArea;lastSize={width:rect.width,height:rect.height};
+    const range=config.edge==='top'?area.width-24-rect.width:area.height-24-rect.height;
+    config.position=range>0?Math.max(0,Math.min(1,(config.edge==='top'?rect.x-area.x-12:rect.y-area.y-12)/range)):.5;
+    positions[config.edge]=config.position;place();
+  }});
   place();
 }

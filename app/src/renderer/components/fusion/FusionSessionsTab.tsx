@@ -18,7 +18,7 @@
 import { useFusionPreferences } from './fusionPreferences';
 import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ArrowRight, CheckCircle2, Clock3, Plus, RefreshCw, Volume2, VolumeX } from 'lucide-react';
+import { CheckCircle2, Clock3, Plus, RefreshCw, Volume2, VolumeX } from 'lucide-react';
 import type { FusionCodexSnapshot, FusionCodexThread, FusionDshSession, FusionDshSnapshot, FusionEchoCodexSessionsSnapshot } from '../../../preload/types/fusion';
 import useIslandStore from '../../store/slices';
 import { FusionPet, type FusionPetMood } from './FusionPet';
@@ -203,7 +203,7 @@ export function FusionSessionsTab(): JSX.Element {
               {codex.threads.map((thread) => (
                 <button className="fusion-session-card" type="button" key={thread.id} onClick={() => void resumeCodex(thread)}>
                   <span className="fusion-session-card-copy"><strong>{thread.name || thread.cwd || t('fusion.external.untitled')}</strong><small>{thread.preview || thread.cwd || ''}</small></span>
-                  <ArrowRight size={15} aria-hidden="true" />
+                  
                 </button>
               ))}
             </div>
@@ -221,7 +221,7 @@ export function FusionSessionsTab(): JSX.Element {
               {dsh.sessions.map((session) => (
                 <button className="fusion-session-card" type="button" key={session.id} onClick={() => void resumeDsh(session)}>
                   <span className="fusion-session-card-copy"><strong>{session.title || session.cwd}</strong><small>{session.cwd}</small></span>
-                  <ArrowRight size={15} aria-hidden="true" />
+                  
                 </button>
               ))}
             </div>
@@ -235,13 +235,13 @@ export function FusionSessionsTab(): JSX.Element {
           {codex.pendingRequests.map((request) => (
             <article className="fusion-pending-card" key={`codex:${request.requestId}`}>
               <div><strong>{request.method === 'item/tool/requestUserInput' ? t('fusion.request.questionTitle') : t('fusion.request.approvalTitle')}</strong><p>{request.command || request.reason || request.pathSummary || t('fusion.request.noDetails')}</p><small>{t('fusion.overview.requestSource', { agent: 'Codex', project: request.cwd || codex.threads.find((thread) => thread.id === request.threadId)?.cwd || '' })}</small></div>
-              <button className="fusion-pending-open" type="button" onClick={() => void handleCodexRequest(request.threadId)}>{t('fusion.overview.handle')}<ArrowRight size={14} /></button>
+              <button className="fusion-pending-open" type="button" onClick={() => void handleCodexRequest(request.threadId)}>{t('fusion.overview.handle')}</button>
             </article>
           ))}
           {dsh.pendingRequests.map((request) => (
             <article className="fusion-pending-card" key={`dsh:${request.requestId}`}>
               <div><strong>{request.title}</strong><p>{request.description || request.toolTitle}</p><small>{t('fusion.overview.requestSource', { agent: t('fusion.provider.dsh'), project: dsh.sessions.find((session) => session.id === request.sessionId)?.cwd || '' })}</small></div>
-              <button className="fusion-pending-open" type="button" onClick={() => void handleDshRequest(request.sessionId)}>{t('fusion.overview.handle')}<ArrowRight size={14} /></button>
+              <button className="fusion-pending-open" type="button" onClick={() => void handleDshRequest(request.sessionId)}>{t('fusion.overview.handle')}</button>
             </article>
           ))}
         </section>
@@ -256,7 +256,7 @@ export function FusionSessionsTab(): JSX.Element {
         </section>
       )}
 
-      <button className="fusion-overview-chat-link" type="button" onClick={() => openChat('codex')}><CheckCircle2 size={15} />{t('fusion.overview.open')}<ArrowRight size={15} /></button>
+      <button className="fusion-overview-chat-link" type="button" onClick={() => openChat('codex')}><CheckCircle2 size={15} />{t('fusion.overview.open')}</button>
     </section>
   );
 }

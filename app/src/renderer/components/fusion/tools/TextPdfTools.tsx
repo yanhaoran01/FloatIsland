@@ -6,39 +6,29 @@ import { useTranslation } from 'react-i18next';
 import { ArrowUp, ArrowDown, X } from 'lucide-react';
 import { useToolJob } from './toolHooks';
 import {useProductFiles} from '../productStore';
-import { ToolBody, ToolResult } from './ToolControls';
+import { ToolBody, ToolResult, ToolTabs, ToolEditors } from './ToolControls';
 import { downloadToolFile, transformText } from './toolHelpers';
 import type { UtilityJob, DiffPart } from './utilityOperations';
 
 /** 普通文本处理和双栏差异比较。
  * @returns 可编辑、可导出的文本工具。
  */
-export function TextTool() {
-  const { t } = useTranslation();
-  const [text, setText] = useState('');
-  const [comparison, setComparison] = useState('');
-  const [find, setFind] = useState('');
-  const [replacement, setReplacement] = useState('');
-  const [inputError, setInputError] = useState('');
-  const job = useToolJob();
-  useProductFiles('text',files=>{if(files[0]){setInputError('');void files[0].text().then(setText).catch(reason=>setInputError(String(reason)));}});
-  const parts = Array.isArray(job.result) ? job.result as DiffPart[] : [];
-  return (
-    <ToolBody busy={job.busy} error={inputError || job.error} cancel={job.cancel}>
-      <div className="fusion-tool-columns">
-        <label>{t('fusion.toolbox.original')}<textarea rows={8} value={text} onChange={event => setText(event.target.value)} /></label>
-        <label>{t('fusion.toolbox.comparison')}<textarea rows={8} value={comparison} onChange={event => setComparison(event.target.value)} /></label>
-      </div>
-      <p className="fusion-tool-hint">{t('fusion.toolbox.textStats', { characters: [...text].length, lines: text ? text.split(/\r?\n/).length : 0, words: [...new Intl.Segmenter(undefined, { granularity: 'word' }).segment(text)].filter(part => part.isWordLike).length })}</p>
-      <div className="fusion-tool-actions">{['dedupe', 'empty', 'upper', 'lower'].map(action => <button type="button" key={action} onClick={() => setText(transformText(text, action))}>{t(`fusion.toolbox.textActions.${action}`)}</button>)}<button type="button" disabled={job.busy} onClick={() => job.run({ kind: 'diff', before: text, after: comparison })}>{t('fusion.toolbox.compare')}</button></div>
-      <div className="fusion-tool-row"><label>{t('fusion.toolbox.find')}<input value={find} onChange={event => setFind(event.target.value)} /></label><label>{t('fusion.toolbox.replacement')}<input value={replacement} onChange={event => setReplacement(event.target.value)} /></label><button type="button" disabled={!find} onClick={() => setText(transformText(text, 'replace', find, replacement))}>{t('fusion.toolbox.replace')}</button></div>
-      {parts.length > 0 && <div className="fusion-tool-columns fusion-diff" aria-label={t('fusion.toolbox.diffResult')}>
-        <pre>{parts.filter(part => !part.added).map((part, index) => <span key={index} data-change={part.removed ? 'removed' : undefined}>{part.value}</span>)}</pre>
-        <pre>{parts.filter(part => !part.removed).map((part, index) => <span key={index} data-change={part.added ? 'added' : undefined}>{part.value}</span>)}</pre>
-      </div>}
-      <ToolResult text={text} filename="text.txt" />
-    </ToolBody>
-  );
+export function TextTool({mode:controlledMode,onModeChange,showModeTabs=true}:{mode?:'process'|'compare';onModeChange?:(mode:'process'|'compare')=>void;showModeTabs?:boolean}={}) {
+ const {t}=useTranslation(),[text,setText]=useState(''),[comparison,setComparison]=useState('');
+ const [localMode,setLocalMode]=useState<'process'|'compare'>('process'),[find,setFind]=useState(''),[replacement,setReplacement]=useState(''),[inputError,setInputError]=useState(''),[ignoreWhitespace,setIgnoreWhitespace]=useState(false);
+ const mode=controlledMode??localMode,setMode=onModeChange??setLocalMode;
+ const job=useToolJob();
+ useProductFiles('text',files=>{if(files[0]){setInputError('');void files[0].text().then(setText).catch(reason=>setInputError(String(reason)));}});
+ const parts=Array.isArray(job.result)?job.result as DiffPart[]:[];
+ const input=<><div className={mode==='compare'?'fusion-tool-columns':'fusion-tool-single'}>
+ <label>{t('fusion.toolbox.original')}<textarea value={text} onChange={event=>setText(event.target.value)}/></label>
+ {mode==='compare'&&<label>{t('fusion.toolbox.comparison')}<textarea value={comparison} onChange={event=>setComparison(event.target.value)}/></label>}</div>
+ {mode==='compare'&&<label><input type="checkbox" checked={ignoreWhitespace} onChange={event=>setIgnoreWhitespace(event.target.checked)}/>{t('fusion.enhance.data.ignoreWhitespace')}</label>}<small className="fusion-tool-stats">{t('fusion.toolbox.textStats',{characters:[...text].length,lines:text?text.split(/\r?\n/).length:0,words:[...new Intl.Segmenter(undefined,{granularity:'word'}).segment(text)].filter(part=>part.isWordLike).length})}</small>
+ {mode==='process'&&<details className="fusion-inline-options"><summary>{t('fusion.toolbox.replace')}</summary><div className="fusion-tool-row"><input aria-label={t('fusion.toolbox.find')} placeholder={t('fusion.toolbox.find')} value={find} onChange={event=>setFind(event.target.value)}/><input aria-label={t('fusion.toolbox.replacement')} placeholder={t('fusion.toolbox.replacement')} value={replacement} onChange={event=>setReplacement(event.target.value)}/><button disabled={!find} onClick={()=>setText(transformText(text,'replace',find,replacement))}>{t('fusion.toolbox.replace')}</button></div></details>}</>;
+ const result=mode==='compare'?(parts.length?<div className="fusion-tool-columns fusion-diff" aria-label={t('fusion.toolbox.diffResult')}><pre>{parts.filter(part=>!part.added).map((part,index)=><span key={index} data-change={part.removed?'removed':undefined}>{part.value}</span>)}</pre><pre>{parts.filter(part=>!part.removed).map((part,index)=><span key={index} data-change={part.added?'added':undefined}>{part.value}</span>)}</pre></div>:undefined):text?<ToolResult text={text} filename="text.txt"/>:undefined;
+ return <ToolBody busy={job.busy} error={inputError||job.error} cancel={job.cancel} actions={mode==='compare'?<button disabled={job.busy} onClick={()=>job.run({kind:'diff',before:text,after:comparison,ignoreWhitespace})}>{t('fusion.toolbox.compare')}</button>:<select aria-label={t('fusion.toolbox.operation')} value="" onChange={event=>{if(event.target.value)setText(transformText(text,event.target.value));}}><option value="">{t('fusion.toolbox.operation')}</option>{['trim','dedupe','sort','reverse','empty','upper','lower'].map(id=><option key={id} value={id}>{t('fusion.toolbox.textActions.'+id)}</option>)}</select>}>
+ {showModeTabs&&<ToolTabs>{(['process','compare'] as const).map(id=><button key={id} aria-pressed={mode===id} onClick={()=>setMode(id)}>{t(id==='compare'?'fusion.toolbox.compare':'fusion.toolbox.workspace.process')}</button>)}</ToolTabs>}
+ <ToolEditors resultRevision={mode==='compare'?job.result:undefined} input={input} result={result}/></ToolBody>;
 }
 
 /** 文件顺序和一开始页码直接决定导出的新 PDF。

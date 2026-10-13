@@ -21,6 +21,8 @@
 
 import { app, nativeImage } from 'electron';
 import { randomUUID } from 'crypto';
+import {captureEngine} from './captureEngine';
+import {recognizeLocalCapture} from './localCaptureOcr';
 
 const API_BASE = process.env.NODE_ENV === 'development'
   ? 'https://test.server.pyisland.com/api'
@@ -81,6 +83,7 @@ export async function recognizeCaptureText(
   dataUrl: string,
   signal: AbortSignal,
 ): Promise<CaptureOcrResult> {
+  if(captureEngine()==='local')return recognizeLocalCapture(dataUrl,signal);
   if (!token.trim()) {
     return { success: false, code: 'ocrLoginRequired', message: '请先登录后再使用文字识别' };
   }

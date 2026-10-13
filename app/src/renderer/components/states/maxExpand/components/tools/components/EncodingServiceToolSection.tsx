@@ -26,6 +26,7 @@
 
 import { useCallback, useState, type ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import { ToolBody, ToolCommands, ToolEditors, ToolResult } from '../../../../../fusion/tools/ToolControls';
 
 function encodeBase64Utf8(value: string): string {
   const bytes = new TextEncoder().encode(value);
@@ -42,13 +43,13 @@ function decodeBase64Utf8(value: string): string {
   for (let i = 0; i < binary.length; i += 1) {
     bytes[i] = binary.charCodeAt(i);
   }
-  return new TextDecoder().decode(bytes);
+  return new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 }
 
 /**
  * 编码服务模块主视图。
  */
-export function EncodingServiceToolSection(): ReactElement {
+export function EncodingServiceToolSection({compact}:{compact?:'json'|'base64'} = {}): ReactElement {
   const { t } = useTranslation();
 
   const [jsonInput, setJsonInput] = useState('');
@@ -100,6 +101,14 @@ export function EncodingServiceToolSection(): ReactElement {
     }
   }, [base64Input, t]);
 
+  if(compact) {
+    const json=compact==='json',input=json?jsonInput:base64Input,output=json?jsonOutput:base64Output;
+    const key='maxExpand.toolbox.encodingService.'+compact;
+    return <ToolBody error={json?jsonError:base64Error}>
+      <ToolCommands><button onClick={json?handleJsonEncode:handleBase64Encode}>{t(key+'.encodeBtn')}</button><button onClick={json?handleJsonDecode:handleBase64Decode}>{t(key+'.decodeBtn')}</button></ToolCommands>
+      <ToolEditors input={<textarea aria-label={t(key+'.inputPlaceholder')} placeholder={t(key+'.inputPlaceholder')} value={input} onChange={event=>(json?setJsonInput:setBase64Input)(event.target.value)}/>} result={output?<ToolResult text={output} filename={json?'output.json':'output.txt'}/>:undefined}/>
+    </ToolBody>;
+  }
   return (
     <div className="settings-cards">
       <div className="settings-card">

@@ -95,7 +95,6 @@ let hoverWindowRect = null;
 let pendingWindowClickRect = null;
 let isTranslating = false;
 let isRecognizing = false;
-let ocrEngine = 'server';
 let recognizedText = '';
 let translationCache = null;
 let displayedImageVersion = 'original';
@@ -115,6 +114,7 @@ const CAPTURE_I18N = {
       save: '保存',
       ocr: '文字识别',
       ocrResult: '文字识别结果',
+      translationResult: '图片文字译文',
       recognizing: '识别中',
       ocrLoginRequired: '请先登录后再使用文字识别',
       copyText: '复制文本',
@@ -156,6 +156,7 @@ const CAPTURE_I18N = {
       save: 'Save',
       ocr: 'Recognize text',
       ocrResult: 'Recognized text',
+      translationResult: 'Translated image text',
       recognizing: 'Recognizing',
       ocrLoginRequired: 'Please sign in to use text recognition',
       copyText: 'Copy text',
@@ -223,16 +224,14 @@ async function initCaptureLanguage() {
 void initCaptureLanguage();
 
 async function initOcrEngine() {
+  let engine = 'local';
   try {
-    // 与 src/shared/storeKeys.ts 中 SCREENSHOT_OCR_ENGINE_STORE_KEY 保持一致
-    const stored = await ipcRenderer.invoke('store:read', 'screenshot-ocr-engine');
-    ocrEngine = stored === 'local' ? 'local' : 'server';
+    // Matches CAPTURE_SERVICE_STORE_KEY; the old forced-cloud preference is not an opt-in.
+    engine = await ipcRenderer.invoke('store:read', 'float-screenshot-service');
   } catch {
-    ocrEngine = 'server';
+    // Local OCR remains available without an account or a stored preference.
   }
-  if (ocrProIcon) {
-    ocrProIcon.style.display = ocrEngine === 'local' ? 'none' : '';
-  }
+  if (ocrProIcon) ocrProIcon.style.display = engine === 'server' ? '' : 'none';
 }
 
 void initOcrEngine();
@@ -605,7 +604,9 @@ function positionOcrPanel() {
   return true;
 }
 
-function showOcrResult(text) {
+function showOcrResult(text, title = 'ocrResult') {
+  const heading = ocrPanel.querySelector('[data-i18n="ocrResult"]');
+  if (heading) heading.textContent = tCapture(title);
   recognizedText = text;
   ocrText.value = text || tCapture('noTextFound');
   btnOcrCopy.disabled = !text;
@@ -1143,16 +1144,8 @@ btnOcr.addEventListener('click', async () => {
   showTranslateOverlay(tCapture('recognizing'));
 
   try {
-    let result;
-    if (ocrEngine === 'local') {
-      result = await ipcRenderer.invoke('capture-ocr-local', { dataURL: image });
-    } else {
-      const token = await ipcRenderer.invoke('store:read', 'user-account-token');
-      if (typeof token !== 'string' || !token.trim()) {
-        throw new Error(tCapture('ocrLoginRequired'));
-      }
-      result = await ipcRenderer.invoke('capture-ocr', { dataURL: image, token });
-    }
+    const token = await ipcRenderer.invoke('store:read', 'user-account-token');
+    const result = await ipcRenderer.invoke('capture-ocr', { dataURL: image, token });
     if (!result?.success) {
       const errorCode = result?.code;
       const fallbackMessage = errorCode && tCapture(errorCode) !== errorCode
@@ -1213,9 +1206,6 @@ btnTranslate.addEventListener('click', async () => {
 
   try {
     const token = await ipcRenderer.invoke('store:read', 'user-account-token');
-    if (typeof token !== 'string' || !token.trim()) {
-      throw new Error(tCapture('loginRequired'));
-    }
     const [storedSourceLang, storedTargetLang] = await Promise.all([
       ipcRenderer.invoke('store:read', 'screenshot-translate-source-lang'),
       ipcRenderer.invoke('store:read', 'screenshot-translate-target-lang'),
@@ -1228,6 +1218,11 @@ btnTranslate.addEventListener('click', async () => {
       sourceLanguage,
       targetLanguage,
     });
+    if (result?.success && typeof result.translatedText === 'string') {
+      hideTranslateOverlay();
+      showOcrResult(result.translatedText, 'translationResult');
+      return;
+    }
     if (!result?.success || !result.translatedImage) {
       const errorCode = result?.code;
       const fallbackMsg = errorCode && tCapture(errorCode) !== errorCode
@@ -1250,8 +1245,10 @@ btnTranslate.addEventListener('click', async () => {
     hideTranslateOverlay();
   } finally {
     isTranslating = false;
-    showToolbar();
-    updateSizeInfo(selX, selY);
+    if (ocrPanel.style.display !== 'flex') {
+      showToolbar();
+      updateSizeInfo(selX, selY);
+    }
   }
 });
 

@@ -55,7 +55,8 @@ export class FusionToolStore {
     if (kind === 'note') {
       const note = value as ToolNote;
       if (!note || !isText(note.id, 100) || !note.id || !isText(note.title, 200) || !isText(note.text, 1_000_000)) throw new Error('invalid-note');
-      const row = { id: note.id, title: note.title, text: note.text, updated: Date.now() };
+      if(note.tags!==undefined&&(!Array.isArray(note.tags)||note.tags.length>20||note.tags.some(tag=>!isText(tag,80))))throw Error('invalid-note');
+      const row = { id: note.id, title: note.title, text: note.text, tags:note.tags?[...new Set(note.tags)]:[],updated: Date.now() };
       const index = next.notes.findIndex(item => item.id === row.id);
       if (index < 0) next.notes.unshift(row); else next.notes[index] = row;
     } else if (kind === 'bookmark') {

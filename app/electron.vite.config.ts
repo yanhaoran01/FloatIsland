@@ -42,6 +42,7 @@ export default defineConfig(({ mode }) => ({
           smtcWorker: resolve(__dirname, 'src/main/smtcWorker.ts'),
           windowCaptureWorker: resolve(__dirname, 'src/main/system/windowCaptureWorker.ts'),
           scrollWorker: resolve(__dirname, 'src/main/system/scrollWorker.ts'),
+          bookSourceWorker: resolve(__dirname,'src/main/system/bookSourceWorker.ts'),
           productWorker: resolve(__dirname, 'src/main/system/productWorker.ts'),
         }
       }
@@ -57,6 +58,7 @@ export default defineConfig(({ mode }) => ({
           index: resolve(__dirname, 'src/preload/index.ts'),
           productAux: resolve(__dirname, 'src/preload/productAux.ts'),
           pixelPicker: resolve(__dirname, 'src/preload/pixelPicker.ts')
+          ,musicPlugin: resolve(__dirname, 'src/preload/musicPlugin.ts')
         }
       }
     }
@@ -70,7 +72,9 @@ export default defineConfig(({ mode }) => ({
       outDir: 'out/renderer',
       rollupOptions: {
         input: {
+          DocumentReader: resolve(__dirname, 'src/renderer/DocumentReader.html'),
           ProductRecordHost: resolve(__dirname, 'src/renderer/ProductRecordHost.html'),
+          MusicPluginHost: resolve(__dirname, 'src/renderer/MusicPluginHost.html'),
           FusionVideo: resolve(__dirname, 'src/renderer/FusionVideo.html'),
           DynamicIslandIndex: resolve(__dirname, 'src/renderer/DynamicIslandIndex.html'),
           DynamicIslandStandalone: resolve(__dirname, 'src/renderer/DynamicIslandStandalone.html'),

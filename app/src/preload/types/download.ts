@@ -26,7 +26,9 @@
 
 /** 下载任务 */
 export type DownloadTaskStatus = 'queued' | 'downloading' | 'paused' | 'completed' | 'failed' | 'canceled';
-export type DownloadPhase = 'queued' | 'resolving' | 'downloading' | 'merging' | 'converting' | 'completed';
+export type DownloadPhase = 'queued' | 'resolving' | 'downloading' | 'merging' | 'converting' | 'completed' | 'metadata' | 'verifying' | 'seeding';
+export interface TorrentFile {index:number;path:string;size:number;completed:number;selected:boolean;}
+export interface TorrentDraft {id:string;name:string;infoHash:string;files:TorrentFile[];totalBytes:number;}
 export interface DownloadTask {
   id: string;
   url: string;
@@ -39,7 +41,20 @@ export interface DownloadTask {
   estimatedFinishAt: number | null;
   threads: number;
   status: DownloadTaskStatus;
-  engine?: 'http' | 'yt-dlp';
+  engine?: 'http' | 'yt-dlp' | 'browser' | 'aria2';
+  torrent?:TorrentDraft;
+  peers?:number;
+  uploadSpeed?:number;
+  sourceId?: string;
+  temporaryDirectory?: string;
+  bookName?: string;
+  sourcePage?: string;
+  libraryFolder?: 'Books'|'Music';
+  song?:{trackId:string;options:import('./fusionMusic').MusicDownloadOptions};
+  audio?:{format:string;bitrate:number|null;sampleRate:number;bitsPerSample:number;qualityFallback:boolean};
+  requiresSourceRefresh?: boolean;
+  sha256?: string;
+  canResume?: boolean;
   phase?: DownloadPhase;
   batchId?: string;
   playlistTitle?: string;
@@ -93,11 +108,15 @@ export interface MediaDownloadOptions {
   cover: boolean;
 }
 export interface MediaDownloadPreset { id: string; name: string; options: MediaDownloadOptions; }
-export interface DownloadPreferences { version: 1; concurrency: number; presets: MediaDownloadPreset[]; }
+export interface DownloadPreferences { version: 1; concurrency: number; presets: MediaDownloadPreset[]; downloadLimit?:number;uploadLimit?:number;seedMinutes?:number;seedRatio?:number; }
 export interface MediaDownloadStart {
   analysisId: string; entryIds: string[]; options: MediaDownloadOptions; directoryId?: string;
 }
 export interface MediaDownloadApi {
+  downloadFilesStart:(urls:string[],directoryId?:string)=>Promise<DownloadTask[]>;
+  downloadTorrentInspect:(requestId:string,url?:string,file?:File)=>Promise<TorrentDraft|null>;
+  downloadTorrentCancel:(requestId:string)=>Promise<boolean>;
+  downloadTorrentStart:(draftId:string,selected:number[],directoryId?:string)=>Promise<DownloadTask>;
   downloadAnalyze: (urls: string[], requestId: string) => Promise<MediaAnalysis>;
   downloadInspect: (analysisId: string, entryId: string) => Promise<MediaEntry>;
   downloadCancelAnalysis: (requestId: string) => Promise<boolean>;

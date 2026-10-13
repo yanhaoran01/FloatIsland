@@ -1513,6 +1513,10 @@ const api = {
   },
 
   // ===== 下载工具 =====
+  downloadTorrentInspect: ((requestId,url,file)=>ipcRenderer.invoke('download:torrent-inspect',requestId,url,file?webUtils.getPathForFile(file):undefined)) as MediaDownloadApi['downloadTorrentInspect'],
+  downloadTorrentCancel: ((id)=>ipcRenderer.invoke('download:torrent-cancel',id)) as MediaDownloadApi['downloadTorrentCancel'],
+  downloadTorrentStart: ((id,selected,directoryId)=>ipcRenderer.invoke('download:torrent-start',id,selected,directoryId)) as MediaDownloadApi['downloadTorrentStart'],
+  downloadFilesStart: ((urls,directoryId)=>ipcRenderer.invoke('download:files-start',urls,directoryId)) as MediaDownloadApi['downloadFilesStart'],
   downloadAnalyze: ((urls, id) => ipcRenderer.invoke('download:analyze', urls, id)) as MediaDownloadApi['downloadAnalyze'],
   downloadInspect: ((analysisId, entryId) => ipcRenderer.invoke('download:inspect', analysisId, entryId)) as MediaDownloadApi['downloadInspect'],
   downloadCancelAnalysis: ((id) => ipcRenderer.invoke('download:cancel-analysis', id)) as MediaDownloadApi['downloadCancelAnalysis'],

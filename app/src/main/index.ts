@@ -43,13 +43,18 @@ import { activeWindow } from 'get-windows';
 import { screen } from 'electron';
 import { registerFusionVoiceGlow } from './window/fusionVoiceGlow';
 import { registerFusionTimer } from './system/fusionTimerService';
+import {registerIndependentTimers} from './system/multiTimerService';
+import {registerFusionLibrary} from './system/fusionLibraryService';
+import {registerLocalImports} from './system/localImportService';
+import {registerFusionTranslation} from './system/fusionTranslationService';
 import { registerFusionBrowser, registerFusionMediaScheme } from './system/fusionBrowserService';
+import { registerFusionMusic } from './music/fusionMusicService';
 import { registerFusionIntegrations } from './system/fusionIntegrationService';
 import { registerLocalAssistantIpcHandlers } from './ipc/agent/localAssistantIpc';
 import { registerEchoExternalCodexIpcHandlers } from './ipc/agent/echoExternalCodexIpc';
 import { registerClipboardIpcHandlers } from './ipc/settings/clipboard';
 import { registerCaptureIpcHandlers } from './ipc/window/capture';
-import { disposeLocalOcrWorker } from './services/captureLocalOcrService';
+import {disposeLocalCaptureOcr} from './services/localCaptureOcr';
 import { registerScreenshotHotkeyIpcHandlers } from './ipc/system/screenshotHotkey';
 import { registerAppIpcHandlers } from './ipc/app/app';
 import { registerSystemIpcHandlers } from './ipc/system/system';
@@ -614,7 +619,12 @@ function registerIpcHandlers(): void {
   registerLocalAssistantIpcHandlers(localAssistantService);
   registerFusionWorkspace(localAssistantService, { codex: codexAppServerService, dsh: dshAcpService });
   registerFusionTimer();
+  registerIndependentTimers();
+  registerFusionLibrary();
+  registerLocalImports();
+  registerFusionTranslation();
   registerFusionBrowser();
+  registerFusionMusic();
   registerFusionIntegrations();
   registerFusionVoiceGlow(() => mainWindow);
   registerEchoExternalCodexIpcHandlers(echoExternalCodexService);
@@ -807,6 +817,7 @@ applyChromiumPerformanceFlags(app);
  *   避免 <video> 直连 file:// 被 webSecurity 阻断
  */
 protocol.registerSchemesAsPrivileged([
+  {scheme:"float-reader",privileges:{standard:true,secure:true,supportFetchAPI:true,corsEnabled:true}},
   {
     scheme: 'eisland-media',
     privileges: {
@@ -835,7 +846,6 @@ registerAppLifecycleHandlers({
     claudeCodeStatusService.stop();
     stopClipboardUrlWatcher();
     smtcService.cleanupWorker();
-    void disposeLocalOcrWorker();
     destroyTray();
     globalShortcut.unregisterAll();
   },
@@ -855,6 +865,7 @@ registerAppLifecycleHandlers({
  */
 app.setName(BRAND.englishName);
 app.on('before-quit', () => {
+  void disposeLocalCaptureOcr();
   void codexAppServerService.stop();
   void dshAcpService.stop();
   localAssistantService.stop();

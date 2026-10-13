@@ -1,5 +1,11 @@
 # Bundled tool resources
 
+## Genie Effect transition reference
+
+Reference: [Adi1816/genie-effect](https://github.com/Adi1816/genie-effect), pinned at commit `33b77d5b3723bbc384337d6277d57c4a1533d771`.
+License: MIT; the reference project's license is included at `resources/licenses/genie/LICENSE`.
+FloatIsland implements its own page snapshot capture, mesh mapping, transition lifecycle, and fallback in TypeScript/WebGL; no reference source files are bundled. See `resources/licenses/genie/NOTICE.txt`.
+
 These tools are bundled locally; no CDN is required. Versions are recorded in package-lock.json. Existing application licenses remain in LICENSE and the pinned runtime.
 
 ## @videojs/react 10.0.1
@@ -1797,3 +1803,26 @@ Bundled Windows x64 components are pinned in `resources/download-runtime/manifes
 - FFmpeg/ffprobe n9.0.2-23-g27b46f0fbc, BtbN GPL shared build dated 2026-10-08. Upstream distribution license is `download-LICENSE.txt`. Build recipe: https://github.com/BtbN/FFmpeg-Builds/tree/autobuild-2026-10-08-13-05 . FFmpeg source revision: https://github.com/FFmpeg/FFmpeg/tree/27b46f0fbc . Linked-library build recipes and versions are preserved by that BtbN tag. DLLs are shipped beside the programs.
 
 The programs are unmodified. FloatIsland adaptations cover argument validation, anonymous metadata parsing, task coordination, Windows Job Object process ownership, progress normalization, non-overwriting output publication and artifact authorization. `scripts/prepare-download-runtime.py` reproduces resources from the pinned archives; `scripts/verify-media-runtime.cjs` verifies packaged hashes and offline program startup.
+
+## Music adapters and responsive music interface
+
+See [`resources/music/README.md`](../resources/music/README.md) and the SHA256 manifest for the pinned Listen 1 / YesPlayMusic MIT sources, React modifications and anonymous-only boundaries. Node-forge 1.4.0 is bundled for the pinned adapters.
+
+## Collections and daily tools (1.3.0)
+
+- Mozilla Readability 0.6.0: Apache-2.0, local article extraction in isolated Electron views.
+- rss-parser 3.13.0: MIT, RSS/Atom parsing in a terminable worker.
+- Fuse.js 7.5.0: Apache-2.0 (license of this exact version), metadata-only fuzzy search in a worker.
+- DOMPurify 3.4.16: MPL-2.0 OR Apache-2.0; distributed under the Apache-2.0 option, sanitized reading display.
+- Exact package metadata and original license files: `resources/licenses/daily-tools/`.
+- Espanso and dupeGuru are interaction references only; no source, Rust/Python engine or third-party runtime from either is distributed. Existing clipboard, file grants and hashing are reused.
+- TagSpaces and Karakeep are collection design references only; no AGPL application core is copied.
+
+- Cheerio 1.2.0 (MIT): inert bookmark/reading markup parsing; exact production dependency and original license in resources/licenses/daily-tools.
+
+## Local OCR and anonymous translation
+
+- Tesseract.js / Tesseract.js-core 7.0.0 (Apache-2.0): existing OCR runtime reused with an unpacked Node worker. No CDN model fetch, account or API key is used.
+- Official tessdata_fast English and Simplified Chinese models, commit `87416418657359cb625c412a48b6e1d6d41c29bd` (Apache-2.0). Original LICENSE and SHA256/source manifest are in `resources/ocr`. Models are copied into the installation resources.
+- MyMemory public translation API: anonymous HTTPS service adapter, no service source code redistributed. Service availability and free quotas apply; translation requires connectivity. Screenshot translation recognizes locally and sends text rather than an image. The original screenshot remains unchanged. https://mymemory.translated.net/doc/spec.php
+- LibreTranslate / Argos Translate were evaluated as self-hosted alternatives. They are not bundled or represented as an installed local translation engine.

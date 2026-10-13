@@ -27,6 +27,7 @@
 import { useEffect, useState, type JSX } from 'react';
 import { MediaBar } from '../fusion/MediaBar';
 import { useMediaState } from '../fusion/mediaState';
+import { useMusicState } from '../fusion/musicState';
 import { FusionCompact } from '../fusion/FusionCompact';
 import { FusionGuide } from '../fusion/FusionGuide';
 import { subscribeFusionActivity } from '../fusion/fusionActivity';
@@ -119,7 +120,8 @@ function TransientStateContent({ state, notification }: DynamicIslandStateConten
 
 /** Keeps the workspace alive while the capsule is visible, preserving drafts and subscriptions. */
 export function DynamicIslandStateContent(props: DynamicIslandStateContentProps): JSX.Element {
-  const media = useMediaState().some(item => item.active);
+  const music = useMusicState();
+  const media = useMediaState().some(item => item.active) || Boolean(music?.active);
   const [opened, setOpened] = useState(props.state === 'maxExpand');
   useEffect(() => { if (props.state === 'maxExpand') setOpened(true); }, [props.state]);
   useEffect(() => { void initializeFusionPreferences(); return subscribeFusionActivity(); }, []);

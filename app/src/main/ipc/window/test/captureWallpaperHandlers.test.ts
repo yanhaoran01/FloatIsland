@@ -79,10 +79,14 @@ const { execFileMock, capturePrimaryDisplayPngMock } = vi.hoisted(() => ({
 }));
 
 vi.mock('../../../system/productCapture',()=>({registerProductCapture:vi.fn(),completeProductCapture:vi.fn(()=>false)}));
+// This IPC test exercises the explicitly selected cloud service's auth response.
+// Logged-out local OCR and translation are covered by captureLocalRouting.test.ts.
+vi.mock('../../../services/captureEngine', () => ({ captureEngine: () => 'server' }));
 
 vi.mock('electron', () => ({
   app: {
     getPath: appGetPathMock,
+    once: vi.fn(),
   },
   clipboard: {
     writeImage: clipboardWriteImageMock,

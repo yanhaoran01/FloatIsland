@@ -89,7 +89,7 @@ export function useFusionVoice(provider: FusionProvider, sessionKey: string, vis
     const current = { chunks: [] as Int16Array[], requestId: crypto.randomUUID(), text: textRef.current, version: versionRef.current, generation: id } as VoiceCapture;
     capture.current = current; Sound.setSuppressed(current.requestId, true); setPhase('permission');
     try {
-      const media = await window.api.fusionMediaCommand('pause');
+      const media = await window.api.fusionMediaCommand('pause-all');
       if (!media.paused && !media.muted) throw new Error('media-not-quiet');
       if (id !== generation.current) return;
       const available = await window.api.fusionSpeechStatus(provider); setStatus(available);

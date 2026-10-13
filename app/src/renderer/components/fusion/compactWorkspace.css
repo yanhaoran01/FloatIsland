@@ -1,0 +1,235 @@
+/* FloatIsland contributors, GPL-3.0. */
+/** @file compactWorkspace.css @description Consistent compact workspaces and explicit hit areas in both native windows. @author 鸡哥 */
+:is(.island-shell, .fusion-workbench) {
+  --ui-control:32px;
+  font-size:13px;
+}
+:is(.island-shell, .fusion-workbench) .fusion-chat--compact {padding:0 8px 8px!important;background:var(--ui-bg)!important;color:var(--ui-text)!important}
+:is(.island-shell, .fusion-workbench) .fusion-chat--compact .fusion-chat-header {min-height:40px!important;height:40px!important;flex-basis:40px!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame {min-height:0;min-width:0}
+:is(.island-shell, .fusion-workbench) .fusion-tool-scroll {overscroll-behavior:contain;scrollbar-gutter:auto}
+:is(.island-shell, .fusion-workbench) .fusion-utility {gap:10px;min-width:0}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame :is(.fusion-tool-actions,.fusion-tool-row) {gap:6px;margin:0;align-items:center}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]),select) {
+  min-height:32px;height:32px;font-size:13px;min-width:0;border-radius:8px;
+}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame button {white-space:nowrap}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame :is(button,input,select,textarea) {transition:background 120ms,border-color 120ms,color 120ms}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame .fusion-tool-input-actions {order:0!important;margin:0!important;padding:0!important;border:0!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame .fusion-tool-empty:not(:has(button)) {display:block!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-result {border-radius:10px}
+:is(.island-shell, .fusion-workbench) .fusion-tool-result>.fusion-tool-actions {position:sticky;bottom:0;z-index:1;background:var(--ui-bg);padding:6px 8px}
+:is(.island-shell, .fusion-workbench) .fusion-tool-commands:empty {display:none}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame[data-standalone=false]:not(:has(.float-tool-function-row button)) {grid-template-rows:40px auto minmax(0,1fr)}
+:is(.island-shell, .fusion-workbench) .fusion-tool-toolbar {min-height:40px!important;height:40px!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-directory-top {grid-template-columns:auto minmax(160px,300px);justify-content:space-between}
+:is(.island-shell, .fusion-workbench) .fusion-tool-directory-search {height:32px!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-directory-categories {grid-column:1/-1}
+:is(.island-shell, .fusion-workbench) .fusion-tool-category-heading {padding-bottom:4px!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-directory .fusion-tool-entry {min-height:54px!important;padding:6px 8px!important;gap:10px!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-entry-text small {font-size:12px!important}
+
+/* Each music screen has one compact control group above the content. */
+:is(.island-shell, .fusion-workbench) .fi-music {gap:8px!important;padding:8px 12px 12px!important}
+:is(.island-shell, .fusion-workbench) .fi-music-collections {display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+:is(.island-shell, .fusion-workbench) .fi-music-collections>.float-reference-import {margin:0!important;flex:0 1 auto}
+:is(.island-shell, .fusion-workbench) .fi-music-collections>select {margin-left:auto;max-width:180px}
+:is(.island-shell, .fusion-workbench) .float-reference-import .fusion-tool-actions {gap:6px}
+:is(.island-shell, .fusion-workbench) .float-reference-import button {padding:4px 9px!important;min-height:32px}
+:is(.island-shell, .fusion-workbench) .fi-music-query {height:32px!important;max-width:680px;flex:none}
+:is(.island-shell, .fusion-workbench) .fi-music-query>select {max-width:160px}
+:is(.island-shell, .fusion-workbench) :is(.fi-music-query,.float-playlist-query,.float-shelf-search) input:focus-visible {outline:0!important}
+:is(.island-shell, .fusion-workbench) .fi-music-empty {min-height:120px;gap:10px!important;padding:20px 12px!important}
+:is(.island-shell, .fusion-workbench) .float-music-page-tabs {display:flex;gap:4px;align-items:center;flex:none}
+:is(.island-shell, .fusion-workbench) .float-music-page-tabs>button {min-height:30px!important;padding:4px 10px!important}
+:is(.island-shell, .fusion-workbench) .float-music-page-tabs>button:last-child {margin-left:auto}
+:is(.island-shell, .fusion-workbench) .float-playlists {display:flex;flex:1;flex-direction:column;min-height:0;gap:8px!important;position:relative}
+:is(.island-shell, .fusion-workbench) .float-playlist-toolbar {display:flex;align-items:center;flex-wrap:wrap;gap:6px;flex:none}
+:is(.island-shell, .fusion-workbench) .float-playlist-toolbar>select {width:auto;max-width:130px;padding-right:22px}
+:is(.island-shell, .fusion-workbench) .float-playlist-query {display:flex;align-items:center;gap:6px;flex:1 1 160px;max-width:340px;min-width:140px;height:32px;padding-left:9px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-surface)}
+:is(.island-shell, .fusion-workbench) .float-playlist-query>svg {flex:none;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) .float-playlist-query>input {flex:1;min-width:0;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;height:28px!important;min-height:28px!important}
+:is(.island-shell, .fusion-workbench) .float-playlist-query>button {display:grid;place-items:center;width:30px;height:30px;min-height:30px;padding:0;flex:none;border:0;border-radius:7px;background:transparent;color:var(--ui-text)}
+:is(.island-shell, .fusion-workbench) .float-playlist-import {position:absolute;right:108px;top:-40px;z-index:3}
+:is(.island-shell, .fusion-workbench) .float-playlist-import>summary {height:32px;display:flex;align-items:center;gap:5px;padding:0 10px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-surface);color:var(--ui-text)}
+:is(.island-shell, .fusion-workbench) .float-playlist-import>summary::before {display:none}
+:is(.island-shell, .fusion-workbench) .float-playlist-import[open] {width:min(calc(100% - 108px),560px)}
+:is(.island-shell, .fusion-workbench) .float-playlist-import[open]>summary {width:max-content;margin-left:auto}
+:is(.island-shell, .fusion-workbench) .float-playlist-share {display:flex;gap:6px;padding:10px;margin-top:6px;border:1px solid var(--ui-border);border-radius:10px;background:var(--ui-bg);box-shadow:0 8px 24px #0003}
+:is(.island-shell, .fusion-workbench) .float-playlist-share>input {flex:1 1 200px;min-width:160px}
+:is(.island-shell, .fusion-workbench) .float-playlist-share>button {min-height:32px;flex:none}
+:is(.island-shell, .fusion-workbench) .float-playlist-grid {overflow:auto;min-height:0;gap:10px;grid-template-columns:repeat(auto-fill,minmax(120px,1fr))}
+:is(.island-shell, .fusion-workbench) .float-playlist-grid:empty {display:none}
+:is(.island-shell, .fusion-workbench) .float-playlist-empty {display:flex;flex:1;min-height:120px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:20px 12px;text-align:center;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) .float-playlist-empty p {max-width:330px;margin:0;font-size:12px;line-height:1.6}
+:is(.island-shell, .fusion-workbench) .float-playlist-empty button {display:flex;gap:5px;align-items:center;min-height:32px;padding:4px 10px;background:var(--ui-surface);color:var(--ui-text);border:1px solid var(--ui-border);border-radius:8px}
+:is(.island-shell, .fusion-workbench) .float-playlist-pagination {display:flex;justify-content:flex-end;align-items:center;gap:8px;flex:none}
+
+/* Reading filters stay aligned; site links are quiet content rows. */
+:is(.island-shell, .fusion-workbench) .float-reading-shelf {gap:8px}
+:is(.island-shell, .fusion-workbench) .float-reading-shelf>.float-library-filter {display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0}
+:is(.island-shell, .fusion-workbench) .float-reading-shelf>.float-library-filter>label {flex:1 1 160px;max-width:360px;min-width:150px;height:32px}
+:is(.island-shell, .fusion-workbench) .float-reading-shelf>.float-library-filter>select {width:auto;max-width:150px}
+:is(.island-shell, .fusion-workbench) .float-shelf-search>input {min-width:0;border:0!important;box-shadow:none!important;background:transparent!important;height:28px!important;min-height:28px!important;padding:0!important}
+:is(.island-shell, .fusion-workbench) .float-reading-sites {margin-top:8px;padding-top:10px}
+:is(.island-shell, .fusion-workbench) .float-reading-sites h3 {font-size:12px;color:var(--ui-muted);margin:0 0 8px}
+:is(.island-shell, .fusion-workbench) .float-reading-sites>button {padding:10px;min-height:52px}
+
+/* Downloads: compact input, independent preview and reachable footer. */
+:is(.island-shell, .fusion-workbench) .float-torrent-drop {display:flex;flex-direction:column;gap:8px;min-height:0;flex:1}
+:is(.island-shell, .fusion-workbench) .float-torrent-drop>textarea {min-height:72px!important;height:80px!important;max-height:120px;flex:none;resize:vertical;padding:10px;font-size:13px}
+:is(.island-shell, .fusion-workbench) .float-torrent-preview {flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+:is(.island-shell, .fusion-workbench) .float-torrent-tree {overflow:auto;min-height:80px;flex:1}
+:is(.island-shell, .fusion-workbench) .float-torrent-footer {display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--ui-border);margin-top:auto}
+:is(.island-shell, .fusion-workbench) .float-torrent-footer>.fusion-product-status {flex:1;min-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-torrent-footer>button {display:flex;gap:5px;align-items:center;padding:5px 10px;min-height:32px}
+:is(.island-shell, .fusion-workbench) .float-torrent-drop>small {font-size:12px;color:var(--ui-muted)}
+
+/* Screenshot and OCR always expose input and preview, then local result actions. */
+:is(.island-shell, .fusion-workbench) .float-capture-workspace {height:100%;min-height:0}
+:is(.island-shell, .fusion-workbench) .float-capture-content {display:flex;flex:1;min-height:160px;gap:10px}
+:is(.island-shell, .fusion-workbench) :is(.float-capture-preview,.float-capture-text) {display:flex;flex:1;min-width:0;flex-direction:column;gap:8px;border:1px solid var(--ui-border);border-radius:10px;overflow:hidden;background:var(--fs-surface)}
+:is(.island-shell, .fusion-workbench) :is(.float-capture-preview,.float-capture-text)>header {display:flex;align-items:center;gap:8px;min-height:32px;padding:0 10px;border-bottom:1px solid var(--ui-border);font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-capture-preview>header>small {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-left:auto;max-width:60%;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) :is(.float-capture-preview,.float-capture-text)>.fusion-utility {padding:8px;flex:1;min-height:0;overflow:auto}
+:is(.island-shell, .fusion-workbench) .float-capture-preview .fusion-product-preview-image {min-height:0;max-height:100%;object-fit:contain;flex:1}
+:is(.island-shell, .fusion-workbench) .float-capture-result-actions {padding:8px;border-top:1px solid var(--ui-border);flex-wrap:wrap}
+:is(.island-shell, .fusion-workbench) .float-capture-empty {display:flex;flex:1;min-height:130px;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:16px;text-align:center;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) .float-capture-empty p {max-width:340px;margin:0;font-size:12px;line-height:1.6}
+:is(.island-shell, .fusion-workbench) .float-capture-empty button {display:flex;align-items:center;gap:5px;min-height:32px;padding:4px 10px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-surface);color:var(--ui-text)}
+:is(.island-shell, .fusion-workbench) .float-capture-notice {margin:0;font-size:12px;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) .float-capture-pin-settings {flex:none}
+
+/* One native header owns navigation and controls; only its empty spacer drags. */
+.fusion-workbench {isolation:isolate;overflow:hidden}
+.fusion-workbench>.fusion-shell {flex:1;min-height:0;height:auto;overflow:hidden}
+.fusion-workbench>.fusion-shell>.fusion-shell-header {position:relative;height:40px;flex:0 0 40px;gap:6px;padding:0 8px;-webkit-app-region:no-drag!important;user-select:none}
+.fusion-workbench .fusion-window-drag {flex:1;min-width:8px;height:100%;-webkit-app-region:drag}
+.fusion-workbench .fusion-shell-header .fusion-navigation {flex:0 1 auto;min-width:0;overflow:auto;scrollbar-width:none}
+.fusion-workbench .fusion-shell-header .fusion-navigation button {padding:4px 8px;font-size:12px;white-space:nowrap;min-height:32px}
+.fusion-workbench .fusion-shell-header>.fusion-icon-button {width:28px;height:32px;min-width:28px;padding:0;flex:none}
+.fusion-workbench .fusion-window-controls {display:flex;align-items:center;gap:2px;flex:none;height:40px;-webkit-app-region:no-drag}
+.fusion-workbench .fusion-window-controls>button {display:grid;place-items:center;width:30px;height:32px;flex:none;padding:0;border:0;border-radius:6px;color:var(--ui-muted);background:transparent;cursor:pointer;-webkit-app-region:no-drag}
+.fusion-workbench .fusion-window-controls>button:hover {background:var(--ui-hover);color:var(--ui-text)}
+.fusion-workbench .fusion-window-controls>button:last-child:hover {color:#fff;background:#b54450}
+.fusion-workbench .fusion-shell-header :is(button,nav,button *) {-webkit-app-region:no-drag}
+.fusion-workbench .fusion-shell-header button>* {pointer-events:none}
+.float-guide .float-guide-stage {gap:16px;padding:16px}
+.float-guide .float-guide-copy h1 {font-size:22px}
+.float-guide .float-guide-shortcuts {max-width:440px;width:100%;gap:10px}
+.float-guide .float-guide-companion {transform:scale(.7)}
+.float-guide footer {justify-content:space-between}
+:is(.island-shell, .fusion-workbench) .fusion-chat--compact .fusion-island-tabs button {width:auto!important;padding:4px 10px!important}
+:is(.island-shell, .fusion-workbench) .fusion-island-tabs button>span {display:inline!important}
+:is(.island-shell, .fusion-workbench) .fusion-island-tabs button>svg {display:none!important}
+:root[data-theme=light] :is(.island-shell, .fusion-workbench) {background:var(--ui-bg)!important;color:var(--ui-text)!important}
+:root[data-theme=light] :is(.island-shell, .fusion-workbench) :is(.fusion-chat,.fusion-shell,.fusion-chat-header,.fusion-titlebar,.fusion-tools-panel,.fusion-tool-directory-top) {background:var(--ui-bg)!important;color:var(--ui-text)!important}
+:is(.island-shell, .fusion-workbench) :is(button,.fusion-product-tabs,.fusion-navigation) {user-select:none}
+:is(.fusion-chat-header,.fusion-tool-toolbar) button>svg {pointer-events:none;-webkit-app-region:no-drag}
+:is(.island-shell, .fusion-workbench) .fusion-settings-body {padding:12px!important;gap:12px}
+:is(.island-shell, .fusion-workbench) .fusion-settings-body h2 {font-size:18px}
+:is(.island-shell, .fusion-workbench) .fusion-settings-body :is(input,select,button) {min-height:32px}
+@container fi-workspace (max-width:620px) {
+  :is(.island-shell, .fusion-workbench) .fusion-tool-commands .fusion-tool-actions>button:has(svg) {width:auto!important;min-width:0!important;height:32px!important;font-size:12px!important;padding:4px 8px!important;gap:5px!important}
+  :is(.island-shell, .fusion-workbench) .float-capture-content {flex-direction:column;flex:none}
+  :is(.island-shell, .fusion-workbench) .float-capture-preview {min-height:150px}
+}
+@media(prefers-reduced-motion:reduce) {
+  :is(.island-shell, .fusion-workbench) :is(button,input,select,textarea) {transition:none!important}
+}
+
+/* QR has a compact two-pane workspace rather than a stacked generic form. */
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame[data-tool-id=qr][data-standalone=false] {grid-template-columns:auto minmax(0,1fr)!important;grid-template-rows:40px auto minmax(0,1fr)!important;grid-template-areas:"bar modes" "cmds cmds" "scroll scroll"!important}
+:is(.island-shell, .fusion-workbench) .fusion-tool-frame[data-tool-id=qr]>.float-tool-function-row {justify-self:end;align-self:center;padding:0 12px!important}
+:is(.island-shell, .fusion-workbench) .float-qr-workspace {height:100%;min-height:240px}
+:is(.island-shell, .fusion-workbench) .float-qr-workspace>.fusion-utility {height:100%;min-height:0}
+:is(.island-shell, .fusion-workbench) .float-qr-layout {display:grid;grid-template-columns:minmax(0,1fr) minmax(180px,.62fr);gap:12px;flex:1;min-height:0}
+:is(.island-shell, .fusion-workbench) .float-qr-layout[hidden] {display:none!important}
+:is(.island-shell, .fusion-workbench) :is(.float-qr-input,.float-qr-output) {display:flex;flex-direction:column;min-width:0;min-height:0;border:1px solid var(--ui-border);border-radius:10px;background:var(--fs-surface);overflow:hidden}
+:is(.island-shell, .fusion-workbench) .float-qr-layout section>header {display:flex;align-items:center;justify-content:space-between;min-height:40px;gap:6px;padding:4px 10px;border-bottom:1px solid var(--ui-border);font-size:12px;flex:none}
+:is(.island-shell, .fusion-workbench) .float-qr-layout header strong {font-weight:500;white-space:nowrap}
+:is(.island-shell, .fusion-workbench) .float-qr-templates {display:flex;gap:2px;align-items:center;padding:2px;border-radius:7px;background:var(--fs-surface-2)}
+:is(.island-shell, .fusion-workbench) .float-qr-templates>button {padding:3px 7px;min-height:26px;border:0;border-radius:5px;background:transparent;color:var(--ui-muted);font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-templates>button[aria-pressed=true] {background:var(--fs-surface-3);color:var(--ui-text)}
+:is(.island-shell, .fusion-workbench) .float-qr-input>textarea {border:0!important;background:transparent!important;box-shadow:none!important;border-radius:0!important;padding:12px;resize:none;flex:1;min-height:120px;font-size:13px;line-height:1.6}
+:is(.island-shell, .fusion-workbench) .float-qr-input>footer {display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:36px;padding:4px 10px;border-top:1px solid var(--ui-border);flex:none}
+:is(.island-shell, .fusion-workbench) .float-qr-input>footer button {display:flex;align-items:center;gap:4px;padding:3px 4px;min-height:26px;background:transparent;color:var(--ui-muted);border:0;font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-input>footer small {font-size:11px;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) .float-qr-preview {display:grid;place-items:center;flex:1;min-height:180px;padding:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-preview>svg {width:min(100%,220px);height:auto;aspect-ratio:1;background:white;border-radius:6px;box-shadow:0 2px 8px #0002}
+:is(.island-shell, .fusion-workbench) .float-qr-placeholder {display:grid;place-items:center;width:min(100%,184px);aspect-ratio:1;border-radius:6px;background:#fff;color:#9ba4b2}
+:is(.island-shell, .fusion-workbench) .float-qr-export {display:flex;justify-content:center;align-items:center;gap:6px;padding:8px;flex:none;border-top:1px solid var(--ui-border)}
+:is(.island-shell, .fusion-workbench) .float-qr-export>button {display:flex;align-items:center;justify-content:center;gap:5px;min-height:32px;padding:4px 9px;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-surface);color:var(--ui-text);font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-export>.fusion-icon-button {width:28px;padding:0}
+:is(.island-shell, .fusion-workbench) .float-qr-wifi {display:flex;flex:1;min-height:0;flex-direction:column;gap:8px;padding:10px;overflow:auto}
+:is(.island-shell, .fusion-workbench) .float-qr-wifi>label {display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--ui-muted)}
+:is(.island-shell, .fusion-workbench) .float-qr-security {display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+:is(.island-shell, .fusion-workbench) .float-qr-security>select {flex:1;min-width:120px}
+:is(.island-shell, .fusion-workbench) .float-qr-security>label {display:flex;align-items:center;gap:4px;font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-image-actions {display:flex;gap:4px;align-items:center}
+:is(.island-shell, .fusion-workbench) .float-qr-image-actions>button {display:flex;align-items:center;gap:4px;min-height:28px;padding:3px 5px;border:0;border-radius:6px;background:transparent;color:var(--ui-text);font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-image-input>input[hidden] {display:none!important}
+:is(.island-shell, .fusion-workbench) .float-qr-image-zone {display:flex;flex:1;min-height:180px;align-items:center;justify-content:center;flex-direction:column;gap:10px;margin:10px;border:1px dashed var(--ui-border);border-radius:8px;background:transparent;color:var(--ui-muted);cursor:pointer;font-size:12px}
+:is(.island-shell, .fusion-workbench) .float-qr-image-zone>img {max-width:100%;max-height:260px;object-fit:contain}
+:is(.island-shell, .fusion-workbench) .float-qr-result-placeholder {display:grid;place-items:center;flex:1;min-height:180px;color:var(--ui-muted);opacity:.4}
+:is(.island-shell, .fusion-workbench) .float-qr-read-result>.fusion-tool-result {display:flex;flex-direction:column;flex:1;min-height:0;padding:0;border:0;background:transparent}
+@container fi-workspace (max-width:620px) {
+  :is(.island-shell, .fusion-workbench) .float-qr-layout {grid-template-columns:minmax(0,1fr) 190px;gap:8px}
+  :is(.island-shell, .fusion-workbench) .float-qr-export {gap:4px;padding:6px}
+  :is(.island-shell, .fusion-workbench) .float-qr-export>button {padding:4px 7px}
+  :is(.island-shell, .fusion-workbench) .float-qr-image-input>header {flex-wrap:wrap}
+}
+
+/* Preserve readable navigation and a single field boundary at small sizes. */
+:is(.island-shell,.fusion-workbench) .fusion-island-tabs button>span {position:static!important;width:auto!important;height:auto!important;overflow:visible!important;clip-path:none!important;white-space:nowrap}
+:is(.island-shell,.fusion-workbench) .fusion-island-tabs {min-width:0;flex-shrink:0}
+:is(.island-shell,.fusion-workbench) .fusion-chat-header {gap:6px!important}
+:is(.island-shell,.fusion-workbench) .fusion-chat-header>.fusion-icon-button {width:28px;min-width:28px;padding:0}
+:is(.island-shell,.fusion-workbench) .float-reading-empty {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;min-height:140px;color:var(--ui-muted);font-size:12px}
+:is(.island-shell,.fusion-workbench) .float-book-grid:empty {display:none}
+:is(.island-shell,.fusion-workbench) .float-shelf-search:focus-within,
+:is(.island-shell,.fusion-workbench) .float-playlist-query:focus-within,
+:is(.island-shell,.fusion-workbench) .fi-music-query:focus-within {border-color:var(--ui-accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--ui-accent) 14%,transparent)}
+:is(.island-shell,.fusion-workbench) .float-file-drop {display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;width:100%;min-height:180px;border:1px dashed var(--ui-border);border-radius:10px;background:var(--fs-surface);color:var(--ui-muted);cursor:pointer}
+:is(.island-shell,.fusion-workbench) .float-file-drop strong {font-size:13px;font-weight:500}
+:is(.island-shell,.fusion-workbench) .float-file-drop span {display:flex;align-items:center;gap:5px;padding:5px 9px;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-surface);color:var(--ui-text);font-size:12px}
+:is(.island-shell,.fusion-workbench) .float-file-drop:hover {border-color:var(--ui-accent)}
+:is(.island-shell,.fusion-workbench) .fusion-file-list:empty {display:none}
+:is(.island-shell,.fusion-workbench) .fusion-image-stage {height:clamp(160px,36vh,360px)!important;min-height:160px!important;margin-top:4px;border:1px solid var(--ui-border);border-radius:10px;background:var(--fs-surface)!important}
+:is(.island-shell,.fusion-workbench) .fusion-image-stage>span {display:flex;align-items:center;justify-content:center;position:absolute;inset:0;pointer-events:none;color:var(--ui-muted);font-size:13px}
+:is(.island-shell,.fusion-workbench) .fusion-image-canvas {min-width:0;max-width:100%;max-height:100%}
+:is(.island-shell,.fusion-workbench) .float-sharing .fusion-utility {gap:10px}
+:is(.island-shell,.fusion-workbench) .float-sharing-toolbar {display:flex;flex-wrap:wrap}
+:is(.island-shell,.fusion-workbench) .float-sharing-toolbar>input {flex:0 1 220px;min-width:150px}
+:is(.island-shell,.fusion-workbench) .float-sharing-toolbar>button {display:flex;align-items:center;gap:5px}
+:is(.island-shell,.fusion-workbench) .float-sharing-toolbar>.fusion-product-status {margin-left:auto;font-size:12px;white-space:nowrap}
+:is(.island-shell,.fusion-workbench) .float-sharing textarea {min-height:90px!important;height:100px!important;max-height:180px;padding:10px;resize:vertical;font-size:13px}
+:is(.island-shell,.fusion-workbench) .float-sharing-peers {display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+:is(.island-shell,.fusion-workbench) .float-sharing-peers>button {display:flex;align-items:center;gap:8px;min-height:48px;text-align:left;padding:8px 10px;color:var(--ui-text);background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:10px}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-service-panel>.settings-card>.settings-card-header {display:none}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-service-panel .settings-card-body {display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;padding:0}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-hash-row {margin:0;min-width:0}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-hash-row:first-child {grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-hash-row:nth-child(2) {grid-column:2;grid-row:2}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-hash-row:nth-child(3) {grid-column:1;grid-row:2}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .settings-hotkey-row {grid-column:1/-1;justify-content:flex-end}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] :is(.download-start-btn-full,.file-hash-pick-btn) {width:auto;min-height:32px;padding:4px 12px}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-hash-result {grid-column:1/-1}
+:is(.island-shell,.fusion-workbench) .fusion-tool-frame[data-tool-id=fileService-hash] .file-hash-filename {max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@container fi-workspace (max-width:620px) {
+  :is(.island-shell,.fusion-workbench) .fusion-chat--compact .fusion-island-tabs button {padding:4px 8px!important;font-size:12px!important}
+  :is(.island-shell,.fusion-workbench) .fusion-chat-header .fusion-pet {width:28px!important;height:28px!important;min-width:28px}
+  :is(.island-shell,.fusion-workbench) .fusion-tool-directory-top {grid-template-columns:auto minmax(160px,230px)}
+  :is(.island-shell,.fusion-workbench) .fusion-image-stage {height:180px!important}
+}
+
+:is(.island-shell,.fusion-workbench) .float-playlist-import {position:relative;right:auto;top:auto;margin-left:auto;flex:none}
+:is(.island-shell,.fusion-workbench) .float-playlist-import[open] {width:auto}
+:is(.island-shell,.fusion-workbench) .float-playlist-import[open]>summary {margin:0}
+:is(.island-shell,.fusion-workbench) .float-playlist-share {position:absolute;right:0;top:34px;width:min(480px,calc(100cqw - 48px));margin:0;flex-wrap:wrap;z-index:4}
+:is(.island-shell,.fusion-workbench) .float-playlist-share>input {flex:1 1 200px;width:100%}
+:is(.island-shell,.fusion-workbench) .fusion-tool-content:not([hidden])>.fusion-tool-frame {animation:fs-in .16s var(--fs-ease) both}
+
+:is(.island-shell,.fusion-workbench) .float-playlist-header-actions {margin-left:auto;display:flex;align-items:center;min-width:0}
+:is(.island-shell,.fusion-workbench) .float-playlist-header-actions .float-playlist-import {margin:0}
+:is(.island-shell,.fusion-workbench) .float-music-page-tabs:has(.float-playlist-header-actions)>button:last-child {margin-left:0}

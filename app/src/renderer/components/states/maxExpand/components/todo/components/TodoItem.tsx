@@ -36,7 +36,7 @@ import { TodoSubItem } from './TodoSubItem';
  * @description 显示单条待办的标题行，展开后可编辑描述和管理子任务
  */
 export function TodoItem({
-  todo, isExpanded, editingDescId, descDraft, setDescDraft, descRef,
+  onSetDue,todo, isExpanded, editingDescId, descDraft, setDescDraft, descRef,
   subInput, setSubInput, subPriority, setSubPriority, subSize, setSubSize, subInputRef,
   onToggleDone, onRemove, onToggleExpand, onStartEditDesc, onSaveDesc,
   onAddSubTodo, onToggleSubDone, onRemoveSubTodo,
@@ -84,7 +84,7 @@ export function TodoItem({
               <span className="expand-todo-progress-label">{subDone}/{subs.length}</span>
             </span>
           )}
-          <span className="expand-todo-time">{formatCreatedTime(todo.createdAt ?? todo.id)}</span>
+          <span className="expand-todo-time">{formatCreatedTime(todo.createdAt ?? todo.id)}</span>{todo.dueAt&&<small style={{color:!todo.done&&todo.dueAt<Date.now()?'var(--fi-danger,#e97878)':undefined}}>{t('fusion.enhance.todos.due')}: {new Date(todo.dueAt).toLocaleString()}</small>}{todo.completedAt&&<small>{t('fusion.enhance.todos.completed')}: {new Date(todo.completedAt).toLocaleString()}</small>}
         </div>
         {!isExpanded && todo.description && (
           <span className="expand-todo-desc-preview" title={todo.description}>{todo.description}</span>
@@ -102,6 +102,7 @@ export function TodoItem({
       {/* 展开详情 */}
       {isExpanded && (
         <div className="expand-todo-detail" onClick={(e) => e.stopPropagation()}>
+          {onSetDue&&<label>{t('fusion.enhance.todos.due')}<input type="datetime-local" value={todo.dueAt?new Date(todo.dueAt-new Date(todo.dueAt).getTimezoneOffset()*60000).toISOString().slice(0,16):''} onChange={event=>onSetDue(todo.id,event.target.value?Date.parse(event.target.value):undefined)}/></label>}
           {/* 描述区域 */}
           <div className="expand-todo-desc-area">
             {editingDescId === todo.id ? (

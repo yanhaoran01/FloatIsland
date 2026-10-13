@@ -1,0 +1,8 @@
+/* FloatIsland contributors. GPL-3.0. */
+import {describe,it,expect,vi} from 'vitest';
+import {BUILTIN_BOOK_SOURCES,seedBookSources,searchWikisource,wikiChapters,wikiText} from './builtinBookSources';
+describe('built-in public book adapters',()=>{
+ it('seeds once, keeps disabled choices and does not resurrect removed sources',()=>{const first=seedBookSources([]);expect(first.sources).toHaveLength(3);first.sources[0].enabled=false;const next=seedBookSources(first.sources.slice(0,1),first.seeded);expect(next.sources).toHaveLength(1);expect(next.sources[0].enabled).toBe(false);});
+ it('uses the official API response and treats missing results as an error',async()=>{const fetch=vi.fn(async(url:string)=>({text:JSON.stringify({query:{search:[{title:'唐詩三百首'}]}}),url}));const result=await searchWikisource(BUILTIN_BOOK_SOURCES[0],'唐诗',new AbortController().signal,fetch);expect(new URL(fetch.mock.calls[0][0]).searchParams.get('srsearch')).toBe('唐诗');expect(result[0].url).toContain('zh.wikisource.org/wiki/');await expect(searchWikisource(BUILTIN_BOOK_SOURCES[0],'x',new AbortController().signal,async url=>({text:'{}',url}))).rejects.toThrow('invalid-book-response');});
+ it('keeps only chapters within the work and excludes scripts from cached text',()=>{const book={id:'book',sourceId:'wiki',title:'唐詩三百首',author:'',url:'https://zh.wikisource.org/wiki/'+encodeURIComponent('唐詩三百首')};const html='<div class="mw-parser-output"><a href="/wiki/'+encodeURIComponent('唐詩三百首/卷一')+'">卷一</a><a href="/wiki/other">Other</a><p>正文<br>下一行</p><script>secret</script></div>';expect(wikiChapters(html,book)).toHaveLength(1);expect(wikiText(html)).toContain('正文\n下一行');expect(wikiText(html)).not.toContain('secret');});
+});

@@ -26,6 +26,9 @@
 
 import type { ReactElement } from 'react';
 import { useTranslation } from 'react-i18next';
+import {useState} from 'react';
+import {BookmarkPlus} from 'lucide-react';
+import {openProductTool} from '../../../../../fusion/productStore';
 import { SvgIcon } from '../../../../../../utils/SvgIcon';
 import type { ClipboardHistoryItemRowProps } from '../types/clipboardHistoryTypes';
 import { getPreviewText } from '../utils/clipboardHistoryUtils';
@@ -50,6 +53,7 @@ export function ClipboardHistoryItemRow({
   onRemove,
 }: ClipboardHistoryItemRowProps): ReactElement {
   const { t } = useTranslation();
+  const [templateError,setTemplateError]=useState('');
 
   return (
     <div className={`clipboard-history-item${selectionMode && !selectionCollapsing && selected ? ' clipboard-history-item--selected' : ''}`}>
@@ -73,6 +77,7 @@ export function ClipboardHistoryItemRow({
         >
           <img src={SvgIcon.COPY} alt="" aria-hidden="true" />
         </button>
+        <button className="clipboard-history-copy" type="button" title={t('fusion.library.saveTemplate')} aria-label={t('fusion.library.saveTemplate')} onClick={()=>{const id=crypto.randomUUID();setTemplateError('');void window.api.fusionLibraryWrite({type:'template',value:{id,title:item.text.slice(0,40),group:'',text:item.text}}).then(()=>openProductTool('clipboard',[],'templates:'+id)).catch(error=>setTemplateError(String(error)));}}><BookmarkPlus size={20} strokeWidth={1.6}/></button>
         <button
           className="clipboard-history-summary"
           type="button"
@@ -88,6 +93,7 @@ export function ClipboardHistoryItemRow({
           </span>
         </button>
       </div>
+      {templateError&&<p className="fusion-inline-error" role="alert">{templateError}</p>}
 
       <div inert={!expanded} aria-hidden={!expanded} className={`clipboard-history-detail-wrapper${expanded ? ' clipboard-history-detail-wrapper--expanded' : ''}`}>
         <div className="clipboard-history-detail-inner">

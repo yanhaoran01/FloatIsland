@@ -33,12 +33,12 @@ import { DEFAULT_MEDIA_OPTIONS } from '../../../core/mediaDownloadModel';
 const state = vi.hoisted(() => ({root: '', handlers: new Map<string, (...args: unknown[]) => unknown>(), quit: () => {}, open: vi.fn(), trusted: true, updates: [] as unknown[]}));
 vi.mock('electron', () => ({
  ipcMain: {handle: (channel: string, fn: (...args: unknown[]) => unknown) => state.handlers.set(channel, fn)},
- app: {getPath: (name: string) => name === 'userData' ? state.root : join(state.root, 'downloads'), once: (_name: string, fn: () => void) => {state.quit = fn;}},
+ app: {getAppPath:()=>state.root, getPath: (name: string) => name === 'userData' ? state.root : join(state.root, 'downloads'), once: (_name: string, fn: () => void) => {state.quit = fn;}},
  dialog: {showOpenDialog: state.open, showSaveDialog: vi.fn(async () => ({canceled: true}))},
  BrowserWindow: {fromWebContents: () => ({}), getFocusedWindow: () => ({})},
 }));
 vi.mock('../../../system/fusionWindows', () => ({isFusionView: () => state.trusted, broadcastFusion: (_channel: string, task: unknown) => state.updates.push(task)}));
-vi.mock('../../../core/mediaPrograms', () => ({runMediaProgram: vi.fn(async (args: string[], _signal: AbortSignal, line?: (value: string) => void) => {
+vi.mock('../../../core/mediaPrograms', () => ({ownMediaProcessTree:()=>()=>{},runMediaProgram: vi.fn(async (args: string[], _signal: AbortSignal, line?: (value: string) => void) => {
  if (!line) return JSON.stringify({title: 'Fixture', webpage_url: 'https://example.com/v', formats: [{format_id: 'a', vcodec: 'h264', acodec: 'aac'}]});
  const output = join(args[args.indexOf('-P') + 1], 'fixture.mp4'); writeFileSync(output, 'fixture'); line('FI_FILE:' + JSON.stringify(output)); return '';
 })}));
@@ -64,7 +64,7 @@ describe('unified download IPC', () => {
   await register(); const result = await call('start', {url: 'https://example.com/a.txt'}) as {ok: boolean; task: DownloadTask};
   expect(result.ok).toBe(true); expect(result.task.status).toBe('queued'); await vi.waitFor(() => expect((call('list') as DownloadTask[])[0].status).toBe('completed'));
   const rows = call('list') as DownloadTask[]; expect(rows[0].status).toBe('completed'); expect(rows[0].id).toBe(result.task.id);
-  expect(readFileSync(rows[0].savePath, 'utf8')).toBe('bytes'); expect(call('remove', rows[0].id)).toBe(true);
+  expect(readFileSync(rows[0].savePath, 'utf8')).toBe('bytes'); expect(await call('remove', rows[0].id)).toBe(true);
  });
  it('does not truncate legacy history and pauses interrupted media after restart', async () => {
   mkdirSync(join(state.root, 'eIsland_store')); const now = Date.now();
@@ -86,12 +86,12 @@ describe('unified download IPC', () => {
  it('round-trips structured presets and an explicitly selected directory', async () => {
   await register(); state.open.mockResolvedValue({canceled: false, filePaths: [join(state.root, 'selected')]}); mkdirSync(join(state.root, 'selected'));
   const directory = await call('pick-directory') as {id: string; path: string}; expect(directory.path).toBe(join(state.root, 'selected')); expect(directory.id).toBeTruthy();
-  const saved = call('save-preferences', {version: 1, concurrency: 3, presets: [{id: 'a', name: 'Audio', options: {...DEFAULT_MEDIA_OPTIONS, mode: 'audio'}}]});
-  expect(call('preferences')).toEqual(saved); expect(() => call('save-preferences', {version: 1, concurrency: 0, presets: []})).toThrow();
+  const saved = await call('save-preferences', {version: 1, concurrency: 3, presets: [{id: 'a', name: 'Audio', options: {...DEFAULT_MEDIA_OPTIONS, mode: 'audio'}}]});
+  expect(call('preferences')).toEqual(saved); await expect(call('save-preferences', {version: 1, concurrency: 0, presets: []}) as Promise<unknown>).rejects.toThrow();
  });
  it('reports invalid inputs without creating HTTP jobs', async () => {
   await register(); expect(await call('start', {url: 'file:///secret'})).toMatchObject({ok: false}); expect(await call('start', {url: ''})).toMatchObject({ok: false});
-  expect(call('cancel', 'missing')).toBe(false); expect(call('pause', 'missing')).toBe(false); expect(await call('resume', 'missing')).toMatchObject({ok: false});
+  expect(await call('cancel', 'missing')).toBe(false); expect(await call('pause', 'missing')).toBe(false); expect(await call('resume', 'missing')).toMatchObject({ok: false});
   expect(await call('pick-save-path', 'a.txt')).toBeNull();
  });
 });

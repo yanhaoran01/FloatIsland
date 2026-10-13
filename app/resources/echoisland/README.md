@@ -1,3 +1,3 @@
 # Native hosts
 
-Generated EXE files are not committed. Build fusion-host/fusion-hook from app/native/fusion-host and desktop-host from vendor/EchoIsland, then copy their Windows release binaries into this directory before packaging. See app/docs/FloatIsland-1.3.0-BUILD.md.
+Build the Windows binaries from the included source with `scripts/build-echoisland-sidecar.ps1` at the repository root. The script writes desktop-host, fusion-host and fusion-hook to this directory. Generated executables are omitted from the source repository. See [Build](../../../docs/BUILD.md).

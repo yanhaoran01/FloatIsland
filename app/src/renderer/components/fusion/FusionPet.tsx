@@ -25,6 +25,7 @@ import { useFusionPreferences } from './fusionPreferences';
 export type FusionPetMood = 'idle' | 'working' | 'waiting' | 'finished' | 'error' | 'listening' | 'thinking' | 'warning' | 'curious' | 'thanks' | 'surprised';
 
 interface FusionPetProps {
+  actionToken?:string|number;
   mood: FusionPetMood;
   label: string;
   muted: boolean;
@@ -89,8 +90,8 @@ export function usePetCompletion(isWorking: boolean, hasError: boolean, muted: b
  * @param props - 真实状态、提示说明、静音和附件反馈。
  * @returns 动作仅发生在角色内部的按钮。
  */
-export function FusionPet({ mood, label, muted, dropActive = false, disabled = false }: FusionPetProps): JSX.Element {
+export function FusionPet({ mood, label, muted, dropActive = false, disabled = false, actionToken }: FusionPetProps): JSX.Element {
   const microphoneActive=useProductStore(s=>s.record?.microphoneActive===true);
   useEffect(() => { Sound.setEnabled(!muted&&!microphoneActive); }, [muted,microphoneActive]);
-  return <BloubAvatar mood={mood} label={label} disabled={disabled} dropActive={dropActive} />;
+  return <BloubAvatar mood={mood} label={label} disabled={disabled} dropActive={dropActive} actionToken={actionToken} />;
 }

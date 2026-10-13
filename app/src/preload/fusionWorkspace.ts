@@ -14,6 +14,13 @@ const listen = <T>(channel: string, callback: (value: T) => void): (() => void) 
   return () => ipcRenderer.removeListener(channel, handler);
 };
 export const fusionWorkspaceApi: FusionWorkspaceApi = {
+  fusionGenie:(command,value)=>ipcRenderer.invoke('fusion:genie',command,value),
+  onFusionGenieCancelled:callback=>listen('fusion:genie:cancelled',callback),
+  fusionWorkBuddyGet:()=>ipcRenderer.invoke('fusion:workbuddy:get'),
+  fusionWorkBuddySave:config=>ipcRenderer.invoke('fusion:workbuddy:save',config),
+  fusionViewportGet:()=>ipcRenderer.invoke('fusion:viewport:get'),
+  fusionViewportControl:(command,value)=>ipcRenderer.invoke('fusion:viewport:control',command,value),
+  onFusionViewport:callback=>listen('fusion:viewport:changed',callback),
   ...fusionToolsApi,
   fusionOnboardingGet: () => ipcRenderer.invoke('fusion:onboarding:get'),
   fusionOnboardingSave: patch => ipcRenderer.invoke('fusion:onboarding:save',patch),
@@ -34,7 +41,11 @@ export const fusionWorkspaceApi: FusionWorkspaceApi = {
   fusionIntegrationsList: () => ipcRenderer.invoke('fusion:integrations:list'),
   fusionIntegrationChange: (source, remove) => ipcRenderer.invoke('fusion:integrations:change', source, remove),
   fusionIntegrationOpen: source => ipcRenderer.invoke('fusion:integrations:open', source),
+  fusionTimersGet:()=>ipcRenderer.invoke('fusion:timers:get'),
+  fusionTimersCommand:command=>ipcRenderer.invoke('fusion:timers:command',command),
+  onFusionTimers:callback=>listen('fusion:timers:updated',callback),
   fusionTimerGet: () => ipcRenderer.invoke('fusion:timer:get'),
+  fusionTimerFocus:options=>ipcRenderer.invoke('fusion:timer:focus',options),
   fusionTimerControl: (action, seconds) => ipcRenderer.invoke('fusion:timer:control', action, seconds),
   onFusionTimer: callback => listen('fusion:timer:updated', callback),
   fusionAvatarGet: () => ipcRenderer.invoke('fusion:avatar:get'),
