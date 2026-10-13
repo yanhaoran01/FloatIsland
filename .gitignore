@@ -32,3 +32,9 @@ userData/
 *.wav
 *.blockmap
 /app/resources/icon/coucou.ico
+
+/app/docs/announcement/
+/vendor/EchoIsland/image/
+/vendor/EchoIsland/technical-notes/
+/vendor/EchoIsland/llms.txt
+/release/
