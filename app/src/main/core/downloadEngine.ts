@@ -125,7 +125,7 @@ export class MultiThreadDownloadEngine {
     options.signal?.throwIfAborted();
     const threads = normalizeThreads(options.threads);
     const savePath = options.savePath && options.savePath.trim()
-      ? options.savePath.trim()
+      ? options.inferName ? join(dirname(options.savePath.trim()), probe.fileName) : options.savePath.trim()
       : join(options.defaultDir, probe.fileName);
 
     await mkdir(dirname(savePath), { recursive: true });
@@ -288,7 +288,12 @@ export class MultiThreadDownloadEngine {
         const dispositionName = parseContentDispositionFileName(disposition);
         if (dispositionName) {
           fileName = dispositionName;
+        } else if (headResponse.url) {
+          fileName = inferFileNameFromUrl(new URL(headResponse.url));
         }
+        const mime = (headResponse.headers.get('content-type') || '').split(';')[0].trim().toLowerCase();
+        const extension = ({'application/epub+zip':'.epub','application/pdf':'.pdf','audio/mpeg':'.mp3'} as Record<string,string>)[mime];
+        if (extension && !fileName.toLowerCase().endsWith(extension)) fileName = fileName.replace(/\.[^.]+$/, '') + extension;
       }
     } catch {
       // ignore head errors

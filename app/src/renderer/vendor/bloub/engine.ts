@@ -1,3 +1,7 @@
+/* FloatIsland - https://github.com/JNTMTMTM/eIsland
+ * Copyright (C) 2026 contributors. GPL-3.0.
+ * Original Bloub engine: jeremy-prt, MIT; see LICENSE in this directory. */
+/** @file engine.ts @description 原始 SVG 动作、球面眼睛投影与自然眨眼。 @author 鸡哥 */
 import { arcRender, type ArcRender, type DotRender } from './decor'
 import { blendExpression, type BotExpression } from './expressions'
 import { decalageDesYeux } from './eyefit'
@@ -126,6 +130,12 @@ function blendPose(a: Pose, b: Pose, t: number): Pose {
  * donnent exactement la meme image, et le rendu est testable sans DOM.
  */
 export class BotEngine {
+  /**
+   * 使用原始眼睑回应点击，不覆盖任务表情与眼睛位置。
+   * @param now - 可见动画时间（秒）。
+   * @returns 无返回值。
+   */
+  blink(now: number): void { this.blinkAt = now }
   // FloatIsland adaptation: daily feedback keeps the selected silhouette; explicit previews remain upstream-faithful.
   private stableBody = false
   /** Selects stable daily rendering before sampling. */

@@ -3,7 +3,7 @@
 import { useEffect,useState,type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { StopwatchState } from '../../../../preload/types/fusionFileTools';
-import { ToolBody,ToolResult,ToolCommands,ToolEditors } from './ToolControls';
+import { ToolBody,ToolResult,ToolCommands,ToolEditors,useToolVisible } from './ToolControls';
 import {MusicMenu} from './MusicMenu';
 import './musicSources.css';
 import {useProductFiles} from '../productStore';
@@ -25,7 +25,9 @@ export function drawNames(text:string,count:number):string[] {
 /** Shares the main-owned stopwatch across pages and native windows. */
 export function StopwatchTool():JSX.Element {
  const {t}=useTranslation(),[value,setValue]=useState<StopwatchState>({version:1,elapsedMs:0,startedAt:null,laps:[]}),[now,setNow]=useState(Date.now()),[error,setError]=useState('');
- useEffect(()=>{let mounted=true;const update=(state:StopwatchState):void=>{if(mounted){setValue(state);setNow(Date.now());}};const off=window.api.onFusionStopwatch(update);void window.api.fusionStopwatchGet().then(update).catch(reason=>setError(String(reason)));const tick=setInterval(()=>{if(!document.hidden)setNow(Date.now());},100);return()=>{mounted=false;off();clearInterval(tick);};},[]);
+ const visible=useToolVisible();
+ useEffect(()=>{let mounted=true;const update=(state:StopwatchState):void=>{if(mounted){setValue(state);setNow(Date.now());}};const off=window.api.onFusionStopwatch(update);void window.api.fusionStopwatchGet().then(update).catch(reason=>setError(String(reason)));return()=>{mounted=false;off();};},[]);
+ useEffect(()=>{if(!visible||value.startedAt===null)return;setNow(Date.now());const tick=setInterval(()=>{if(!document.hidden)setNow(Date.now());},100);return()=>clearInterval(tick);},[visible,value.startedAt]);
  const format=(ms:number):string=>{const total=Math.floor(ms/10);return [Math.floor(total/360000),Math.floor(total/6000)%60,Math.floor(total/100)%60].map(n=>String(n).padStart(2,'0')).join(':')+'.'+String(total%100).padStart(2,'0');};
  const elapsed=value.elapsedMs+(value.startedAt===null?0:Math.max(0,now-value.startedAt));
  const command=(action:'start'|'pause'|'lap'|'reset'):void=>{setError('');void window.api.fusionStopwatchControl(action).then(setValue).catch(reason=>setError(String(reason)));};

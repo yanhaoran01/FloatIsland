@@ -12,3 +12,27 @@ html,body,#reader{height:100%;margin:0;overflow:hidden;font:14px system-ui}#read
 #reader[data-theme=light] th,#reader[data-theme=warm] th{background:var(--reader-panel);color:inherit}
 #reader>nav :focus-visible{outline:2px solid #819cc4;outline-offset:1px}
 @media(max-width:640px){#reader>aside{top:var(--reader-toolbar-height,40px);max-width:70vw;box-shadow:4px 0 24px #0003}#reader>nav input[type=search]{max-width:none;flex:1 1 120px}}
+
+/* Pin content to the flexible grid row when the status and contents are hidden. */
+#reader>main{grid-column:2;grid-row:3}
+#reader>aside{grid-column:1;grid-row:3}
+
+html{color-scheme:dark}*{scrollbar-width:thin;scrollbar-color:var(--reader-scroll-thumb,#666c77) transparent}::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#666c7780;border-radius:8px}::-webkit-scrollbar-button{display:none}
+
+/* Keep every toolbar control on the same baseline, including the settings trigger. */
+#reader>nav{align-items:center;gap:6px;padding:6px 8px}
+#reader>nav :is(button,select,summary,input[type=search]){box-sizing:border-box;height:32px;min-height:32px;margin-block:0;white-space:nowrap}
+#reader>nav button,#reader>nav summary{display:flex;align-items:center;justify-content:center;line-height:1;padding-inline:9px}
+#reader>nav summary{list-style:none}
+#reader>nav summary::-webkit-details-marker{display:none}
+#reader>nav summary::before{content:"";width:5px;height:5px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;transform:rotate(-45deg);margin-right:8px}
+#reader>nav details[open]>summary::before{transform:rotate(45deg)}
+#reader>nav details,#reader>nav details[open]{position:relative;top:auto;right:auto;flex:none;overflow:visible;padding:0;max-height:none;max-width:none;background:transparent;border:0;box-shadow:none}
+.reader-settings-panel{display:none}
+#reader>nav details[open]>.reader-settings-panel{display:flex;flex-direction:column;gap:10px;position:absolute;top:calc(100% + 6px);left:0;z-index:8;width:220px;max-width:calc(100vw - 32px);padding:12px;box-sizing:border-box;border:1px solid #8884;border-radius:8px;background:var(--reader-panel,#303136);box-shadow:0 8px 28px #0005}
+#reader>nav .reader-settings-panel label{display:flex;flex-direction:column;gap:8px;padding:0}
+#reader>nav .reader-settings-panel input{width:100%;margin:0;padding:0}
+#reader>nav .reader-settings-panel select{width:100%;padding:0 8px}
+#reader>nav .reader-navigation{display:flex;align-items:center;gap:4px;flex:none;margin-left:auto}
+#reader>nav .reader-navigation button{min-width:64px}
+#reader>nav .reader-page-input{box-sizing:border-box;height:32px;padding:4px}

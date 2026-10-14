@@ -10,7 +10,7 @@ import {useLibrary} from '../libraryState';
 import type { WebKind } from '../../../../preload/types/fusionTools';
 import { openProductTool } from '../productStore';
 import { useMediaState } from '../mediaState';
-import { ToolError,ToolTabs,ToolCommands } from './ToolControls';
+import { ToolError,useToolVisible } from './ToolControls';
 import {MusicMenu} from './MusicMenu';
 import './musicSources.css';
 
@@ -25,7 +25,9 @@ export function WebTool({ kind }: { kind: WebKind }) {
   const slot = useRef<HTMLDivElement>(null);
   const root = useRef<HTMLElement>(null);
   useEffect(() => { if (state?.url && !state.url.startsWith('fusion-file:')) setAddress(state.url); }, [state?.url]);
+  const toolVisible=useToolVisible();
   useLayoutEffect(() => {
+    if(!toolVisible)return;
     let frame = 0; let disposed = false; let previous = '';
     const attach = (): void => {
       frame = 0; if (disposed) return;
@@ -42,7 +44,7 @@ export function WebTool({ kind }: { kind: WebKind }) {
     const mutation = new MutationObserver(schedule); mutation.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['hidden', 'class'] });
     window.addEventListener('float-tool-panel',schedule);window.addEventListener('resize', schedule); window.addEventListener('scroll', schedule, true); schedule();
     return () => { disposed = true; cancelAnimationFrame(frame); resize.disconnect(); mutation.disconnect(); window.removeEventListener('float-tool-panel',schedule);window.removeEventListener('resize', schedule); window.removeEventListener('scroll', schedule, true); void window.api.fusionWebAttach(kind, null).catch(() => {}); };
-  }, [kind, Boolean(state?.url), Boolean(state?.error),menuOpen,Boolean(reader)]);
+  }, [kind, Boolean(state?.url), Boolean(state?.error),menuOpen,Boolean(reader),toolVisible]);
   const run = (action: () => Promise<unknown>): void => { setError(''); void action().catch(reason => setError(reason instanceof Error ? reason.message : String(reason))); };
   const navigate = (url = address): void => run(() => window.api.fusionWebNavigate(kind, url));
   const local = (file?: File): void => run(() => window.api.fusionVideoFile(file));
@@ -51,13 +53,12 @@ export function WebTool({ kind }: { kind: WebKind }) {
   const icon=(label:string,action:()=>void,content:React.ReactNode,disabled=false)=><button type="button" className="fusion-icon-button" title={label} aria-label={label} disabled={disabled} onClick={action}>{content}</button>;
   return <section ref={root} className="fusion-web-tool" data-layout={isLocal ? 'video' : 'web'} data-video-ratio={ratio}
     onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); event.stopPropagation(); if (kind === 'video') local(event.dataTransfer.files[0]); }}>
-    {!isLocal&&!reader&&<ToolTabs><form className="fusion-web-address fusion-web-address-compact" onSubmit={event=>{event.preventDefault();navigate();}}>
+    {!isLocal&&!reader&&<form className="fusion-web-address fusion-web-address-compact" onSubmit={event=>{event.preventDefault();navigate();}}>
       {icon(t('fusion.web.back'),()=>run(()=>window.api.fusionWebAction(kind,'back')),<ArrowLeft size={20} strokeWidth={1.6}/>,!state?.back)}
       {icon(t('fusion.web.forward'),()=>run(()=>window.api.fusionWebAction(kind,'forward')),<ArrowRight size={20} strokeWidth={1.6}/>,!state?.forward)}
       {icon(t('fusion.web.reload'),()=>run(()=>window.api.fusionWebAction(kind,'reload')),<RotateCw size={20} strokeWidth={1.6}/>,!state?.url)}
       <input aria-label={t('fusion.web.address')} value={address} onChange={event=>setAddress(event.target.value)} placeholder="https://"/>
-    </form></ToolTabs>}
-    {!reader&&<ToolCommands>
+    <div className="fusion-web-actions">
       {kind==='video'&&icon(t('fusion.media.local'),()=>local(),<FolderOpen size={20} strokeWidth={1.6}/>)}
       {isLocal?icon(t('fusion.media.close'),()=>run(()=>window.api.fusionMediaCommand('close')),<X size={20} strokeWidth={1.6}/>):<>
         {icon(t('fusion.web.favorite'),()=>{if(state)run(()=>library.write({type:'url',title:state.title.slice(0,200),url:state.url}));},<Star size={20} strokeWidth={1.6}/>,!state?.url)}
@@ -72,10 +73,11 @@ export function WebTool({ kind }: { kind: WebKind }) {
           <button onClick={()=>{if(confirm(t('fusion.web.clearConfirm')))run(()=>window.api.fusionWebAction(kind,'clear'));}}>{t('fusion.web.clear')}</button>
         </MusicMenu>
       </>}
-    </ToolCommands>}
+    </div></form>}
+    {isLocal&&!reader&&<div className="fusion-web-local-actions">{icon(t('fusion.media.local'),()=>local(),<FolderOpen size={20}/>)}{icon(t('fusion.media.close'),()=>run(()=>window.api.fusionMediaCommand('close')),<X size={20}/>)}</div>}
     <ToolError error={error || library.error || state?.error || ''} />
     {state?.error && <div className="fusion-tool-actions"><button onClick={() => run(() => window.api.fusionWebAction(kind, 'reload'))}>{t('fusion.web.retry')}</button>{!isLocal && <button onClick={() => run(() => window.api.fusionWebAction(kind, 'external'))}>{t('fusion.web.external')}</button>}</div>}
     {state?.loading && <small role="status">{t('fusion.web.loading')}</small>}
-    {reader?<ArticleReader article={reader} onChange={setReader} onClose={()=>setReader(null)}/>:<div ref={slot} className="fusion-web-slot">{!state?.url && <div className="fusion-web-welcome">{kind === 'video' && <button aria-label={t('fusion.media.local')} onClick={() => local()}><FolderOpen size={20} /></button>}</div>}</div>}
+    {reader?<ArticleReader article={reader} onChange={setReader} onClose={()=>setReader(null)}/>:<div ref={slot} className="fusion-web-slot">{!state?.url && <div className="fusion-web-welcome">{kind==='browser'&&<span>{t('fusion.ui.browserStartHint')}</span>}{kind === 'video' && <button aria-label={t('fusion.media.local')} onClick={() => local()}><FolderOpen size={20} />{t('fusion.media.local')}</button>}</div>}</div>}
   </section>;
 }

@@ -7,7 +7,7 @@ import { Search, Plus, Eye, Download, Trash2, PanelLeft } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {useToolPreference} from './toolPreferences';
 import { useToolData } from './toolHooks';
-import { ToolBody, ToolError, ToolResult, ToolCommands, ToolTabs } from './ToolControls';
+import { ToolBody, ToolError, ToolResult, ToolCommands, ToolTabs, useToolVisible } from './ToolControls';
 import { colorFormats, dateMilliseconds, downloadToolFile, generatePassword } from './toolHelpers';
 import type { ToolNote } from '../../../../preload/types/fusionTools';
 import {useProductStore,useProductFiles} from '../productStore';
@@ -76,7 +76,8 @@ export function DateTool({mode:externalMode,showModeTabs=true}:{mode?:'dates'|'t
   const [now, setNow] = useState(Date.now());
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
-  useEffect(() => { const clock = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(clock); }, []);
+  const visible=useToolVisible();
+  useEffect(() => { if(!visible||mode==='dates')return;setNow(Date.now());const clock = setInterval(() => {if(!document.hidden)setNow(Date.now());}, 1000); return () => clearInterval(clock); }, [visible,mode]);
   const calculate = (operation: string): void => {
     try {
       setError('');
@@ -92,7 +93,7 @@ export function DateTool({mode:externalMode,showModeTabs=true}:{mode?:'dates'|'t
     <div className="fusion-tool-row"><label>{t('fusion.toolbox.dates.city')}<input list="float-timezones" value={city} onChange={event=>setCity(event.target.value)}/></label><datalist id="float-timezones">{zoneOptions.map(zone=><option key={zone} value={zone}/>)}</datalist><button disabled={zones.length>=20} onClick={addZone}>{t('fusion.enhance.utility.addZone')}</button></div>
     </>}
     {mode==='dates'&&<><div className="fusion-tool-columns"><label>{t('fusion.toolbox.dates.start')}<input type="date" value={start} onChange={event => setStart(event.target.value)} /></label><label>{t('fusion.toolbox.dates.end')}<input type="date" value={end} onChange={event => setEnd(event.target.value)} /></label></div>
-    <div className="fusion-tool-actions"><button onClick={() => calculate('difference')}>{t('fusion.toolbox.dates.difference')}</button><input type="number" aria-label={t('fusion.toolbox.dates.days')} value={days} onChange={event => setDays(Number(event.target.value))} /><button onClick={() => calculate('add')}>{t('fusion.toolbox.dates.add')}</button></div>
+    <div className="float-date-actions"><button onClick={() => calculate('difference')}>{t('fusion.toolbox.dates.difference')}</button><label>{t('fusion.toolbox.dates.days')}<input type="number" value={days} onChange={event => setDays(Number(event.target.value))} /></label><button onClick={() => calculate('add')}>{t('fusion.toolbox.dates.add')}</button></div>
     </>}
     {mode==='timestamp'&&<><div className="fusion-tool-actions"><input aria-label={t('fusion.toolbox.dates.timestamp')} value={stamp} onChange={event => setStamp(event.target.value)} /><select aria-label={t('fusion.toolbox.dates.unit')} value={unit} onChange={event => setUnit(event.target.value)}>{['seconds', 'milliseconds'].map(id => <option key={id} value={id}>{t(`fusion.toolbox.dates.${id}`)}</option>)}</select><button onClick={() => calculate('timestamp')}>{t('fusion.toolbox.convert')}</button><button onClick={() => setResult(`${Math.floor(now / 1000)}\n${now}`)}>{t('fusion.toolbox.dates.now')}</button></div>
     <label>{t('fusion.toolbox.dates.dateTime')}<input type="datetime-local" value={dateTime} onChange={event => setDateTime(event.target.value)} /></label><button onClick={() => calculate('fromDate')}>{t('fusion.toolbox.dates.toTimestamp')}</button></>}

@@ -34,6 +34,7 @@ export interface StartDownloadOptions {
   url: string;
   /** 保存路径（可选，默认使用 defaultDir） */
   savePath?: string;
+  inferName?: boolean;
   /** 下载线程数（可选，默认使用配置值） */
   threads?: number;
   /** 默认下载目录 */

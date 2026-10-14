@@ -7,6 +7,13 @@ import {SHAPES,COLORS} from '../../vendor/bloub/skins';
 import {STATES,POSES} from '../../vendor/bloub/states';
 import {normalizeAvatar,DEFAULT_AVATAR,validAvatar} from '../../../shared/avatarConfig';
 describe('stable daily actor and complete preview',()=>{
+ it('acknowledges clicks with original eyelids without changing the eye path or body',()=>{
+  const engine=new BotEngine(100);engine.setStableBody(true);engine.reset('idle',0);
+  const before=engine.sample(.5);engine.blink(.5);const closed=engine.sample(.6);const opened=engine.sample(.8);
+  expect(closed.bodyPath).toBe(before.bodyPath);expect(closed.eyes.map(e=>e.d)).toEqual(before.eyes.map(e=>e.d));
+  expect(closed.eyes.every(e=>Math.abs(Number(e.matrix.slice(7,-1).split(',')[3]))<.2)).toBe(true);
+  expect(opened.eyes.some(e=>Math.abs(Number(e.matrix.slice(7,-1).split(',')[3]))>.5)).toBe(true);
+ });
  it('preserves v1 choices, adds cream, and round-trips every original color',()=>{
   expect(normalizeAvatar({version:1,shape:'nuage',expression:'curieux'})).toEqual({...DEFAULT_AVATAR,shape:'nuage',expression:'curieux'});
   expect(COLORS).toHaveLength(12);

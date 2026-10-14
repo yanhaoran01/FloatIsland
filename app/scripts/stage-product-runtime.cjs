@@ -17,7 +17,7 @@ function copy(name,from){
  if(require('node:module').isBuiltin(name))return;
  const source=locate(name,from),pkg=JSON.parse(fs.readFileSync(path.join(source,'package.json'))),key=name+'@'+pkg.version;
  if(sources.has(source))return;sources.add(source);
- const relative=path.relative(fs.realpathSync(path.join(app,'node_modules')),source);
+ const relative=path.relative(path.join(app,'node_modules'),source);
  if(relative.startsWith('..')||path.isAbsolute(relative))throw Error('Dependency outside node_modules: '+name);
  const dest=path.join(stage,'node_modules',relative);fs.mkdirSync(path.dirname(dest),{recursive:true});if(fs.existsSync(dest)){const absolute=path.resolve(dest),baseModules=path.resolve(stage,'node_modules');if(!absolute.startsWith(baseModules+path.sep))throw Error('Unsafe runtime package path');const backup=path.join(stage,'replaced-packages',relative);fs.mkdirSync(path.dirname(backup),{recursive:true});if(fs.existsSync(backup))fs.renameSync(backup,backup+'-'+Date.now());fs.renameSync(absolute,backup);}fs.cpSync(source,dest,{recursive:true,dereference:true});
  seen.add(key);

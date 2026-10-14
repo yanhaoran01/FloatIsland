@@ -21,11 +21,13 @@ import useIslandStore from '../../store/slices';
 import { FusionPet, type FusionPetMood } from './FusionPet';
 import { useFusionActivity } from './fusionActivity';
 import { useFusionPreferences } from './fusionPreferences';
+import {prepareIslandTransition} from './islandTransition';
 import {writeWorkspaceNavigation} from './workspaceNavigation';
 
 /** Summarizes current activity without activating or resuming a session. */
 export function FusionCompact({ overview = false }: { overview?: boolean }): JSX.Element {
   const { t } = useTranslation();
+  useEffect(()=>{const timer=setTimeout(prepareIslandTransition,350);return()=>clearTimeout(timer);},[]);
   const press=useRef<{x:number;y:number}|null>(null);
   const [edge,setEdge]=useState<'top'|'left'|'right'>('top');
   useEffect(()=>{let active=true;void window.api.fusionDockGet().then(value=>{if(active)setEdge(value.config.edge);});const off=window.api.onFusionDock(value=>setEdge(value.config.edge));return()=>{active=false;off();};},[]);

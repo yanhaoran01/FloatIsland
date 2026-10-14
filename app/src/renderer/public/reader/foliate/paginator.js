@@ -504,6 +504,8 @@ export class Paginator extends HTMLElement {
             grid-row: 1 / -1;
         }
         #container {
+            scrollbar-width: thin;
+            scrollbar-color: var(--reader-scroll-thumb, #666c77) transparent;
             grid-column: 2 / 5;
             grid-row: 2;
             overflow: hidden;

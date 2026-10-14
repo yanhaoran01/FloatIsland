@@ -155,11 +155,11 @@
       "off": "Mute"
     },
     "pet": {
-      "idle": "FloatIsland companion is idle. Click to interact.",
-      "working": "FloatIsland companion is focused. Click to interact.",
-      "waiting": "FloatIsland companion is waiting for you. Click to interact.",
-      "finished": "FloatIsland companion finished the task. Click to interact.",
-      "error": "FloatIsland companion hit a problem. Click to interact.",
+      "idle": "FloatIsland companion is idle. Click to cycle through its original actions.",
+      "working": "FloatIsland companion is focused.",
+      "waiting": "FloatIsland companion is waiting for you.",
+      "finished": "FloatIsland companion finished the task.",
+      "error": "FloatIsland companion hit a problem.",
       "listening": "Listening",
       "thinking": "Thinking",
       "warning": "Reminder",
@@ -1510,6 +1510,9 @@
       "edit": "Edit"
     },
     "reader": {
+      "previous": "Previous page",
+      "paginated": "Paginated",
+      "scrolled": "Scrolling",
       "theme": "Reading theme",
       "dark": "Dark",
       "warm": "Warm",
@@ -1549,7 +1552,11 @@
       "matches": "Matches",
       "noMatches": "No matching text",
       "searching": "Searching…",
-      "bookmark": "Bookmark / highlight"
+      "bookmark": "Bookmark / highlight",
+      "translateSelection": "Translate selection",
+      "translationHint": "Select text in the document, then choose Translate selection.",
+      "translationLimit": "Select up to 5,000 characters per translation.",
+      "translationLanguage": "Translate to"
     },
     "workspace": {
       "pages": {
@@ -1655,7 +1662,7 @@
         "importFile": "Import playlist file",
         "exportPlaylist": "Export playlist",
         "searchPlaylists": "Search online playlists",
-        "searchPlaylistHint": "Playlist keywords, e.g. ambient or running",
+        "searchPlaylistHint": "Search playlists",
         "librarySearch": "Search songs, artists or albums",
         "sort": "Sort",
         "originalOrder": "Playlist order",
@@ -1765,6 +1772,7 @@
       }
     },
     "ui": {
+      "previewEmpty": "Drop a file or choose a file to preview its contents",
       "taskPreview": "Task preview",
       "downloadPreviewHint": "Paste links and identify tasks, then confirm before downloading.",
       "originalSites": "Original websites",
@@ -1775,7 +1783,7 @@
       "mediaTitle": "Video, audio and playlists",
       "mediaHint": "Paste a page link, analyze it, then choose quality, audio format, subtitles and cover.",
       "mediaSettings": "Subtitles, cover and more settings",
-      "mediaPreviewHint": "Analyze a video or playlist, select the items you want, then start downloading.",
+      "mediaPreviewHint": "Analyze links to select downloads",
       "importPlaylist": "Import playlist",
       "playlistHint": "Choose a source and category, or search by keyword. You can also import a playlist link or file.",
       "importImage": "Import image",
@@ -1791,7 +1799,9 @@
       "qrUrlPlaceholder": "https://example.com",
       "qrBytes": "{{count}} / 2000 bytes",
       "emptyShelf": "No books yet",
-      "archiveInput": "Drop files or choose a ZIP"
+      "archiveInput": "Drop files or choose a ZIP",
+      "torrentPreviewHint": "Import a torrent or paste a magnet link to inspect and select files.",
+      "browserStartHint": "Enter a URL above or open a bookmark from the menu."
     },
     "stage": {
       "mood": {

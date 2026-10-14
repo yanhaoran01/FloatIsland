@@ -32,9 +32,11 @@ userData/
 *.wav
 *.blockmap
 /app/resources/icon/coucou.ico
-
-/app/docs/announcement/
-/vendor/EchoIsland/image/
-/vendor/EchoIsland/technical-notes/
-/vendor/EchoIsland/llms.txt
+/.claude/
+/artifacts/
+/github-source/
+/source/
+/packaging-runtime/
+/packaging-runtime-*/
 /release/
+/releases/

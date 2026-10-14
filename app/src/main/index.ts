@@ -38,7 +38,7 @@ import { registerCodexStatusIpcHandlers } from './ipc/agent/codexStatusIpc';
 import { registerCodexAppServerIpcHandlers } from './ipc/agent/codexAppServerIpc';
 import { registerDshAcpIpcHandlers } from './ipc/agent/dshAcpIpc';
 import { registerFusionWorkspace } from './system/fusionWorkspaceService';
-import { registerFusionDock } from './window/fusionDock';
+import { registerFusionDock, fusionDockKeepsVisible } from './window/fusionDock';
 import { activeWindow } from 'get-windows';
 import { screen } from 'electron';
 import { registerFusionVoiceGlow } from './window/fusionVoiceGlow';
@@ -367,6 +367,7 @@ const mainWindowService = createMainWindowService({
 
 const autoHideWatcher = createAutoHideWatcher({
   getMainWindow: () => mainWindow,
+  shouldKeepVisible: fusionDockKeepsVisible,
   defaultWindowTitleList: DEFAULT_HIDE_PROCESS_LIST,
   defaultAutoHideFullscreenWindows: false,
   isAnyFullscreenWindow: async () => {

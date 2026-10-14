@@ -155,11 +155,11 @@
       "off": "静音"
     },
     "pet": {
-      "idle": "FloatIsland角色，空闲中。点击互动。",
-      "working": "FloatIsland角色正在专注工作。点击互动。",
-      "waiting": "FloatIsland角色在等待你的选择。点击互动。",
-      "finished": "FloatIsland角色完成了任务。点击互动。",
-      "error": "FloatIsland角色遇到问题。点击互动。",
+      "idle": "FloatIsland角色，空闲中。点击轮换原生互动动作。",
+      "working": "FloatIsland角色正在专注工作。",
+      "waiting": "FloatIsland角色在等待你的选择。",
+      "finished": "FloatIsland角色完成了任务。",
+      "error": "FloatIsland角色遇到问题。",
       "listening": "聆听中",
       "thinking": "思考中",
       "warning": "提醒",
@@ -1510,6 +1510,9 @@
       "edit": "编辑"
     },
     "reader": {
+      "previous": "上一页",
+      "paginated": "分页阅读",
+      "scrolled": "滚动阅读",
       "theme": "阅读主题",
       "dark": "深色",
       "warm": "暖色",
@@ -1549,7 +1552,11 @@
       "matches": "查找结果",
       "noMatches": "没有找到匹配文字",
       "searching": "正在查找…",
-      "bookmark": "书签／高亮"
+      "bookmark": "书签／高亮",
+      "translateSelection": "翻译选中文本",
+      "translationHint": "在正文中选中文字，然后点击“翻译选中文本”。",
+      "translationLimit": "每次最多翻译 5,000 个字符，请缩短所选文字。",
+      "translationLanguage": "目标语言"
     },
     "workspace": {
       "pages": {
@@ -1655,7 +1662,7 @@
         "importFile": "导入歌单文件",
         "exportPlaylist": "导出歌单",
         "searchPlaylists": "搜索网上歌单",
-        "searchPlaylistHint": "歌单关键词，例如轻音乐、夜跑",
+        "searchPlaylistHint": "搜索歌单",
         "librarySearch": "搜索歌曲、歌手或专辑",
         "sort": "排序",
         "originalOrder": "歌单顺序",
@@ -1765,6 +1772,7 @@
       }
     },
     "ui": {
+      "previewEmpty": "拖入文件或选择文件以预览内容",
       "taskPreview": "任务预览",
       "downloadPreviewHint": "粘贴链接后识别，确认任务再开始下载。",
       "originalSites": "原站入口",
@@ -1775,7 +1783,7 @@
       "mediaTitle": "视频、音频与播放列表",
       "mediaHint": "粘贴网页链接，分析后选择画质、音频格式、字幕和封面。",
       "mediaSettings": "字幕、封面与更多设置",
-      "mediaPreviewHint": "单个视频和播放列表均可分析，选择需要的项目后开始下载。",
+      "mediaPreviewHint": "解析后选择下载项目",
       "importPlaylist": "导入歌单",
       "playlistHint": "选择音源和分类，或输入关键词搜索。也可以导入歌单链接或文件。",
       "importImage": "导入图片",
@@ -1791,7 +1799,9 @@
       "qrUrlPlaceholder": "https://example.com",
       "qrBytes": "{{count}} / 2000 字节",
       "emptyShelf": "书架暂无书籍",
-      "archiveInput": "拖入文件或选择 ZIP"
+      "archiveInput": "拖入文件或选择 ZIP",
+      "torrentPreviewHint": "导入种子或粘贴磁力链接后，获取文件目录并选择要下载的文件。",
+      "browserStartHint": "在地址栏输入网址，或从菜单打开收藏。"
     },
     "stage": {
       "mood": {

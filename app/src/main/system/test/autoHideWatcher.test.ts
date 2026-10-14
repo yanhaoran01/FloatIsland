@@ -72,6 +72,34 @@ describe('createAutoHideWatcher', () => {
   });
 
   describe('checkNow', () => {
+    it('keeps an explicitly expanded workspace visible under title and fullscreen rules', async () => {
+      hasAnyFocusedWindowTitleMock.mockResolvedValue(true);
+      const fullscreen = vi.fn(() => true);
+      const watcher = createAutoHideWatcher({getMainWindow,defaultWindowTitleList:['app.exe'],defaultAutoHideFullscreenWindows:true,isAnyFullscreenWindow:fullscreen,shouldKeepVisible:()=>true});
+      await watcher.checkNow();
+      expect(mockWindow.hide).not.toHaveBeenCalled();
+      expect(hasAnyFocusedWindowTitleMock).not.toHaveBeenCalled();
+      expect(fullscreen).not.toHaveBeenCalled();
+    });
+
+    it('discards a stale hide result when the workspace expands during detection', async () => {
+      let keepVisible = false;
+      hasAnyFocusedWindowTitleMock.mockImplementation(async () => {keepVisible=true;return true;});
+      const watcher = createAutoHideWatcher({getMainWindow,defaultWindowTitleList:['app.exe'],shouldKeepVisible:()=>keepVisible});
+      await watcher.checkNow();
+      expect(mockWindow.hide).not.toHaveBeenCalled();
+      expect(watcher.getHiddenByAutoHideProcess()).toBe(false);
+    });
+
+    it('restores an automatically hidden workspace once explicit display takes priority', async () => {
+      mockWindow=createMockWindow({isVisible:()=>false});
+      const watcher = createAutoHideWatcher({getMainWindow,defaultWindowTitleList:['app.exe'],shouldKeepVisible:()=>true});
+      watcher.setHiddenByAutoHideProcess(true);
+      await watcher.checkNow();
+      expect(mockWindow.showInactive).toHaveBeenCalledTimes(1);
+      expect(watcher.getHiddenByAutoHideProcess()).toBe(false);
+    });
+
     it('does nothing when main window is null', async () => {
       const watcher = createAutoHideWatcher({
         getMainWindow: () => null,

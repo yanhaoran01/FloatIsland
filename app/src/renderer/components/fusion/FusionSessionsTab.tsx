@@ -11,20 +11,19 @@
 
 /**
  * @file FusionSessionsTab.tsx
- * @description Unified overview for hosted and external Codex sessions, dsh sessions, and pending requests.
+ * @description 应用内 Codex 与 dsh 会话和待处理请求概览。
  * @author 鸡哥
  */
 
 import { useFusionPreferences } from './fusionPreferences';
-import { useCallback, useEffect, useMemo, useState, type JSX } from 'react';
+import { useCallback, useEffect, useState, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CheckCircle2, Clock3, Plus, RefreshCw, Volume2, VolumeX } from 'lucide-react';
-import type { FusionCodexSnapshot, FusionCodexThread, FusionDshSession, FusionDshSnapshot, FusionEchoCodexSessionsSnapshot } from '../../../preload/types/fusion';
+import type { FusionCodexSnapshot, FusionCodexThread, FusionDshSession, FusionDshSnapshot } from '../../../preload/types/fusion';
 import useIslandStore from '../../store/slices';
 import { FusionPet, type FusionPetMood } from './FusionPet';
 
 import { FusionProviderIcon } from './FusionResourceIcon';
-import { EchoSessionAvatar } from './EchoSessionAvatar';
 
 const EMPTY_CODEX: FusionCodexSnapshot = {
   state: 'stopped', error: null, activeThreadId: null, activeTurnId: null,
@@ -36,7 +35,6 @@ const EMPTY_DSH: FusionDshSnapshot = {
   working: false, sessions: [], messages: [], pendingRequests: [],
 };
 
-const EMPTY_EXTERNAL: FusionEchoCodexSessionsSnapshot = { state: 'unavailable', updatedAt: null, sessions: [] };
 
 /**
  * Summarizes current local agent sessions and routes the user to the matching chat when they need to act.
@@ -47,7 +45,6 @@ export function FusionSessionsTab(): JSX.Element {
   const setMaxExpandTab = useIslandStore((state) => state.setMaxExpandTab);
   const [codex, setCodex] = useState<FusionCodexSnapshot>(EMPTY_CODEX);
   const [dsh, setDsh] = useState<FusionDshSnapshot>(EMPTY_DSH);
-  const [external, setExternal] = useState<FusionEchoCodexSessionsSnapshot>(EMPTY_EXTERNAL);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const muted = useFusionPreferences((state) => state.value.muted);
@@ -59,11 +56,9 @@ export function FusionSessionsTab(): JSX.Element {
     const results = await Promise.allSettled([
       window.api.fusionCodexSnapshot(),
       window.api.fusionDshSnapshot(),
-      window.api.fusionEchoCodexSessions(),
     ]);
     if (results[0].status === 'fulfilled') setCodex(results[0].value);
     if (results[1].status === 'fulfilled') setDsh(results[1].value);
-    if (results[2].status === 'fulfilled') setExternal(results[2].value);
     const failed = results.filter((result) => result.status === 'rejected');
     if (failed.length === results.length) setError(t('fusion.overview.unavailable'));
     setBusy(false);
@@ -87,12 +82,10 @@ export function FusionSessionsTab(): JSX.Element {
   useEffect(() => {
     const unsubscribeCodex = window.api.onFusionCodexUpdated(setCodex);
     const unsubscribeDsh = window.api.onFusionDshUpdated(setDsh);
-    const unsubscribeExternal = window.api.onFusionEchoCodexSessionsUpdated(setExternal);
     void refresh();
     return () => {
       unsubscribeCodex();
       unsubscribeDsh();
-      unsubscribeExternal();
     };
   }, [refresh]);
 
@@ -102,11 +95,6 @@ export function FusionSessionsTab(): JSX.Element {
 
   const pendingCount = codex.pendingRequests.length + dsh.pendingRequests.length;
   const mood: FusionPetMood = pendingCount > 0 ? 'waiting' : (codex.error || dsh.error) ? 'error' : (codex.working || dsh.working) ? 'working' : 'idle';
-  const managedThreadIds = useMemo(() => new Set(codex.threads.map((thread) => thread.id)), [codex.threads]);
-  const externalSessions = useMemo(() => external.state === 'ready' || external.state === 'restored'
-    ? external.sessions.filter((session) => session.source !== 'codex' || !managedThreadIds.has(session.sessionId))
-    : [], [external, managedThreadIds]);
-
   const openChat = useCallback((provider: 'codex' | 'dsh'): void => {
     localStorage.setItem('fusion.provider', provider);
     window.dispatchEvent(new CustomEvent('fusion-select-provider', { detail: provider }));
@@ -165,11 +153,6 @@ export function FusionSessionsTab(): JSX.Element {
   };
   const handleDshRequest = async (_sessionId: string): Promise<void> => {
     document.querySelector<HTMLButtonElement>('.fusion-request-disclosure[aria-expanded="false"]')?.click();
-  };
-
-  const handleExternalCodex = async (): Promise<void> => {
-    const focused = await window.api.fusionFocusExternalCodex();
-    if (!focused) setError(t('fusion.overview.unavailable'));
   };
 
   return (
@@ -244,15 +227,6 @@ export function FusionSessionsTab(): JSX.Element {
               <button className="fusion-pending-open" type="button" onClick={() => void handleDshRequest(request.sessionId)}>{t('fusion.overview.handle')}</button>
             </article>
           ))}
-        </section>
-      )}
-
-      {externalSessions.length > 0 && (
-        <section className="fusion-external-section">
-          <div className="fusion-section-heading"><img className="fusion-resource-icon no-filter" src="./echoisland/icon.png" alt="" /><strong>{t('fusion.overview.external')}</strong><span>{externalSessions.length}</span><small className="fusion-external-freshness">{t(external.state === 'restored' ? 'fusion.overview.cachedSnapshot' : 'fusion.overview.liveSnapshot')}</small><button type="button" onClick={() => void handleExternalCodex()}>{t('fusion.overview.externalFocus')}</button></div>
-          <div className="fusion-external-list">
-            {externalSessions.map((session) => <details className="fusion-external-session fusion-session-detail" key={session.source + ":" + session.sessionId}><summary><EchoSessionAvatar status={session.status} restored={external.state !== 'ready' || session.status === 'Restored'} /><div className="fusion-external-session-copy"><strong>{session.projectName || session.cwd || t('fusion.external.untitled')}</strong><small>{session.lastUserPrompt || session.lastAssistantMessage || t('fusion.external.noPreview')}</small></div></summary><div className="fusion-session-detail-body"><strong>{session.source} · {session.status}</strong><p>{session.cwd}</p><p>{session.lastUserPrompt}</p><p>{session.lastAssistantMessage}</p>{session.toolHistory?.map((entry, index) => <pre key={index}>{entry.tool}: {entry.description}</pre>)}<button type="button" onClick={() => { void window.api.fusionFocusSession(session.source, session.sessionId).then((focused) => { if (!focused) setError(t('fusion.overview.unavailable')); }).catch(() => setError(t('fusion.overview.unavailable'))); }}>{t('fusion.overview.externalFocus')}</button></div></details>)}
-          </div>
         </section>
       )}
 

@@ -10,6 +10,7 @@ import {useProductStore} from '../productStore';
 import {openProductTool} from '../productStore';
 import { downloadToolFile } from './toolHelpers';
 import {TOOL_REGISTRY} from './toolRegistry';
+import { useSlidingIndicator } from '../useSlidingIndicator';
 const ToolSlots=createContext<{modes:HTMLElement|null;actions:HTMLElement|null;visible?:boolean;toolId?:string}>({modes:null,actions:null});
 /** Allows retained tools to ignore navigation requests addressed to another workspace. */
 export function useToolVisible():boolean{return useContext(ToolSlots).visible!==false;}
@@ -22,18 +23,29 @@ export function ToolFrame({children,onBack,presentation,toolId,visible=true,stan
   useEffect(()=>{if(!visible)return;const restore=requestAnimationFrame(()=>{if(focus.current?.isConnected&&frame.current?.contains(focus.current)&&focus.current.getBoundingClientRect().height)focus.current.focus({preventScroll:true});});return()=>cancelAnimationFrame(restore);},[visible]);
   const importFiles=async(files?:File[])=>{if(!toolId||importing)return;setImporting(true);setInputError('');try{const result=await window.api.fusionLocalImport({domain:'files',mode:files?'drop':'files',requestId:crypto.randomUUID()},files);if(!result.cancelled&&result.artifacts.length)useProductStore.getState().set({target:toolId,inputs:result.artifacts,nonce:Date.now()});if(result.errors.length)setInputError(result.errors.map(item=>item.name+': '+item.error).join('\n'));}catch(reason){setInputError(String(reason));}finally{setImporting(false);}};
   return <ToolSlots.Provider value={{modes,actions,visible,toolId}}><div ref={frame} className="fusion-tool-frame" data-tool-id={toolId} data-standalone={standalone} data-presentation={presentation} onFocusCapture={event=>{if(visible)focus.current=event.target as HTMLElement;}} onDragOver={event=>{if(accepted.length&&event.dataTransfer.types.includes('Files'))event.preventDefault();}} onDrop={event=>{if(event.defaultPrevented||!accepted.length||!event.dataTransfer.files.length)return;event.preventDefault();event.stopPropagation();void importFiles(Array.from(event.dataTransfer.files));}}>
-    <div className="fusion-tool-toolbar">{!standalone&&<>{toolId==='browser'?<MusicMenu label={t('fusion.music.more')}><button onClick={onBack}>{t('fusion.tools.back')}</button></MusicMenu>:<button type="button" className="fusion-icon-button" title={t('fusion.tools.back')} aria-label={t('fusion.tools.back')} onClick={onBack}><X size={17} strokeWidth={1.7}/></button>}<strong className="float-tool-title">{definition?t(definition.label):''}</strong></>}
+    <div className="fusion-tool-toolbar">{!standalone&&<>{<button type="button" className="fusion-icon-button" title={t('fusion.tools.back')} aria-label={t('fusion.tools.back')} onClick={onBack}><X size={17} strokeWidth={1.7}/></button>}<strong className="float-tool-title">{definition?t(definition.label):''}</strong></>}
       {standalone&&<div className="fusion-tool-modes" ref={setModes}/>}</div>
     {!standalone&&<div className="fusion-tool-modes float-tool-function-row" ref={setModes}/>}
-    <div className="fusion-tool-commands" ref={setActions}/>
-    <div className="fusion-tool-scroll">{['text','encoding','translation','random','calculator'].includes(toolId||'')&&<div className="fusion-tool-input-actions"><button disabled={importing} onClick={()=>void importFiles()}><FilePlus2 size={16}/>{t('fusion.toolbox.chooseFiles')}</button></div>}<ToolError error={inputError}/>{children}</div>
+    <div className="fusion-tool-commands" ref={setActions}>{['text','encoding','translation','random','calculator'].includes(toolId||'')&&<div className="fusion-tool-input-actions"><button disabled={importing} onClick={()=>void importFiles()}><FilePlus2 size={16}/>{t('fusion.toolbox.chooseFiles')}</button></div>}</div>
+    <div className="fusion-tool-scroll"><ToolError error={inputError}/>{children}</div>
   </div></ToolSlots.Provider>;
 }
 /** Places mode selectors beside the return control; standalone tools remain usable. */
 export function ToolTabs({children,alwaysVisible=false}:{children:ReactNode;alwaysVisible?:boolean}) {
   const slots=useContext(ToolSlots),{t}=useTranslation();
+  const tabs=useRef<HTMLDivElement>(null);
+  useSlidingIndicator(tabs, 'button[aria-pressed=true]', slots.visible===false?null:slots.modes);
   if(slots.visible===false)return null;
-  const content=<div className="fusion-product-tabs" data-page-navigation={alwaysVisible} role="group" aria-label={t('fusion.tools.functions')}>{children}</div>;
+  const content=<div ref={tabs} className="fusion-product-tabs" data-page-navigation={alwaysVisible} role="group" aria-label={t('fusion.tools.functions')} onKeyDown={event=>{
+    if(!['ArrowLeft','ArrowRight','Home','End'].includes(event.key)||!(event.target instanceof HTMLButtonElement)||event.target.parentElement!==tabs.current)return;
+    const container=tabs.current;if(!container)return;
+    const buttons=Array.from(container.querySelectorAll<HTMLButtonElement>(':scope > button:not(:disabled)'));
+    const index=buttons.indexOf(event.target);
+    const next=event.key==='Home'?0:event.key==='End'?buttons.length-1:Math.max(0,Math.min(buttons.length-1,index+(event.key==='ArrowRight'?1:-1)));
+    event.preventDefault();buttons[next]?.click();buttons[next]?.focus({preventScroll:true});
+    const button=buttons[next];
+    if(button&&container&&(button.offsetLeft<container.scrollLeft||button.offsetLeft+button.offsetWidth>container.scrollLeft+container.clientWidth))container.scrollTo({left:button.offsetLeft-(container.clientWidth-button.offsetWidth)/2,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});
+  }}>{children}</div>;
   return slots.modes?createPortal(content,slots.modes):content;
 }
 /** Hosts current commands in the shared toolbar without moving or duplicating inputs. */
@@ -56,7 +68,7 @@ export function ToolModes({value,children}:{value:string;children:Record<string,
 /** Keeps input and result mounted while switching panes on narrow windows. */
 export function ToolEditors({input,result,resultRevision}:{input:ReactNode;result?:ReactNode;resultRevision?:unknown}) {
   const {t}=useTranslation(),element=useRef<HTMLDivElement>(null),[narrow,setNarrow]=useState(false),[pane,setPane]=useState('input');
-  useEffect(()=>{const node=element.current;if(!node)return;const observer=new ResizeObserver(([entry])=>setNarrow(entry.contentRect.width<640));observer.observe(node);return()=>observer.disconnect();},[]);
+  useEffect(()=>{const node=element.current;if(!node)return;const observer=new ResizeObserver(([entry])=>{if(entry.contentRect.width>0)setNarrow(entry.contentRect.width<640);});observer.observe(node);return()=>observer.disconnect();},[]);
   useEffect(()=>{if(!result)setPane('input');},[Boolean(result)]);
   useEffect(()=>{if(resultRevision!==undefined&&resultRevision!==null&&element.current?.offsetHeight)setPane('result');},[resultRevision]);
   return <div ref={element} className="fusion-tool-editors" data-narrow={narrow}>

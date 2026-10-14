@@ -34,6 +34,7 @@ interface CreateAutoHideWatcherOptions {
   defaultAutoHideFullscreenWindows?: boolean;
   isAnyFullscreenWindow?: () => boolean | Promise<boolean>;
   pollIntervalMs?: number;
+  shouldKeepVisible?: () => boolean;
 }
 
 interface AutoHideWatcherService {
@@ -73,6 +74,15 @@ export function createAutoHideWatcher(options: CreateAutoHideWatcherOptions): Au
 
     checkInFlight = true;
     try {
+      // Explicitly opened workspaces take priority over passive auto-hide rules.
+      if (options.shouldKeepVisible?.()) {
+        if (hiddenByAutoHideProcess && !mainWindow.isVisible()) {
+          mainWindow.showInactive();
+          mainWindow.setAlwaysOnTop(true, 'screen-saver');
+        }
+        hiddenByAutoHideProcess = false;
+        return;
+      }
       const hasWindowTitleRules = autoHideWindowTitleList.length > 0;
       const shouldHideByFocusedTitle = hasWindowTitleRules
         ? await hasAnyFocusedWindowTitle(autoHideWindowTitleList)
@@ -81,6 +91,9 @@ export function createAutoHideWatcher(options: CreateAutoHideWatcherOptions): Au
         ? await options.isAnyFullscreenWindow()
         : false;
       const shouldHide = shouldHideByFocusedTitle || shouldHideByFullscreen;
+
+      // Focus detection is asynchronous: expansion may have started during the check.
+      if (mainWindow.isDestroyed() || options.shouldKeepVisible?.()) return;
 
       if (shouldHide) {
         if (mainWindow.isVisible()) {

@@ -78,7 +78,7 @@ export function TextUnified(){
 export function TimeUnified(){
  const {t}=useTranslation(),store=useProductStore(),[tab,setTab]=useState('countdown');
  useEffect(()=>{if(store.target==='timer')setTab(store.tab.startsWith('focus')?'focus':store.tab==='stopwatch'?'stopwatch':'countdown');},[store.nonce]);
- return <><ToolTabs>{['countdown','stopwatch','focus'].map(id=><button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}>{t(id==='focus'?'fusion.library.focus':'fusion.product.tabs.'+id)}</button>)}</ToolTabs><ToolModes value={tab} children={{countdown:<><FusionTimerPanel/><IndependentTimers/></>,stopwatch:<StopwatchTool/>,focus:<FocusPanel/>}}/></>;
+ return <><ToolTabs>{['countdown','stopwatch','focus'].map(id=><button key={id} aria-pressed={tab===id} onClick={()=>setTab(id)}>{t(id==='focus'?'fusion.library.focus':'fusion.product.tabs.'+id)}</button>)}</ToolTabs><ToolModes value={tab} children={{countdown:<div className="float-timer-workspace"><FusionTimerPanel/><IndependentTimers/></div>,stopwatch:<StopwatchTool/>,focus:<FocusPanel/>}}/></>;
 }
 /** Preserves saved launch shortcuts and the existing software catalog. @returns Launcher workspace. */
 export function LauncherUnified() {

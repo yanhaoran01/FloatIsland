@@ -16,6 +16,7 @@ let strip = false, expanded = false, lastSize = {width:260,height:42}, lastOutsi
 let ready = false, shortcutError = '', dragging: {x:number;y:number;bounds:DockRect;moved:boolean} | null = null;
 let preview: DockEdge | null = null;
 let protectedActivity = false;
+let recalledUntil = 0;
 let positions: Record<DockEdge, number> = {top:.5,left:.5,right:.5};
 const targetDisplay = () => screen.getAllDisplays().find(d=>String(d.id) === config.displayId) || screen.getPrimaryDisplay();
 const file = () => join(app.getPath('userData'),'eIsland_store','fusion-dock.json');
@@ -24,19 +25,27 @@ const publish = () => broadcastFusion('fusion:dock:changed',snapshot());
 const persist = () => {mkdirSync(join(app.getPath('userData'),'eIsland_store'),{recursive:true});writeFileSync(file()+'.tmp',JSON.stringify({...config, positions}));renameSync(file()+'.tmp',file());};
 /** Reports whether the island docking owner is registered. */
 export function fusionDockReady(): boolean { return ready; }
+/** @returns Whether an explicit workspace or active transition must stay visible. */
+export function fusionDockKeepsVisible(): boolean {
+  if(!ready)return false;
+  if(expanded||protectedActivity||strip||!config.autoHide||Date.now()<recalledUntil||genieTransitionActive())return true;
+  const win=getWindow();if(!win||win.isDestroyed())return false;
+  const point=screen.getCursorScreenPoint(),bounds=win.getBounds();
+  return point.x>=bounds.x&&point.x<bounds.x+bounds.width&&point.y>=bounds.y&&point.y<bounds.y+bounds.height;
+}
 /** Applies the same anchor to every upstream resize. */
 export function fusionDockBounds(rect: DockRect): DockRect {
   if (!ready || dragging) return rect;
   if (!strip) lastSize={width:rect.width,height:rect.height};
   const compact = lastSize.width === 260 && lastSize.height === 42;
   const retained = compact && config.edge !== 'top' ? {width:48,height:260} : lastSize;
-  const size = strip ? config.edge === 'top' ? {width:48,height:5} : {width:5,height:48} : retained;
+  const size = strip ? config.edge === 'top' ? {width:64,height:10} : {width:10,height:64} : retained;
   return dockRect(targetDisplay().workArea,size,config.edge,config.position,strip);
 }
 export function snapFusionDock(win:BrowserWindow,bounds:DockRect):void { if(ready)snapNativeDockEdge(win,config.edge,bounds,targetDisplay().scaleFactor); }
 const place = () => { const win=getWindow(); if(!win || win.isDestroyed())return;const bounds=fusionDockBounds({...win.getBounds(),...lastSize});const current=win.getBounds();if(Object.keys(bounds).some(key=>Math.abs(bounds[key as keyof DockRect]-current[key as keyof DockRect])>1))win.setBounds(bounds);snapFusionDock(win,bounds);win.setShape([{x:0,y:0,width:bounds.width,height:bounds.height}]);win.setIgnoreMouseEvents(false);win.webContents.invalidate(); };
 /** Explicit user recall also restores an accessible capsule from the tiny handle. */
-export function revealFusionIsland(): void { strip=false;lastOutside=Date.now();place();publish();getWindow()?.show(); }
+export function revealFusionIsland(): void { strip=false;lastOutside=Date.now();recalledUntil=lastOutside+config.delayMs+500;place();publish();getWindow()?.show(); }
 /** Installs restricted IPC and one shared pointer timer for the island. */
 export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
   getWindow=getIsland;
@@ -47,14 +56,15 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
     const win=getWindow();if(win){const display=screen.getDisplayMatching(win.getBounds());config.displayId=String(display.id);config.position=Math.max(0,Math.min(1,(win.getBounds().x+win.getBounds().width/2-display.workArea.x)/display.workArea.width));}
     const legacy=join(app.getPath('userData'),'eIsland_store','island-position-offset.json');if(existsSync(legacy))copyFileSync(legacy,legacy+'.fusion-backup-'+Date.now());persist();
   }
-  const initial=getWindow()?.getBounds();if(initial)lastSize={width:initial.width,height:initial.height};
-  ready=true;registerFusionGenie(getWindow,()=>config);
+  const initial=getWindow()?.getBounds();lastSize=initial&&initial.width>=260&&initial.height>=42?{width:initial.width,height:initial.height}:{width:260,height:42};
+  ready=true;recalledUntil=Date.now()+config.delayMs+500;registerFusionGenie(getWindow,()=>config);
   const mediaRecall=():void=>{if(hasFusionMedia() && strip){strip=false;lastOutside=Date.now();place();publish();}};
   (app as unknown as NodeJS.EventEmitter).on('fusion-media-active',mediaRecall);
   const recall=()=>{revealFusionIsland();getWindow()?.webContents.send('fusion:dock:reveal');};
   if(config.shortcut && !globalShortcut.register(config.shortcut,recall))shortcutError='shortcut-conflict';
   const trusted=(event:Electron.IpcMainInvokeEvent)=>{if(!isFusionView(event.sender))throw Error('untrusted-view');};
   ipcMain.handle('fusion:dock:get',event=>{trusted(event);return snapshot();});
+  ipcMain.handle('fusion:dock:reveal-compact',event=>{trusted(event);revealFusionIsland();return snapshot();});
   ipcMain.handle('fusion:dock:save',(event,patch:Partial<FusionDockConfig>)=>{
     if(viewportAdjusting())throw Error('resize-in-progress');
     trusted(event);const next={...config,...patch};
@@ -84,7 +94,7 @@ export function registerFusionDock(getIsland:()=>BrowserWindow|null): void {
   });
   const timer=setInterval(()=>{const win=getWindow();if(!win||win.isDestroyed()||!win.isVisible()||dragging||viewportAdjusting()||genieTransitionActive())return;
     if(expanded || protectedActivity || hasFusionMedia() || !config.autoHide){lastOutside=Date.now();return;}
-    const point=screen.getCursorScreenPoint(),bounds=strip ? dockRect(targetDisplay().workArea,config.edge==='top'?{width:48,height:5}:{width:5,height:48},config.edge,config.position,true) : win.getBounds();const inside=point.x>=bounds.x&&point.x<bounds.x+bounds.width&&point.y>=bounds.y&&point.y<bounds.y+bounds.height;
+    const point=screen.getCursorScreenPoint(),bounds=strip ? dockRect(targetDisplay().workArea,config.edge==='top'?{width:64,height:10}:{width:10,height:64},config.edge,config.position,true) : win.getBounds();const inside=point.x>=bounds.x&&point.x<bounds.x+bounds.width&&point.y>=bounds.y&&point.y<bounds.y+bounds.height;
     if(inside){lastOutside=Date.now();}
     else {if(!strip&&Date.now()-lastOutside>=config.delayMs){strip=true;place();publish();}}
   },80);

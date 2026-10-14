@@ -103,58 +103,16 @@ export function FileServiceToolSection(): ReactElement {
           <div className="settings-card-subtitle">{t('maxExpand.toolbox.fileService.hash.subtitle')}</div>
         </div>
         <div className="settings-card-body">
-          <div className="file-hash-row">
-            <div className="file-hash-algo-group">
-              {HASH_ALGORITHMS.map((algo) => (
-                <button
-                  key={algo}
-                  type="button"
-                  className={`file-hash-algo-btn ${algorithm === algo ? 'active' : ''}`}
-                  onClick={() => setAlgorithm(algo)}
-                >
-                  {algo.toUpperCase()}
-                </button>
-              ))}
-            </div>
-            <span className="file-hash-filename" title={filePath}>
-              {fileName || t('maxExpand.toolbox.fileService.hash.noFile')}
-            </span>
+          <div className="file-hash-source">
+            <span className="file-hash-filename" title={filePath}>{fileName || t('maxExpand.toolbox.fileService.hash.noFile')}</span>
+            <button type="button" className="file-hash-pick-btn" onClick={handlePickFile}>{t('maxExpand.toolbox.fileService.hash.pickFile')}</button>
           </div>
-
-          <div className="file-hash-row">
-            <button
-              type="button"
-              className="file-hash-pick-btn"
-              onClick={handlePickFile}
-            >
-              {t('maxExpand.toolbox.fileService.hash.pickFile')}
-            </button>
+          <div className="file-hash-algo-group" role="group" aria-label={t('maxExpand.toolbox.fileService.hash.title')}>
+            {HASH_ALGORITHMS.map(algo => <button key={algo} type="button" aria-pressed={algorithm === algo} className={'file-hash-algo-btn '+(algorithm === algo ? 'active' : '')} onClick={() => setAlgorithm(algo)}>{algo.toUpperCase()}</button>)}
           </div>
-
-          <div className="file-hash-row">
-            <input
-              type="text"
-              className="file-hash-input"
-              placeholder={t('maxExpand.toolbox.fileService.hash.expectedPlaceholder')}
-              value={expectedHash}
-              onChange={(e) => {
-                setExpectedHash(e.target.value);
-                setVerifyResult(null);
-              }}
-            />
-          </div>
-
-          <div className="settings-hotkey-row">
-            <button
-              className={`settings-lyrics-source-btn download-start-btn-full ${(!filePath || computing) ? 'disabled' : ''}`}
-              type="button"
-              disabled={!filePath || computing}
-              onClick={handleCompute}
-            >
-              {computing
-                ? t('maxExpand.toolbox.fileService.hash.computing')
-                : t('maxExpand.toolbox.fileService.hash.computeBtn')}
-            </button>
+          <div className="file-hash-verify-row">
+            <input type="text" className="file-hash-input" aria-label={t('maxExpand.toolbox.fileService.hash.expectedPlaceholder')} placeholder={t('maxExpand.toolbox.fileService.hash.expectedPlaceholder')} value={expectedHash} onChange={event => {setExpectedHash(event.target.value);setVerifyResult(null);}} />
+            <button type="button" className="fusion-tool-primary" disabled={!filePath || computing} onClick={handleCompute}>{t(computing ? 'maxExpand.toolbox.fileService.hash.computing' : 'maxExpand.toolbox.fileService.hash.computeBtn')}</button>
           </div>
 
           {resultHash && (

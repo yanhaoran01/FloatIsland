@@ -92,6 +92,11 @@
   .island-shell .float-guide .float-guide-copy h1 { font-size: 20px; }
   .island-shell .float-guide .float-guide-capabilities li { padding: 6px 2px; }
 }
-@media (max-width: 520px) { .island-shell .float-guide .float-guide-shortcuts { grid-template-columns: 1fr; } }
+@media (max-width: 639px) {
+  .island-shell .float-guide .float-guide-shortcuts { grid-template-columns: minmax(0,1fr); gap:8px; }
+  .island-shell .float-guide .float-guide-key { flex-direction:row; align-items:center; gap:12px; padding:12px; }
+  .island-shell .float-guide .float-guide-key > span { flex:0 0 100px; margin:0; }
+  .island-shell .float-guide .float-shortcut-control { flex:1; width:auto; }
+}
 :root[data-fi-reduced-motion=true] .island-shell .float-guide *, :root[data-fi-reduced-motion=true] .island-shell .float-guide *::before { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
 @media (prefers-reduced-motion: reduce) { .island-shell .float-guide *, .island-shell .float-guide *::before { animation-duration: 1ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; } }

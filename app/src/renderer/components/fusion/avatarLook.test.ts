@@ -5,6 +5,18 @@ import {avatarPointerLook} from './avatarLook';
 import {BotEngine} from '../../vendor/bloub/engine';
 describe('pointer gaze',()=>{
  const rect={left:100,top:100,width:200,height:200};
+ it('keeps pointer feedback subtle instead of taking over the full gaze',()=>{
+  const look=avatarPointerLook(250,200,rect)!;
+  expect(look.mix).toBeLessThan(1);
+  expect(look.wander).toBe(0);
+ });
+ it('keeps far-away cursor directions within a fully visible face',()=>{
+  for(const x of [-10000,10000])for(const y of [-10000,10000]){
+   const look=avatarPointerLook(x,y,rect)!;
+   expect(Math.abs(look.yaw)).toBeLessThanOrEqual(24);
+   expect(Math.abs(look.pitch)).toBeLessThanOrEqual(20);
+  }
+ });
  it('maps both horizontal directions and screen-down to negative pitch',()=>{
   expect(avatarPointerLook(400,200,rect)!.yaw).toBeGreaterThan(0);
   expect(avatarPointerLook(0,200,rect)!.yaw).toBeLessThan(0);

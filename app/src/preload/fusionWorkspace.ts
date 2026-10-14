@@ -4,7 +4,7 @@
  * Licensed under GPL-3.0. See LICENSE.
  */
 
-/** @file fusionWorkspace.ts @description Allowlisted workspace and recording IPC. @author 楦″摜 */
+/** @file fusionWorkspace.ts @description Allowlisted workspace and recording IPC. @author 鸡哥 */
 import { ipcRenderer } from 'electron';
 import { fusionToolsApi } from './fusionTools';
 import type { FusionWorkspaceApi } from './types/fusionWorkspace';
@@ -31,6 +31,7 @@ export const fusionWorkspaceApi: FusionWorkspaceApi = {
   fusionDockGet: () => ipcRenderer.invoke('fusion:dock:get'),
   fusionDockSave: patch => ipcRenderer.invoke('fusion:dock:save',patch),
   fusionDockReset: () => ipcRenderer.invoke('fusion:dock:reset'),
+  fusionDockReveal: () => ipcRenderer.invoke('fusion:dock:reveal-compact'),
   fusionDockActivity: (expanded, keepVisible) => ipcRenderer.invoke('fusion:dock:activity',expanded,keepVisible),
   fusionDockDrag: action => ipcRenderer.invoke('fusion:dock:drag',action),
   onFusionDock: callback => listen('fusion:dock:changed',callback),

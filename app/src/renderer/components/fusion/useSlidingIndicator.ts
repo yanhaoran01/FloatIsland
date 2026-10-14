@@ -17,20 +17,40 @@ export function useSlidingIndicator(container: RefObject<HTMLElement | null>, se
   useLayoutEffect(() => {
     const element = container.current;
     if (!element) return;
+    let pending = 0;
     const place = (): void => {
+      pending = 0;
       const active = element.querySelector<HTMLElement>(selector);
-      if (!active) { element.style.setProperty('--indicator-o', '0'); return; }
+      if (!active || !active.getClientRects().length) { element.style.setProperty('--indicator-o', '0'); return; }
       element.style.setProperty('--indicator-x', `${active.offsetLeft}px`);
       element.style.setProperty('--indicator-y', `${active.offsetTop}px`);
       element.style.setProperty('--indicator-w', `${active.offsetWidth}px`);
       element.style.setProperty('--indicator-h', `${active.offsetHeight}px`);
       element.style.setProperty('--indicator-o', '1');
+      const scroll = element.closest<HTMLElement>('.fusion-tool-modes, .fusion-island-tabs, .fusion-navigation');
+      if (scroll && scroll.scrollWidth > scroll.clientWidth) {
+        const bounds = active.getBoundingClientRect(), viewport = scroll.getBoundingClientRect();
+        if (bounds.left < viewport.left || bounds.right > viewport.right) {
+          scroll.scrollTo({left: scroll.scrollLeft + bounds.left - viewport.left - (scroll.clientWidth - bounds.width) / 2, behavior: 'instant'});
+        }
+      }
     };
     place();
     // 首次定位不做过渡，避免指示器从左上角滑入。
     const frame = requestAnimationFrame(() => { element.dataset.indicator = 'ready'; });
-    const observer = new ResizeObserver(place);
+    const schedule = (): void => { if (!pending) pending = requestAnimationFrame(place); };
+    const observer = new ResizeObserver(schedule);
     observer.observe(element);
-    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
+    element.querySelectorAll('button').forEach(button => observer.observe(button));
+    const changes = new MutationObserver(schedule);
+    changes.observe(element, { childList: true, subtree: true, attributes: true, attributeFilter: ['aria-pressed', 'aria-current', 'hidden'] });
+    document.fonts.addEventListener('loadingdone', schedule);
+    return () => {
+      cancelAnimationFrame(frame);
+      cancelAnimationFrame(pending);
+      observer.disconnect();
+      changes.disconnect();
+      document.fonts.removeEventListener('loadingdone', schedule);
+    };
   }, [container, selector, key]);
 }

@@ -18,7 +18,7 @@
 .fusion-tool-toolbar{height:40px;min-height:40px;display:flex;align-items:center;gap:8px;border-bottom:1px solid #ffffff09;margin:0 6px}
 .fusion-tool-toolbar>.fusion-icon-button{width:32px!important;height:32px!important;flex:0 0 32px;padding:0!important;background:transparent!important}
 .fusion-tool-modes{display:flex;align-items:center;gap:6px;min-width:0;flex:1;overflow-x:auto;scrollbar-width:none}
-.fusion-tool-commands{display:flex;align-items:center;gap:4px;flex-shrink:0;max-width:55%;overflow-x:auto;scrollbar-width:none}
+.fusion-tool-commands{display:flex;align-items:center;gap:4px;flex-shrink:0;min-width:0;max-width:100%;overflow-x:auto;scrollbar-width:none}
 .fusion-tool-toolbar .fusion-product-tabs,.fusion-tool-toolbar .fusion-tool-actions{display:flex;flex-wrap:nowrap!important;gap:4px;margin:0!important;padding:0!important;min-height:32px}
 .island-shell .fusion-tool-toolbar :is(button,select){height:32px!important;min-height:32px!important;min-width:32px;border-radius:6px!important;font-size:12px!important;padding:0 9px!important;white-space:nowrap;background:transparent!important;border:0!important;box-shadow:none!important}
 .island-shell .fusion-tool-toolbar button:hover,.island-shell .fusion-tool-toolbar button[aria-pressed=true]{background:#ffffff0b!important}
@@ -51,7 +51,7 @@
 .fusion-avatar-preview{height:220px!important}.fusion-avatar-preview>.fusion-pet{width:220px!important;height:220px!important}
 .island-shell .fusion-voice-character>.fusion-pet{width:240px!important;height:240px!important}
 .fusion-avatar-thumb{border-radius:10px;overflow:hidden}
-@container(max-width:639px){.fusion-tool-editors .fusion-tool-columns{grid-template-columns:1fr}.fusion-editor-pane textarea{min-height:130px}.fusion-note-layout{grid-template-columns:112px minmax(0,1fr)!important}.fusion-tool-commands{max-width:48%}}
+@container(max-width:639px){.fusion-tool-editors .fusion-tool-columns{grid-template-columns:1fr}.fusion-editor-pane textarea{min-height:130px}.fusion-note-layout{grid-template-columns:112px minmax(0,1fr)!important}.fusion-tool-commands{max-width:100%}}
 
 
 .island-shell .fusion-utility button{transform:none!important;transition:background 120ms,color 120ms!important}

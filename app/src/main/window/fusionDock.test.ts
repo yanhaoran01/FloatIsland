@@ -8,8 +8,30 @@ vi.mock('../system/fusionWindows',()=>({isFusionView:()=>true,broadcastFusion:vi
 beforeEach(()=>{vi.resetModules();vi.useFakeTimers();env.root=mkdtempSync(join(tmpdir(),'fusion-dock-test-'));env.handlers.clear();env.bounds={x:400,y:12,width:300,height:60};env.point={x:900,y:700};env.window={isDestroyed:()=>false,isVisible:()=>true,getBounds:()=>env.bounds,setBounds:(r:any)=>{env.bounds=r},setShape:vi.fn(),setIgnoreMouseEvents:vi.fn(),webContents:{invalidate:vi.fn(),send:vi.fn()},on:vi.fn(),show:vi.fn()};});
 afterEach(()=>{vi.clearAllTimers();vi.useRealTimers();rmSync(env.root,{recursive:true,force:true});});
 describe('main process docking',()=>{
+ it('initializes the full capsule instead of preserving the legacy tiny icon bounds',async()=>{
+  env.bounds={x:788,y:0,width:48,height:38};const {registerFusionDock}=await import('./fusionDock');registerFusionDock(()=>env.window);
+  expect(env.bounds.width).toBe(260);expect(env.bounds.height).toBe(42);
+  env.handlers.get('fusion:dock:reveal-compact')!({});expect(env.bounds.width).toBe(260);
+ });
+ it('reveals the compact pet without opening a workspace or changing docking preferences',async()=>{
+  const {registerFusionDock,fusionDockKeepsVisible}=await import('./fusionDock');registerFusionDock(()=>env.window);
+  vi.advanceTimersByTime(4000);expect(env.bounds.height).toBe(10);
+  const before=env.handlers.get('fusion:dock:get')!({}).config;
+  const revealed=env.handlers.get('fusion:dock:reveal-compact')!({});
+  expect(revealed.strip).toBe(false);expect(revealed.config).toEqual(before);expect(env.bounds.height).toBe(60);expect(env.window.show).toHaveBeenCalled();
+  expect(fusionDockKeepsVisible()).toBe(true);
+ });
+ it('protects the recall handle, pointer interaction and disabled auto-hide from passive hiding',async()=>{
+  const {registerFusionDock,fusionDockKeepsVisible}=await import('./fusionDock');registerFusionDock(()=>env.window);
+  vi.advanceTimersByTime(4000);expect(fusionDockKeepsVisible()).toBe(true);
+  env.handlers.get('fusion:dock:reveal-compact')!({});
+  env.point={x:env.bounds.x+10,y:env.bounds.y+10};vi.advanceTimersByTime(5000);
+  expect(env.bounds.height).toBe(60);expect(fusionDockKeepsVisible()).toBe(true);
+  env.handlers.get('fusion:dock:save')!({}, {autoHide:false});env.point={x:900,y:700};vi.advanceTimersByTime(10000);
+  expect(fusionDockKeepsVisible()).toBe(true);expect(env.bounds.height).toBe(60);
+ });
  it('allows other settings to save despite an occupied recall shortcut',async()=>{vi.mocked((await import('electron')).globalShortcut.register).mockReturnValue(false);const {registerFusionDock}=await import('./fusionDock');registerFusionDock(()=>env.window);const save=env.handlers.get('fusion:dock:save')!;expect(save({}, {edge:'left',autoHide:false}).config.edge).toBe('left');expect(save({}, {delayMs:5000}).shortcutError).toBe('shortcut-conflict');expect(()=>save({}, {shortcut:'Control+Alt+Space'})).toThrow('shortcut-conflict');vi.mocked((await import('electron')).globalShortcut.register).mockReturnValue(true);});
- it('requires explicit recall and never expands on handle hover',async()=>{const {registerFusionDock,revealFusionIsland}=await import('./fusionDock');registerFusionDock(()=>env.window);vi.advanceTimersByTime(3120);expect(env.bounds.height).toBe(5);expect(env.bounds.width).toBe(48);env.point={x:env.bounds.x+2,y:env.bounds.y+2};vi.advanceTimersByTime(1000);expect(env.bounds.height).toBe(5);revealFusionIsland();expect(env.bounds.height).toBe(60);});
+ it('requires explicit recall and never expands on handle hover',async()=>{const {registerFusionDock,revealFusionIsland}=await import('./fusionDock');registerFusionDock(()=>env.window);vi.advanceTimersByTime(3120);expect(env.bounds.height).toBe(10);expect(env.bounds.width).toBe(64);env.point={x:env.bounds.x+2,y:env.bounds.y+2};vi.advanceTimersByTime(1000);expect(env.bounds.height).toBe(10);revealFusionIsland();expect(env.bounds.height).toBe(60);});
  it('uses mirrored side rails and restores independent edge positions',async()=>{env.bounds={x:400,y:0,width:260,height:42};const {registerFusionDock,fusionDockBounds}=await import('./fusionDock');registerFusionDock(()=>env.window);const save=env.handlers.get('fusion:dock:save')!;save({}, {edge:'left',position:.2,autoHide:false});expect(env.bounds.width).toBe(48);expect(env.bounds.height).toBe(260);expect(env.bounds.x).toBe(0);save({}, {edge:'right',position:.8});expect(env.bounds.x).toBe(1152);save({}, {edge:'left'});expect(save({},{}).config.position).toBe(.2);expect(fusionDockBounds({x:0,y:0,width:760,height:560}).width).toBe(760);expect(fusionDockBounds({x:0,y:0,width:260,height:42}).width).toBe(48);});
  it('keeps recording and confirmation controls accessible while collapsed',async()=>{const {registerFusionDock}=await import('./fusionDock');registerFusionDock(()=>env.window);env.handlers.get('fusion:dock:activity')!({sender:env.window.webContents},false,true);vi.advanceTimersByTime(10000);expect(env.bounds.height).toBe(60);});
  it('keeps an explicitly opened panel visible',async()=>{const {registerFusionDock}=await import('./fusionDock');registerFusionDock(()=>env.window);env.handlers.get('fusion:dock:activity')!({sender:env.window.webContents},true);vi.advanceTimersByTime(10000);expect(env.bounds.height).toBe(60);});

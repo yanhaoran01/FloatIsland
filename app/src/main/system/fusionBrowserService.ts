@@ -251,4 +251,4 @@ export function registerFusionMediaScheme(): void {
 }
 
 /** Captures only the currently attached isolated native views, without destroying their sessions. */
-export async function captureFusionGuestViews(host:BrowserWindow):Promise<import('../../preload/types/genie').GenieFrame[]>{const result:import('../../preload/types/genie').GenieFrame[]=[];for(const guest of guests.values()){if(guest.owner!==host||guest.view.webContents.isDestroyed())continue;const image=await guest.view.webContents.capturePage();if(image.isEmpty())throw Error('native-capture-unavailable');result.push({image:image.toDataURL(),rect:guest.view.getBounds()});}return result;}
+export async function captureFusionGuestViews(host:BrowserWindow):Promise<import('../../preload/types/genie').GenieFrame[]>{return Promise.all([...guests.values()].filter(guest=>guest.owner===host&&!guest.view.webContents.isDestroyed()).map(async guest=>{const rect=guest.view.getBounds(),image=await guest.view.webContents.capturePage();if(image.isEmpty())throw Error('native-capture-unavailable');return {image:image.resize({width:rect.width,height:rect.height,quality:'good'}).toDataURL(),rect};}));}

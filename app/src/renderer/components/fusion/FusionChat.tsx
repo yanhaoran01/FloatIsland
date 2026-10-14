@@ -41,6 +41,7 @@ import './floatIsland.css';
 import './workspaceEnhancement.css';
 import './floatStage.css';
 import './compactWorkspace.css';
+import './sessionReadingLayout.css';
 import {ViewportHandles} from './ViewportHandles';
 import {WORKSPACE_PAGES,readWorkspaceNavigation,writeWorkspaceNavigation,workspacePageForTool,type WorkspacePage} from './workspaceNavigation';
 
@@ -284,8 +285,8 @@ export function FusionChat({ compact = false, visible = true }: { compact?: bool
       // Shared product drop handling owns files outside a specific tool.
       return; }}>
     {compact&&<ViewportHandles/>}
-    <header className="fusion-chat-header">
-      {!stageVisible && <FusionPet actionToken={key} mood={mood} label={t('fusion.pet.' + mood)} muted={preferences.muted} dropActive={dragging} attachmentCount={draft.value.attachments.length} />}
+    <header className="fusion-chat-header" hidden={!compact}>
+      <span className="fusion-chat-avatar-slot">{!stageVisible && <FusionPet actionToken={key} mood={mood} label={t('fusion.pet.' + mood)} muted={preferences.muted} dropActive={dragging} attachmentCount={draft.value.attachments.length} />}</span>
       {compact ? <>
         <nav ref={tabs} className="fusion-island-tabs" aria-label={t('fusion.island.navigation')}>
           {WORKSPACE_PAGES.map((view, index) => <button type="button" key={view} aria-pressed={islandView === view} title={t('fusion.workspace.pages.'+view)}
@@ -337,6 +338,7 @@ export function FusionChat({ compact = false, visible = true }: { compact?: bool
     {compact && shortcutWarning && <div className="fusion-inline-notice" role="status"><p>{t('fusion.onboarding.shortcutDeferred')}</p><div className="fusion-tool-actions"><button onClick={() => {setSetupOpen(false);useIslandStore.getState().setMaxExpandTab('settings');}}>{t('fusion.navigation.settings')}</button><button aria-label={t('fusion.product.close')} onClick={() => {localStorage.removeItem('fusion.onboarding-shortcut-warning');setShortcutWarning(false);}}>{t('fusion.product.close')}</button></div></div>}
 
     <div className="fusion-chat-context">
+      {!compact && <select className="fusion-chat-provider" aria-label={t('fusion.provider.select')} value={provider} onChange={event => setSelection(event.target.value as FusionProvider)}>{providers.map(id => <option key={id} value={id}>{t('fusion.provider.' + providerLabels[id])}</option>)}</select>}
       <select aria-label={t('fusion.sessions.label')} value={sessionId} disabled={busy}
         onChange={event => void selectSession(event.target.value)}>
         <option value="">{t('fusion.sessions.chooseProvider', { provider: t('fusion.provider.' + providerLabels[provider]) })}</option>

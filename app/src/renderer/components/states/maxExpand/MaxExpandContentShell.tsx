@@ -27,6 +27,7 @@ import { MediaBar } from '../../fusion/MediaBar';
 import { useAdaptiveView } from '../../fusion/useCompactChatSize';
 import { FusionRequestQueue } from '../../fusion/FusionRequestQueue';
 import {WORKSPACE_PAGES,readWorkspaceNavigation,writeWorkspaceNavigation,workspacePageForTool,type WorkspacePage} from '../../fusion/workspaceNavigation';
+import { useSlidingIndicator } from '../../fusion/useSlidingIndicator';
 
 export interface MaxExpandContentShellProps {
   renderActiveTab: (activeTab: MaxExpandTab, fallback: React.ReactElement, ready: boolean) => React.ReactElement | null;
@@ -49,6 +50,7 @@ export function MaxExpandContentShell({ renderActiveTab }: MaxExpandContentShell
   const wheel = useRef(new NavigationWheel());
   const preferences = useFusionPreferences((s) => s.value);
   const [workspacePage,setWorkspacePage]=useState<WorkspacePage>(()=>readWorkspaceNavigation().islandPage);
+  useSlidingIndicator(navRef, 'button[aria-current=page]', active + ':' + workspacePage);
   const peers = WORKSPACE_PAGES;
   const selectPeer = (id: typeof peers[number]): void => {
     setWorkspacePage(id);writeWorkspaceNavigation({islandPage:id});

@@ -296,7 +296,7 @@ export function registerDownloadIpcHandlers(options: RegisterDownloadIpcHandlers
         let value=queued.value,request=value.libraryFolder==='Books'?protectedBookRequest:undefined;
         if(value.song){emitToRenderer({...value,phase:'resolving'});const result=await resolveSong(value.song,controller.signal);controller.signal.throwIfAborted();const owned=join(dirname(taskStorePath),'music-downloads',id);await fs.mkdir(owned,{recursive:true});value={...value,url:result.url,fileName:result.name,savePath:join(owned,result.name),temporaryDirectory:owned};emitToRenderer(value);const headers=result.headers;request=(input,init)=>protectedBookRequest(input,{...init,headers:{...headers,...Object.fromEntries(new Headers(init?.headers))}});}
         if(queued.resume&&engine.getTask(id))return engine.resumeDownload(id,controller.signal,value.song?{url:value.url,request:request!}:undefined);
-        return engine.startDownload({id,url:value.url,savePath:value.savePath||undefined,threads:value.threads,defaultDir:options.getDownloadsPath(),signal:controller.signal,request});
+        return engine.startDownload({id,url:value.url,savePath:value.savePath||undefined,threads:value.threads,inferName:!value.song&&!value.libraryFolder&&Boolean(value.outputDir),defaultDir:value.outputDir||options.getDownloadsPath(),signal:controller.signal,request});
       })();
       httpLaunchWork.set(id,work);
       void work.catch(reason => {

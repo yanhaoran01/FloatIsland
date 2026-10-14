@@ -20,6 +20,7 @@ import type { FusionAssistantProvider, FusionAssistantConfig } from '../../../pr
 import { useSlidingIndicator } from './useSlidingIndicator';
 import {WorkBuddySettings} from './WorkBuddySettings';
 import {useContentWidth} from './useContentWidth';
+import './settingsLayout.css';
 
 const SECTIONS = ['agents', 'models', 'pet', 'navigation', 'reminders', 'tools', 'about'] as const;
 type Section = typeof SECTIONS[number];
@@ -92,11 +93,14 @@ export function FusionSettings(): JSX.Element {
   const [nativeProvider,setNativeProvider] = useState<'codex'|'dsh'>(()=>localStorage.getItem('fusion.settings-model')==='dsh'?'dsh':'codex');
   const [error, setError] = useState('');
   const preferences = useFusionPreferences((s) => s.value);
+  const ready = useFusionPreferences((s) => s.ready);
+  const [pendingPreferences,setPendingPreferences] = useState<Partial<FusionPreferences>>({});
+  const savingPreferences = useRef(false);
   const save = useFusionPreferences((s) => s.save);
   const selection = useRef(0);
   const aside = useRef<HTMLElement>(null);
-  const content=useContentWidth<HTMLElement>();
-  useSlidingIndicator(aside, 'button[aria-current=page]', section);
+  const content=useContentWidth<HTMLElement>(false);
+  useSlidingIndicator(aside, 'button[aria-current=page]', section + ':' + content.narrow);
   useEffect(() => {
     let active=true;const initialSelection=selection.current;
     const target = (value: import('../../../preload/types/fusionWorkspace').WorkspaceTarget): void => { if(value.settingsSection) setSection(value.settingsSection); };
@@ -114,20 +118,22 @@ export function FusionSettings(): JSX.Element {
     window.addEventListener('fusion-open-model-settings', open);
     return () => window.removeEventListener('fusion-open-model-settings', open);
   }, []);
-  const toggle = (key: keyof FusionPreferences): JSX.Element => <label className="fusion-setting-row">
+  const toggle = (key: keyof FusionPreferences): JSX.Element => <label className="fusion-setting-row" aria-busy={key in pendingPreferences}>
     <span>{t('fusion.settings.' + key)}</span>
-    <input type="checkbox" checked={preferences[key]} onChange={(e) => {
-      setError(''); void save({ [key]: e.target.checked }).catch(() => setError(t('fusion.settings.saveError')));
+    <input type="checkbox" role="switch" checked={pendingPreferences[key] ?? preferences[key]} disabled={!ready || Object.keys(pendingPreferences).length>0} onChange={(e) => {
+      if(savingPreferences.current)return;
+      const patch={ [key]: e.target.checked };savingPreferences.current=true;setPendingPreferences(patch);
+      setError(''); void save(patch).catch(() => setError(t('fusion.settings.saveError'))).finally(()=>{savingPreferences.current=false;setPendingPreferences({});});
     }} />
   </label>;
-  return <section ref={content.ref} className="fusion-settings" data-narrow={content.narrow}>
+  return <section ref={content.ref} className="fusion-settings" data-narrow={content.narrow} onWheel={event=>event.stopPropagation()}>
     <div className="fusion-settings-selector" hidden={!content.narrow}><select aria-label={t('fusion.navigation.settings')} value={section} onChange={event=>{selection.current++;setSection(event.target.value as Section);}}>{SECTIONS.map(id=><option key={id} value={id}>{t('fusion.settings.'+id)}</option>)}</select></div>
     <aside ref={aside} hidden={content.narrow} aria-label={t('fusion.navigation.settings')}>{SECTIONS.map((id) =>
       <button type="button" key={id} aria-current={section === id ? 'page' : undefined}
         onClick={() => {selection.current++;setSection(id);}}>{t('fusion.settings.' + id)}</button>)}</aside>
     <div className="fusion-settings-body" key={section}>
       <h2>{t('fusion.settings.' + section)}</h2>
-      {section === 'agents' && <>{toggle('autoDiscover')}<p>{t('fusion.settings.discoveryHint')}</p><AgentSettings /></>}
+      {section === 'agents' && <><AgentSettings /></>}
       {section === 'models' && <>
         <p>{t('fusion.settings.modelsHint')}</p>
         <select aria-label={t('fusion.provider.select')} value={provider} onChange={(e) => setProvider(e.target.value as FusionAssistantProvider)}>

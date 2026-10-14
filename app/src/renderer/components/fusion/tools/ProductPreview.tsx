@@ -12,6 +12,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { parsePdfPages } from './utilityOperations';
 import {useContentWidth} from '../useContentWidth';
+import { FilePlus2, Files } from 'lucide-react';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 pdfjs.GlobalWorkerOptions.workerSrc=new URL('pdfjs-dist/build/pdf.worker.min.mjs',import.meta.url).toString();
@@ -37,7 +38,8 @@ export function ProductPreview({artifact,showActions=true}:{artifact?:ProductArt
  const run=async():Promise<void>=>{if(!item)return;const token=generation.current;try{setError('');parsePdfPages(pageDraft,count);const job=await window.api.fusionProductRun('pdf',[item.id],{mode:'extract',pages:pageDraft});store.job(job);if(token===generation.current)setActiveJob(job.id);}catch(reason){if(token===generation.current)setError(String(reason));}};
  if(item&&isDocument(item.name)&&!['pdf','text'].includes(item.kind))return <DocumentReader artifact={item}/>;
  return <ToolBody error={error||active?.error||''} busy={active?.state==='running'} cancel={()=>{if(activeJob)void window.api.fusionProductJob(activeJob,'cancel').catch(reason=>setError(String(reason)));}}>
-  {!artifact&&<ToolCommands><button onClick={()=>void pick()}>{t('fusion.toolbox.chooseFiles')}</button>{store.inputs.length>1&&<select value={item?.id??''} onChange={event=>setSelected(event.target.value)}>{store.inputs.map(input=><option key={input.id} value={input.id}>{input.name}</option>)}</select>}</ToolCommands>}
+  {!artifact&&item&&<ToolCommands><button onClick={()=>void pick()}>{t('fusion.toolbox.chooseFiles')}</button>{store.inputs.length>1&&<select value={item?.id??''} onChange={event=>setSelected(event.target.value)}>{store.inputs.map(input=><option key={input.id} value={input.id}>{input.name}</option>)}</select>}</ToolCommands>}
+  {!item&&<div className="float-preview-empty"><Files size={30} strokeWidth={1.5} aria-hidden="true"/><p>{t('fusion.ui.previewEmpty')}</p><button onClick={()=>void pick()}><FilePlus2 size={16}/>{t('fusion.toolbox.chooseFiles')}</button></div>}
   {showActions&&item&&<ToolCommands><button onClick={()=>void window.api.fusionProductSave(item.id).catch(reason=>setError(String(reason)))}>{t('fusion.product.save')}</button><button onClick={()=>void window.api.fusionProductOpen(item.id).catch(reason=>setError(String(reason)))}>{t('fusion.product.external')}</button>{item.kind==='image'&&<><button onClick={()=>openProductTool('image',[item])}>{t('fusion.toolbox.items.image')}</button><button onClick={()=>void window.api.fusionProductPin(item.id).catch(reason=>setError(String(reason)))}>{t('fusion.product.pin')}</button></>}</ToolCommands>}
   {item?.kind==='image'&&url&&<img className="fusion-product-preview-image" src={url} alt={item.name}/>}
   {item?.kind==='pdf'&&file&&<Document key={item.id} className="fusion-product-pdf" file={file} options={pdfOptions} onLoadSuccess={value=>{setCount(value.numPages);setPage(1);setThumbStart(0);}} onLoadError={reason=>setError(reason.message)}>

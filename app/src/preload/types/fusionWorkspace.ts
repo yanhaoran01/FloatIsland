@@ -6,7 +6,7 @@ import type { AvatarConfig } from '../../shared/avatarConfig';
  * Licensed under GPL-3.0. See LICENSE.
  */
 
-/** @file fusionWorkspace.ts @description Shared draft, navigation and voice contracts. @author 楦″摜 */
+/** @file fusionWorkspace.ts @description Shared draft, navigation and voice contracts. @author 鸡哥 */
 import type { FusionCodexMessage } from './fusion';
 import type { FusionToolsApi } from './fusionTools';
 export type FusionProvider = 'codex' | 'dsh' | 'openai' | 'anthropic' | 'ollama';
@@ -66,6 +66,7 @@ export interface FusionWorkspaceApi extends FusionToolsApi, GenieApi {
   fusionDockGet: () => Promise<FusionDockState>;
   fusionDockSave: (patch: Partial<FusionDockConfig>) => Promise<FusionDockState>;
   fusionDockReset: () => Promise<FusionDockState>;
+  fusionDockReveal: () => Promise<FusionDockState>;
   fusionDockActivity: (expanded: boolean, keepVisible?: boolean) => Promise<void>;
   fusionDockDrag: (action: 'start'|'move'|'end') => Promise<boolean|void>;
   onFusionDock: (callback: (state:FusionDockState)=>void) => ()=>void;

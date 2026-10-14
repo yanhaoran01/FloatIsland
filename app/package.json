@@ -79,6 +79,7 @@
     "cmdk": "1.1.1",
     "colorthief": "^3.3.1",
     "crypto-js": "4.2.0",
+    "date-fns": "4.1.0",
     "debug": "^4.4.3",
     "diff": "9.0.0",
     "docx-preview": "0.4.1",

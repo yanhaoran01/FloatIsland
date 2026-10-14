@@ -39,8 +39,8 @@ interface FusionPetProps {
  * @param mood - Companion state used to select the WAV cue.
  */
 export function playFusionPetCue(mood: FusionPetMood): void {
-  const cues = { idle: 'blip', working: 'work', waiting: 'approval', finished: 'finish', error: 'error', listening: 'blip', thinking: 'think' };
-  Sound.play(cues[mood as keyof typeof cues]);
+  const cues: Record<FusionPetMood, string> = { idle: 'blip', working: 'work', waiting: 'approval', finished: 'finish', error: 'error', listening: 'blip', thinking: 'think', warning: 'approval', curious: 'question', thanks: 'love', surprised: 'pop' };
+  Sound.play(cues[mood]);
 }
 
 /**
@@ -90,8 +90,8 @@ export function usePetCompletion(isWorking: boolean, hasError: boolean, muted: b
  * @param props - 真实状态、提示说明、静音和附件反馈。
  * @returns 动作仅发生在角色内部的按钮。
  */
-export function FusionPet({ mood, label, muted, dropActive = false, disabled = false, actionToken }: FusionPetProps): JSX.Element {
+export function FusionPet({ mood, label, muted, dropActive = false, attachmentCount = 0, disabled = false, actionToken }: FusionPetProps): JSX.Element {
   const microphoneActive=useProductStore(s=>s.record?.microphoneActive===true);
   useEffect(() => { Sound.setEnabled(!muted&&!microphoneActive); }, [muted,microphoneActive]);
-  return <BloubAvatar mood={mood} label={label} disabled={disabled} dropActive={dropActive} actionToken={actionToken} />;
+  return <BloubAvatar mood={mood} label={label} disabled={disabled} dropActive={dropActive} attachmentCount={attachmentCount} actionToken={actionToken} />;
 }

@@ -386,8 +386,8 @@ export function registerWindowIpcHandlers(options: RegisterWindowIpcHandlersOpti
       return {
         x: Math.round(centerX - options.sizes.islandWidth / 2),
         y: getEffectiveY(win),
-        width: hasFusionMedia() ? 360 : fusionDockReady() ? 260 : options.sizes.islandWidth,
-        height: hasFusionMedia() ? 72 : fusionDockReady() ? 42 : getHeight(options.sizes.islandHeight, PILL_ISLAND_HEIGHT),
+        width: fusionDockReady() ? 260 : hasFusionMedia() ? 360 : options.sizes.islandWidth,
+        height: fusionDockReady() ? 42 : hasFusionMedia() ? 72 : getHeight(options.sizes.islandHeight, PILL_ISLAND_HEIGHT),
       };
     }, delayMs);
   });

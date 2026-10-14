@@ -1,51 +1,75 @@
 # 构建与发布
 
-## 源码结构
+## 项目结构
 
 | 路径 | 内容 |
 | --- | --- |
-| `app/src/main` | 窗口、权限、文件、下载、阅读及服务协调 |
-| `app/src/preload` | 有类型的受限 IPC 接口 |
-| `app/src/renderer` | React 工作区、工具、角色及主题 |
-| `app/resources` | 图标、OCR 模型、下载资源清单和许可证 |
-| `app/plugins`、`app/native` | Windows 原生组件源码 |
-| `app/vendor`、`vendor/EchoIsland` | 固定版本的上游及衍生源码 |
-| `app/i18n` | 简体中文与英文 |
+| `app/src/main` | 窗口、文件授权、下载、阅读、音乐及服务协调 |
+| `app/src/preload` | 带类型的受限 IPC 接口 |
+| `app/src/renderer` | React 工作区、工具、主题和角色 |
+| `app/resources` | 图标、OCR 模型、运行资源清单及许可证 |
+| `app/plugins`、`app/native` | Windows 插件和原生主机源码 |
+| `app/vendor`、`vendor` | 固定版本的第三方及衍生源码 |
+| `app/i18n` | 简体中文、英文翻译 |
 | `dsh-plugin` | 配套插件 |
-| `docs` | 使用、构建及贡献资料 |
+| `scripts` | 固定上游准备、Rust 主机构建 |
 
 ## 环境
 
-使用 Windows x64、Node.js 24.19 或更新版本、npm、Python 3。1.3.0 的 Electron 版本由锁文件固定。原生插件包含 .NET 与 C++ 实现；EchoIsland 主机包含 Rust 实现。完整编译需安装各工程文件声明的 .NET SDK、Rust 工具链、Visual Studio C++ 构建工具及 Windows SDK。
+使用 Windows 10/11 x64、Node.js 24.19 或更新版本、npm、Python 3 和 7-Zip。Electron 与 JavaScript 依赖由 `app/package-lock.json` 固定。
 
-本次发布使用固定 eIsland v26.7.4 原生运行时；JavaScript 绑定必须与固定来源匹配，打包脚本会拒绝不一致的绑定。修改原生源码时须自行重编对应组件，不能沿用旧 DLL 并声称修改已经生效。原生运行时来源与校验保留在程序的 `resources/runtime-provenance.json`。
+编译 Rust 主机需安装 Rust stable 的 `x86_64-pc-windows-msvc` 工具链、Visual Studio C++ 构建工具与 Windows SDK。完整重编 Windows 插件还需对应工程声明的 .NET SDK，当前插件包含 .NET 10 工程。`npm ci` 不会自动生成这些插件的全部 DLL。
 
-## 准备资源
+1.3.0 的 Windows 插件运行时固定来自 eIsland v26.7.4。准备脚本核对安装包 SHA-256，运行时脚本核对版本与 JavaScript 绑定。固定运行时适合构建未修改的上游插件；修改插件源码后应重编对应组件并更新固定来源及绑定校验。
 
-在项目 `app` 目录执行：
+## 获取源码与依赖
 
 ```powershell
+git clone https://github.com/yanhaoran01/FloatIsland.git
+cd FloatIsland
+git checkout v1.3.0
+cd app
 npm ci
+```
+
+也可解压 Release 的 `FloatIsland-1.3.0-source.zip`。源码包与该版本标签对应，包含构建脚本、锁文件、测试及必要许可证，不包含个人配置和编译产物。
+
+## 准备固定资源
+
+以下命令先在仓库根目录执行。默认缓存位于 `%LOCALAPPDATA%/FloatIsland/build-cache`，不会把上游安装包和解压目录放进源码树。
+
+```powershell
+./scripts/prepare-upstream-runtime.ps1
+$env:FUSION_UPSTREAM_RESOURCES = Join-Path $env:LOCALAPPDATA 'FloatIsland/build-cache/eIsland-26.7.4/application/resources'
+```
+
+脚本下载并解压 [eIsland v26.7.4 安装包](https://github.com/JNTMTMTM/eIsland/releases/tag/v26.7.4)。已有安装包时可传入 `-InstallerPath 'D:/Downloads/eIsland-26.7.4-Setup.exe'`；使用 `-CacheDirectory` 可更改缓存目录，此时同步调整上面的资源路径。
+
+在 `app` 目录恢复下载引擎与音频：
+
+```powershell
+cd app
 python scripts/prepare-download-runtime.py
+node scripts/prepare-source-assets.cjs (Join-Path $env:FUSION_UPSTREAM_RESOURCES 'app.asar')
 ```
 
-下载资源依据 `resources/download-runtime/manifest.json` 获取，脚本校验下载包及解压文件 SHA-256。OCR 模型随源码保留。固定上游音频使用资源清单恢复，避免把无关二进制混入仓库：
+下载引擎依据 `resources/download-runtime/manifest.json` 获取并核对 SHA-256。音频逐文件核对 `resources/source-assets.json`；OCR 模型随源码提供。运行安装包时无需再次下载这些基础资源。
+
+返回仓库根目录，构建三个 Rust 主机：
 
 ```powershell
-node scripts/prepare-source-assets.cjs '固定上游的 resources/app.asar'
-```
-
-上游资源必须来自 eIsland v26.7.4。音频恢复脚本逐文件验证清单，原生准备脚本验证版本与绑定。不能使用任意新版本替代固定来源。
-
-在仓库根目录构建三个 Rust 主机后再打包：
-
-```powershell
+cd ..
 ./scripts/build-echoisland-sidecar.ps1
 ```
 
-## 检查与构建
+脚本生成 `app/resources/echoisland/desktop-host.exe`、`fusion-host.exe` 和 `fusion-hook.exe`。Rust 编译缓存默认放在系统临时目录，可通过 `-CargoTargetDir` 指定。
+
+## 开发与构建
+
+在 `app` 目录执行：
 
 ```powershell
+cd app
 npx tsc --noEmit -p tsconfig.node.json
 npx tsc --noEmit -p tsconfig.web.json
 npm run i18n:check
@@ -53,18 +77,16 @@ npm test
 npm run build
 ```
 
-测试代码和用于验证算法/格式的夹具属于源码，必须保留。测试结果 JSON、日志、覆盖率和临时截图属于本机产物，不提交。
+原生插件全部在本机编译完成后，可使用 `npm run dev` 启动开发模式；插件构建命令为 `npm run plugins:build`。使用固定上游运行时进行完整启动时，采用下一节的 `stage` 与 `launch`。
 
-开发启动前需编译本机原生插件，或用下述固定运行时启动已构建应用。只执行 `npm ci` 不会自动补齐全部 Windows 原生 DLL。插件构建脚本见 `package.json` 的 `plugins:build`；Rust 主机工程见 `native/` 和 `vendor/EchoIsland/`。本地服务与模型设置不包含于源码。
+## 构建安装版与便携版
 
-## 同源打包
-
-从新的、专属输出目录开始，避免复用旧程序或旧结果：
+在 `app` 目录设置专属构建目录，避免与源码及最终交付文件混放：
 
 ```powershell
-$env:FUSION_UPSTREAM_RESOURCES = '固定 eIsland v26.7.4/resources'
-$env:FUSION_BUILD_DIR = 'D:/FloatIsland-build/runtime'
-$env:FUSION_OUTPUT_DIR = 'D:/FloatIsland-build/output'
+$buildRoot = Join-Path $env:LOCALAPPDATA 'FloatIsland/build-cache/1.3.0'
+$env:FUSION_BUILD_DIR = Join-Path $buildRoot 'runtime'
+$env:FUSION_OUTPUT_DIR = Join-Path $buildRoot 'output'
 
 node scripts/release-workflow.cjs checks
 node scripts/release-workflow.cjs build
@@ -73,18 +95,43 @@ node scripts/release-workflow.cjs verify
 node scripts/release-workflow.cjs package
 ```
 
-`stage-product-runtime.cjs` 保留固定原生组件，并从当前锁定依赖复制生产模块及嵌套依赖。新增的 Tesseract worker、WASM core 与 OCR 模型必须随包提供，不从 CDN 临时获取。
+这些命令分别完成源码检查、生产编译、固定运行时准备、输出核对及双格式打包。`FUSION_UPSTREAM_RESOURCES` 须保持上一节的设置。也可将 `FUSION_RUNTIME_SEED` 指向已有且带 `runtime-provenance.json` 的固定运行时。
 
-发布流程核对源码摘要、锁文件摘要、构建标识和全部编译文件。检查完成后修改了源码，必须重新检查、构建。打包后的 ASAR 会逐文件与当前编译输出比较，并验证原生 GUI 启动、依赖加载及下载运行时。失败时打包中止。
+`stage` 从固定来源保留 Windows 原生组件，并复制当前锁定的生产依赖和嵌套依赖。OCR worker、WASM、语言模型和媒体工具均随包提供。`verify` 核对源码与编译摘要；`package` 逐文件比较 ASAR 与编译输出，并检查原生运行时、GUI 加载和媒体资源。检查或编译后修改源码，需要重新执行对应流程。
 
-安装版与便携版使用同一编译输出。产物名称为 `FloatIsland-1.3.0-Setup.exe` 与 `FloatIsland-1.3.0-portable.exe`。包未配置代码签名，Windows 可能显示未知发布者；不要把未签名描述为已签名。
+调试完整运行时可执行：
 
-## 发布目录与源码包
+```powershell
+node scripts/release-workflow.cjs launch
+```
 
-源码包保留源代码、锁文件、必要资源、构建脚本、测试夹具、上游署名和许可证。排除 `node_modules`、`out`、`target`、`bin`、`obj`、个人配置、令牌、缓存、过程报告、临时图片和旧源码副本。下载引擎二进制通过固定清单重现，安装包中包含运行资源。
+该启动方式使用构建目录内的独立配置，启用本机调试端口。正式安装包不使用该调试配置。
 
-GitHub Release 提供安装版、便携版、完整源码 ZIP 和 SHA-256 文件。Release 正文只记录实际交付变化、平台和已知限制。仓库根目录不堆放历史测试输出；构建证据放在发布工作目录内，交付时仅保留必要产物。
+最终 EXE 位于 `FUSION_OUTPUT_DIR`，名称为 `FloatIsland-1.3.0-Setup.exe` 和 `FloatIsland-1.3.0-portable.exe`。两者来自同一份编译输出。当前配置没有代码签名；如需签名，按 electron-builder 的证书配置设置发布环境。
 
-## 服务与设备边界
+## GitHub Release
 
-服务端提示词位于独立服务端仓库，当前源码不包含该服务端。UI 和本地构建不能证明云端提示词同步、账号服务或外部音源可用。硬件 GPU、麦克风、蓝牙、跨设备互传、登录网站、受限制媒体和在线接口需要独立实测。软件 GPU 的窗口检查不能代替硬件图形验收。
+提交最终源码后，在仓库根目录导出源码包。输出目录应位于源码仓库之外：
+
+```powershell
+$releaseDir = 'D:/FloatIsland-release/1.3.0'
+New-Item -ItemType Directory -Path $releaseDir -Force | Out-Null
+python app/scripts/bundle-float-source.py (Join-Path $releaseDir 'FloatIsland-1.3.0-source.zip')
+Copy-Item (Join-Path $env:FUSION_OUTPUT_DIR 'FloatIsland-1.3.0-Setup.exe') $releaseDir
+Copy-Item (Join-Path $env:FUSION_OUTPUT_DIR 'FloatIsland-1.3.0-portable.exe') $releaseDir
+
+Get-ChildItem $releaseDir -File | Where-Object Name -ne 'SHA256SUMS.txt' | Sort-Object Name |
+  ForEach-Object { '{0}  {1}' -f (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant(), $_.Name } |
+  Set-Content (Join-Path $releaseDir 'SHA256SUMS.txt') -Encoding utf8NoBOM
+```
+
+源码导出脚本要求工作区干净，使用 Git 归档生成 ZIP。发布目录只需保留两个 EXE、源码 ZIP 和 `SHA256SUMS.txt`；构建缓存、日志、截图、覆盖率及检查 JSON 留在本机构建目录。
+
+推送源码后，将 `v1.3.0` 标签指向该提交，并在 GitHub Release 上传这四个文件。Release 说明包含版本变化、系统要求、安装方式及实际限制，可使用 GitHub CLI：
+
+```powershell
+git push origin main
+gh release create v1.3.0 --repo yanhaoran01/FloatIsland --target (git rev-parse HEAD) --title 'FloatIsland 1.3.0' --notes-file 'D:/FloatIsland-release/notes.md' "$releaseDir/*"
+```
+
+再次发布时使用新版本号，同步 `app/package.json`、锁文件、更新记录及归档文件名。保留已发布版本和对应源码标签。

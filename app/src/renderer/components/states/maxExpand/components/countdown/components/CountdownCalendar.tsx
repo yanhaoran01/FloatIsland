@@ -26,17 +26,22 @@
 
 import type { ReactElement } from 'react';
 import DatePicker from 'react-datepicker';
+import { zhCN } from 'date-fns/locale/zh-CN';
+import { useTranslation } from 'react-i18next';
 import 'react-datepicker/dist/react-datepicker.css';
 import type { CountdownCalendarProps } from '../types/countdownTypes';
 
 /** 日历选择器，支持高亮已有事件日期 */
 export function CountdownCalendar({ selectedDate, onSelectDate, highlightDates }: CountdownCalendarProps): ReactElement {
+  const { i18n } = useTranslation();
   return (
     <div className="cd-calendar-wrap countdown-calendar-wrap">
       <DatePicker
+        locale={i18n.language.startsWith('zh') ? zhCN : undefined}
         selected={selectedDate}
         onChange={(date: Date | null) => onSelectDate(date)}
         inline
+        fixedHeight
         highlightDates={highlightDates}
         calendarClassName="countdown-calendar"
       />

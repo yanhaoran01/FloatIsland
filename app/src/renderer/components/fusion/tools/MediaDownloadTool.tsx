@@ -78,11 +78,11 @@ export function MediaDownloadTool({onStarted}: {onStarted: () => void}) {
     try {setPreferences(await window.api.downloadSavePreferences(next));} catch (reason) {setError(String(reason));}
   };
   return <ToolBody className="float-media-workspace" error={error}>
-    <div className="float-media-setup"><div className="float-media-heading"><h2>{t('fusion.ui.mediaTitle')}</h2><p>{t('fusion.ui.mediaHint')}</p></div>
+    <div className="float-media-setup">
     <label className="fusion-download-source">{t('fusion.download.urls')}<textarea rows={3} aria-label={t('fusion.download.urls')} value={draft.urls}
       disabled={Boolean(draft.request)} placeholder={t('fusion.download.urlsPlaceholder')} onChange={event => draft.set({urls: event.target.value, analysis: null, selected: [], options: {...draft.options, format: 'best'}})}/></label>
-    <div className="fusion-tool-actions">
-      <button disabled={!draft.urls.trim() || Boolean(draft.request)} onClick={() => void analyze()}><Search size={15}/>{t('fusion.download.analyze')}</button>
+    <div className="fusion-tool-actions float-media-actions">
+      <button className="fusion-primary-button" disabled={!draft.urls.trim() || Boolean(draft.request)} onClick={() => void analyze()}><Search size={15}/>{t('fusion.download.analyze')}</button>
       {draft.request && <button onClick={cancel}><X size={15}/>{t('fusion.toolbox.cancel')}</button>}
       <button aria-expanded={advanced} onClick={() => setAdvanced(!advanced)}>{t('fusion.ui.mediaSettings')}</button>
     </div>
@@ -92,8 +92,8 @@ export function MediaDownloadTool({onStarted}: {onStarted: () => void}) {
         {draft.options.mode === 'audio' && <label>{t('fusion.download.audioFormat')}<select aria-label={t('fusion.download.audioFormat')} value={draft.options.audioFormat} onChange={event => patchOptions({audioFormat: event.target.value as MediaDownloadOptions['audioFormat']})}>{['m4a', 'mp3', 'opus'].map(value => <option key={value} value={value}>{value.toUpperCase()}</option>)}</select></label>}
       </div></div>
     <div className="float-media-content">
-    {!draft.analysis&&!draft.request&&<p className="float-empty-hint">{t('fusion.ui.mediaPreviewHint')}</p>}
-    {draft.request && <progress aria-label={t('fusion.download.analyzing')}/>}
+    {!draft.analysis&&!draft.request&&<div className="float-empty-hint float-media-empty"><Download size={28} strokeWidth={1.4}/><span>{t('fusion.ui.mediaPreviewHint')}</span></div>}
+    {draft.request && <div role="status" aria-label={t('fusion.download.analyzing')} className="fusion-tool-busy"/>}
     {draft.analysis?.errors.map((item, index) => <div key={index} className="fusion-download-error"><div><ToolError error={item.message}/>{item.detail && <details><summary>{t('fusion.download.diagnostics')}</summary><pre>{item.detail}</pre></details>}</div><button title={item.url} onClick={() => void window.api.clipboardOpenUrl(item.url).catch(reason => setError(String(reason)))}><ExternalLink size={14}/>{t('fusion.web.external')}</button></div>)}
     {draft.analysis && <>
       {draft.analysis.entries.length > 1 && <div className="fusion-tool-actions"><button onClick={() => draft.set({selected: draft.analysis!.entries.map(x => x.id), options: {...draft.options, format: 'best'}})}>{t('fusion.download.selectAll')}</button><button onClick={() => draft.set({selected: []})}>{t('fusion.download.selectNone')}</button><span>{t('fusion.download.selection', {selected: draft.selected.length, total: draft.analysis.entries.length})}</span></div>}
@@ -147,11 +147,11 @@ export function UnifiedDownloadHistory() {
   };
   const groups = new Map<string, DownloadTask[]>();
   for (const task of visible) {const id = task.batchId || task.id; groups.set(id, [...groups.get(id) ?? [], task]);}
-  return <ToolBody error={error}>
+  return <ToolBody className="float-download-history" error={error}>
     <div className="float-download-filter"><input aria-label={t('fusion.enhance.download.search')} placeholder={t('fusion.enhance.download.search')} value={query} onChange={event=>setQuery(event.target.value)}/><select aria-label={t('fusion.enhance.download.filter')} value={filter} onChange={event=>setFilter(event.target.value)}><option value="all">{t('fusion.enhance.download.all')}</option>{['queued','downloading','paused','failed','completed','canceled'].map(state=><option key={state} value={state}>{t('fusion.download.status.'+state)}</option>)}</select></div>
     <div className="fusion-tool-actions float-download-batch"><label><input type="checkbox" checked={Boolean(visible.length)&&visible.every(task=>selected.includes(task.id))} onChange={event=>setSelected(event.target.checked?[...new Set([...selected,...visible.map(task=>task.id)])]:selected.filter(id=>!visible.some(task=>task.id===id)))}/>{t('fusion.download.selectAll')}</label>{selectedTasks.length>0&&(['pause','resume','cancel','remove'] as const).map(command=><button key={command} disabled={working||!selectedTasks.some(task=>eligible(task,command))} onClick={()=>void batch(command)}>{command==='pause'?<Pause size={14}/>:command==='resume'?<Play size={14}/>:command==='cancel'?<X size={14}/>:<Trash2 size={14}/>}<span>{t('fusion.enhance.download.batch.'+command)}</span></button>)}<small>{selectedTasks.length||''}</small></div>
     <DownloadSettings/>
-    {!tasks.length && <span className="fusion-product-status">{t('maxExpand.toolbox.download.tasks.empty')}</span>}
+    {!tasks.length && <div className="float-download-empty"><Download size={32} strokeWidth={1.4}/><span>{t('maxExpand.toolbox.download.tasks.empty')}</span></div>}
     {[...groups].map(([id, rows]) => <section className="fusion-download-group" key={id}>
       {rows.length > 1 && <small>{rows[0].playlistTitle || t('fusion.download.batch')} · {t('fusion.download.batchProgress', {done: rows.filter(x => x.status === 'completed').length, total: rows.length})}</small>}
       {rows.map(task => <article className="fusion-download-task" key={task.id}>
@@ -180,5 +180,5 @@ function DownloadSettings(){
  const {t}=useTranslation(),[value,setValue]=useState<DownloadPreferences|null>(null),[error,setError]=useState('');
  useEffect(()=>{void window.api.downloadPreferences().then(setValue).catch(reason=>setError(String(reason)));},[]);
  const save=async()=>{if(!value)return;try{setValue(await window.api.downloadSavePreferences(value));setError('');}catch(reason){setError(String(reason));}};
- return <details className="float-download-settings"><summary>{t('fusion.enhance.download.settings')}</summary>{value&&<div className="fusion-product-options"><label>{t('fusion.download.concurrency')}<select value={value.concurrency} onChange={event=>setValue({...value,concurrency:Number(event.target.value)})}>{[1,2,3,4].map(n=><option key={n}>{n}</option>)}</select></label>{(['downloadLimit','uploadLimit'] as const).map(key=><label key={key}>{t('fusion.enhance.download.'+key)}<input type="number" min="0" max="976562500" value={(value[key]||0)/1024} onChange={event=>setValue({...value,[key]:Math.max(0,Number(event.target.value))*1024})}/></label>)}<label><input type="checkbox" checked={Boolean(value.seedMinutes)} onChange={event=>setValue({...value,seedMinutes:event.target.checked?30:0})}/>{t('fusion.enhance.download.seed')}</label>{Boolean(value.seedMinutes)&&<>{(['seedMinutes','seedRatio'] as const).map(key=><label key={key}>{t('fusion.enhance.download.'+key)}<input type="number" min="0" value={value[key]||0} onChange={event=>setValue({...value,[key]:Number(event.target.value)})}/></label>)}</>}<small>{t('fusion.enhance.download.limitHint')}</small><button onClick={()=>void save()}>{t('fusion.enhance.save')}</button></div>}<ToolError error={error}/></details>;
+ return <details className="float-download-settings"><summary>{t('fusion.enhance.download.settings')}</summary>{value&&<div className="float-download-settings-fields"><label>{t('fusion.download.concurrency')}<select value={value.concurrency} onChange={event=>setValue({...value,concurrency:Number(event.target.value)})}>{[1,2,3,4].map(n=><option key={n}>{n}</option>)}</select></label>{(['downloadLimit','uploadLimit'] as const).map(key=><label key={key}>{t('fusion.enhance.download.'+key)}<input type="number" min="0" max="976562500" value={(value[key]||0)/1024} onChange={event=>setValue({...value,[key]:Math.max(0,Number(event.target.value))*1024})}/></label>)}<label className="float-check float-download-seed"><input type="checkbox" checked={Boolean(value.seedMinutes)} onChange={event=>setValue({...value,seedMinutes:event.target.checked?30:0})}/>{t('fusion.enhance.download.seed')}</label>{Boolean(value.seedMinutes)&&<>{(['seedMinutes','seedRatio'] as const).map(key=><label key={key}>{t('fusion.enhance.download.'+key)}<input type="number" min="0" value={value[key]||0} onChange={event=>setValue({...value,[key]:Number(event.target.value)})}/></label>)}</>}<div className="float-download-settings-footer"><small>{t('fusion.enhance.download.limitHint')}</small><button onClick={()=>void save()}>{t('fusion.enhance.save')}</button></div></div>}<ToolError error={error}/></details>;
 }

@@ -78,7 +78,7 @@ function DynamicIsland(): JSX.Element {
   });
 
   return (<>
-    {dock.dock?.strip && <button className="fusion-dock-handle" data-edge={dock.dock.config.edge} data-waiting={waiting>0} aria-label={t('fusion.dock.reveal')} onClick={() => store.setMaxExpand()} />}
+    {dock.dock?.strip && <button className="fusion-dock-handle" data-edge={dock.dock.config.edge} data-waiting={waiting>0} aria-label={t('fusion.dock.reveal')} onClick={() => { void window.api.fusionDockReveal(); }} />}
     <div
       {...{onPointerDown:dock.onPointerDown,onPointerMove:dock.onPointerMove,onPointerUp:dock.onPointerUp,onPointerCancel:dock.onPointerUp,onClickCapture:dock.onClickCapture}}
       data-dock-preview={dock.dock?.preview || undefined}
