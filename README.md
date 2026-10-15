@@ -1,4 +1,4 @@
-# 浮屿 · FloatIsland
+# FloatIsland
 
 FloatIsland 是 Windows 桌面的贴边工作台，将对话、实用工具、音乐、阅读和下载集中在一个可收起的窗口中。支持顶部、左侧和右侧停靠，深色与浅色主题，以及独立窗口。
 
@@ -10,9 +10,9 @@ FloatIsland 是 Windows 桌面的贴边工作台，将对话、实用工具、�
 
 | 发布文件 | 用途 |
 | --- | --- |
-| `FloatIsland-1.3.1-Setup.exe` | 安装版，可选择安装目录，适合日常使用 |
-| `FloatIsland-1.3.1-portable.exe` | 免安装版，直接运行 |
-| `FloatIsland-1.3.1-source.zip` | 对应版本的完整源码与构建资料 |
+| `FloatIsland-1.3.2-Setup.exe` | 安装版，可选择安装目录，适合日常使用 |
+| `FloatIsland-1.3.2-portable.exe` | 免安装版，直接运行 |
+| `FloatIsland-1.3.2-source.zip` | 对应版本的完整源码与构建资料 |
 | `SHA256SUMS.txt` | 发布文件的 SHA-256 校验值 |
 
 从 [GitHub Releases](https://github.com/yanhaoran01/FloatIsland/releases) 下载。升级前退出正在运行的旧版本，再安装或替换程序。便携版同样使用应用配置目录，用户数据不会自动保存在 EXE 旁。卸载默认保留用户数据。

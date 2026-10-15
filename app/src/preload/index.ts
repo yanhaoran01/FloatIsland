@@ -1773,7 +1773,7 @@ const api = {
   fusionCodexInterrupt: (sessionId?: string): Promise<void> => ipcRenderer.invoke('fusion:codex:turn:interrupt', sessionId),
   fusionCodexAnswer: (requestId: string, decision: FusionCodexDecision, answers?: Record<string, string[]>): Promise<boolean> => ipcRenderer.invoke('fusion:codex:request:answer', requestId, decision, answers),
   fusionSelectProject: (): Promise<string | null> => ipcRenderer.invoke('fusion:project:select'),
-  fusionEchoCodexSessions: (): Promise<FusionEchoCodexSessionsSnapshot> => ipcRenderer.invoke('fusion:echo:codex-sessions:get'),
+  fusionEchoCodexSessions: (refresh = false): Promise<FusionEchoCodexSessionsSnapshot> => ipcRenderer.invoke('fusion:echo:codex-sessions:get', refresh),
   fusionFocusSession: (source: string, sessionId: string): Promise<boolean> => ipcRenderer.invoke('fusion:echo:focus', source, sessionId),
   fusionAnswerExternalRequest: (requestId: string, action: string, answer?: string): Promise<boolean> => ipcRenderer.invoke('fusion:echo:answer', requestId, action, answer),
   fusionFocusExternalCodex: (): Promise<boolean> => ipcRenderer.invoke('fusion:echo:codex-focus'),

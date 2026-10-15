@@ -23,6 +23,8 @@ import type { FusionCodexSnapshot, FusionCodexThread, FusionDshSession, FusionDs
 import useIslandStore from '../../store/slices';
 import { FusionPet, type FusionPetMood } from './FusionPet';
 
+import { useFusionActivity } from './fusionActivity';
+import { LocalAgentCards } from './LocalAgentCards';
 import { FusionProviderIcon } from './FusionResourceIcon';
 
 const EMPTY_CODEX: FusionCodexSnapshot = {
@@ -45,6 +47,7 @@ export function FusionSessionsTab(): JSX.Element {
   const setMaxExpandTab = useIslandStore((state) => state.setMaxExpandTab);
   const [codex, setCodex] = useState<FusionCodexSnapshot>(EMPTY_CODEX);
   const [dsh, setDsh] = useState<FusionDshSnapshot>(EMPTY_DSH);
+  const echo = useFusionActivity(state => state.echo);
   const [busy, setBusy] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const muted = useFusionPreferences((state) => state.value.muted);
@@ -56,6 +59,7 @@ export function FusionSessionsTab(): JSX.Element {
     const results = await Promise.allSettled([
       window.api.fusionCodexSnapshot(),
       window.api.fusionDshSnapshot(),
+      window.api.fusionEchoCodexSessions(true).then(echo => useFusionActivity.setState({ echo })),
     ]);
     if (results[0].status === 'fulfilled') setCodex(results[0].value);
     if (results[1].status === 'fulfilled') setDsh(results[1].value);
@@ -93,8 +97,10 @@ export function FusionSessionsTab(): JSX.Element {
     localStorage.setItem('fusion.pet-muted', String(muted));
   }, [muted]);
 
-  const pendingCount = codex.pendingRequests.length + dsh.pendingRequests.length;
-  const mood: FusionPetMood = pendingCount > 0 ? 'waiting' : (codex.error || dsh.error) ? 'error' : (codex.working || dsh.working) ? 'working' : 'idle';
+  const externalPending = echo?.state === 'ready' ? echo.pendingRequests?.length || 0 : 0;
+  const externalWorking = echo?.state === 'ready' && echo.sessions.some(session => ['Processing', 'Running'].includes(session.status));
+  const pendingCount = codex.pendingRequests.length + dsh.pendingRequests.length + externalPending;
+  const mood: FusionPetMood = pendingCount > 0 ? 'waiting' : (codex.error || dsh.error) ? 'error' : (codex.working || dsh.working || externalWorking) ? 'working' : 'idle';
   const openChat = useCallback((provider: 'codex' | 'dsh'): void => {
     localStorage.setItem('fusion.provider', provider);
     window.dispatchEvent(new CustomEvent('fusion-select-provider', { detail: provider }));
@@ -210,9 +216,10 @@ export function FusionSessionsTab(): JSX.Element {
             </div>
           )}
         </article>
+        <LocalAgentCards snapshot={echo} onError={setError} />
       </div>
 
-      {(codex.pendingRequests.length > 0 || dsh.pendingRequests.length > 0) && (
+      {(codex.pendingRequests.length > 0 || dsh.pendingRequests.length > 0 || externalPending > 0) && (
         <section className="fusion-pending-section" aria-label={t('fusion.overview.pending')}>
           <div className="fusion-section-heading"><strong>{t('fusion.overview.pending')}</strong><span>{pendingCount}</span></div>
           {codex.pendingRequests.map((request) => (
@@ -221,6 +228,13 @@ export function FusionSessionsTab(): JSX.Element {
               <button className="fusion-pending-open" type="button" onClick={() => void handleCodexRequest(request.threadId)}>{t('fusion.overview.handle')}</button>
             </article>
           ))}
+          {echo?.state === 'ready' && echo.pendingRequests?.map(request => {
+            const session = echo.sessions.find(item => item.sessionId === request.sessionId && item.source === request.source);
+            return <article className="fusion-pending-card" key={`external:${request.requestId}`}>
+              <div><strong>{request.kind === 'approval' ? t('fusion.request.approvalTitle') : t('fusion.request.questionTitle')}</strong><p>{request.text}</p><small>{request.source} · {session?.projectName || session?.cwd || ''}</small></div>
+              <button className="fusion-pending-open" type="button" disabled={!session?.capabilities?.focus} onClick={() => session && void window.api.fusionFocusSession(session.source, session.sessionId).then(ok => { if (!ok) setError(t('fusion.localAgents.focusFailed', { defaultValue: '未找到可切换的窗口，请在本机 Agent 中继续。' })); }).catch(reason => setError(String(reason)))}>{t('fusion.overview.handle')}</button>
+            </article>;
+          })}
           {dsh.pendingRequests.map((request) => (
             <article className="fusion-pending-card" key={`dsh:${request.requestId}`}>
               <div><strong>{request.title}</strong><p>{request.description || request.toolTitle}</p><small>{t('fusion.overview.requestSource', { agent: t('fusion.provider.dsh'), project: dsh.sessions.find((session) => session.id === request.sessionId)?.cwd || '' })}</small></div>

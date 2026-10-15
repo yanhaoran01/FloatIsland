@@ -1,7 +1,7 @@
 /* FloatIsland - https://github.com/yanhaoran01/FloatIsland. Copyright (C) 2026 FloatIsland contributors. GPL-3.0. */
 /**
  * @file floatStage.css
- * @description 浮屿最终视觉层：角色舞台、统一按钮与输入、工具目录卡片、留声机音乐页和柔和动效。
+ * @description FloatIsland 角色与页面样式：角色舞台、统一按钮与输入、工具目录卡片、留声机音乐页和柔和动效。
  * @description 外壳几何仍由原生视口负责，这里只为内部元素添加透明度与位移动画。
  * @author 鸡哥
  */

@@ -34,7 +34,15 @@ export interface FusionEchoCodexSession {
   windowTitle: string | null;
 }
 
+export interface FusionLocalAgent {
+  source: string;
+  name: string;
+  installed: boolean;
+  configured: boolean;
+}
+
 export interface FusionEchoCodexSessionsSnapshot {
+  agents?: FusionLocalAgent[];
   state: 'ready' | 'restored' | 'unavailable' | 'error';
   updatedAt: string | null;
   sessions: FusionEchoCodexSession[];

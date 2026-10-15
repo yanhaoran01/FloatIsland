@@ -19,6 +19,7 @@ import { join } from 'path';
 import type { BrowserWindow } from 'electron';
 import type { FusionEchoCodexSessionsSnapshot, FusionEchoCodexSession } from '../../preload/types/fusion';
 import type { EchoCodexSessionCache } from '../types/system/EchoExternalCodexService';
+import { createLocalAgentDiscovery } from './localAgentDiscovery';
 import {WorkBuddyObserver} from './workBuddyObserver';
 import {discoverWorkBuddy,workBuddyHistory,workBuddyAlive,openWorkBuddy} from './workBuddyConfig';
 
@@ -76,7 +77,9 @@ export function createEchoRuntimeService(options: Options) {
   const sourceSequences = new Map<string, number>();
   const workbuddy=new WorkBuddyObserver();
   let workbuddySeenAt=0;
-  const combined=():FusionEchoCodexSessionsSnapshot=>({...snapshot,sessions:[...snapshot.sessions.filter(item=>item.source!=='workbuddy'),...workbuddy.snapshot()].sort((a,b)=>(b.lastActivity??'').localeCompare(a.lastActivity??''))});
+  const localAgents = createLocalAgentDiscovery();
+  let localScanAt = 0;
+  const combined=():FusionEchoCodexSessionsSnapshot=>({...snapshot,agents:localAgents.snapshot().agents,sessions:[...snapshot.sessions.filter(item=>item.source!=='workbuddy'&&item.source!=='kimi'),...workbuddy.snapshot(),...localAgents.snapshot().sessions].sort((a,b)=>(b.lastActivity??'').localeCompare(a.lastActivity??''))});
   const publish = (): void => {
     broadcastFusion('fusion:echo:codex-sessions:updated', combined());
   };
@@ -93,6 +96,8 @@ export function createEchoRuntimeService(options: Options) {
   const refreshPreferences = (): void => {
     let discover = true;
     try { discover = JSON.parse(readFileSync(options.preferencesPath, 'utf8')).autoDiscover !== false; } catch { /* Default to local status discovery. */ }
+    if (!discover) localAgents.clear();
+    if (Date.now() - localScanAt > 15000) { localScanAt = Date.now(); void localAgents.scan().then(() => { if (enabled === false) localAgents.clear(); publish(); }).catch(() => {}); }
     if (enabled !== discover) {
       enabled = discover;
       void request('discover', { enabled: discover }).catch(() => { enabled = null; });
@@ -201,8 +206,8 @@ export function createEchoRuntimeService(options: Options) {
       child?.stdin.end();
     },
     getSnapshot: (): FusionEchoCodexSessionsSnapshot => structuredClone(combined()),
-    rescan: async (): Promise<void> => { workbuddy.restore(workBuddyHistory());publish();enabled=null;refreshPreferences(); },
-    focusSession: async (source: string, sessionId: string): Promise<boolean> => source==='workbuddy' ? openWorkBuddy() : Boolean((await request('focus', { source, sessionId })).focused),
+    rescan: async (): Promise<void> => { await localAgents.scan(); workbuddy.restore(workBuddyHistory());publish();enabled=null;refreshPreferences(); },
+    focusSession: async (source: string, sessionId: string): Promise<boolean> => source==='kimi' ? localAgents.focus(sessionId) : source==='workbuddy' ? openWorkBuddy() : Boolean((await request('focus', { source, sessionId })).focused),
     focusCodexApp: async (): Promise<boolean> => {
       const session = snapshot.sessions.find((item) => item.source === 'codex');
       return session ? Boolean((await request('focus', { source: session.source, sessionId: session.sessionId })).focused) : false;

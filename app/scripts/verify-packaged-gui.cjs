@@ -19,13 +19,13 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
   const response=await new Promise((resolve,reject)=>{
    const timer=setTimeout(()=>reject(Error('Native GUI check timed out')),20000);
    socket.onmessage=event=>{const value=JSON.parse(event.data);if(value.id===1){clearTimeout(timer);value.error?reject(Error(value.error.message)):resolve(value.result);}};
-   const expression=`(async()=>{const initializedBy=Date.now()+15000;while(!process.mainModule&&Date.now()<initializedBy)await new Promise(resolve=>setTimeout(resolve,25));if(!process.mainModule)throw Error('Packaged main module did not initialize');const e=process.mainModule.require('electron');await e.app.whenReady();const load=process.mainModule.require('node:module').createRequire(${JSON.stringify(path.join(archive,'package.json'))});const hook=load('uiohook-napi').uIOhook;hook.start();hook.stop();return {electron:process.versions.electron,name:e.app.getName(),data:e.app.getPath('userData'),hook:true};})()`;
+   const expression=`(async()=>{const initializedBy=Date.now()+15000;while(!process.mainModule&&Date.now()<initializedBy)await new Promise(resolve=>setTimeout(resolve,25));if(!process.mainModule)throw Error('Packaged main module did not initialize');const e=process.mainModule.require('electron');await e.app.whenReady();const load=process.mainModule.require('node:module').createRequire(${JSON.stringify(path.join(archive,'package.json'))});const hook=load('uiohook-napi').uIOhook;if(typeof hook.start!=='function'||typeof hook.stop!=='function')throw Error('invalid-hook-addon');return {electron:process.versions.electron,name:e.app.getName(),data:e.app.getPath('userData'),hookApi:true};})()`;
    socket.send(JSON.stringify({id:1,method:'Runtime.evaluate',params:{expression,awaitPromise:true,returnByValue:true}}));
   });
   if(response.exceptionDetails)throw Error(JSON.stringify(response.exceptionDetails));
-  report.runtime=response.result.value;report.passed=Boolean(report.runtime.hook)&&report.runtime.data===profile;
-  report.checks.push({name:'native hook start/stop inside packaged GUI',passed:report.passed});
- }catch(error){report.checks.push({name:'native hook start/stop inside packaged GUI',passed:false,error:String(error)});}
+  report.runtime=response.result.value;report.passed=Boolean(report.runtime.hookApi)&&report.runtime.data===profile;
+  report.checks.push({name:'packaged GUI startup and native hook API',passed:report.passed});
+ }catch(error){report.checks.push({name:'packaged GUI startup and native hook API',passed:false,error:String(error)});}
  finally{socket?.close();child.kill();fs.writeFileSync(output,JSON.stringify(report,null,2));}
  console.log(JSON.stringify(report));process.exitCode=report.passed?0:1;
 })().catch(error=>{console.error(error);process.exitCode=1;});

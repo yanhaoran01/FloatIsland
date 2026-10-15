@@ -389,7 +389,7 @@ declare global {
       fusionCodexInterrupt: (sessionId?: string) => Promise<void>;
       fusionCodexAnswer: (requestId: string, decision: FusionCodexDecision, answers?: Record<string, string[]>) => Promise<boolean>;
       fusionSelectProject: () => Promise<string | null>;
-      fusionEchoCodexSessions: () => Promise<FusionEchoCodexSessionsSnapshot>;
+      fusionEchoCodexSessions: (refresh?: boolean) => Promise<FusionEchoCodexSessionsSnapshot>;
       fusionFocusExternalCodex: () => Promise<boolean>;
       onFusionEchoCodexSessionsUpdated: (callback: (snapshot: FusionEchoCodexSessionsSnapshot) => void) => () => void;
       onFusionCodexUpdated: (callback: (snapshot: FusionCodexSnapshot) => void) => () => void;

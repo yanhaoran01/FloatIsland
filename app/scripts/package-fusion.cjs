@@ -73,7 +73,7 @@ const configPath = path.join(stage,'fusion-builder.cjs');
 const serializable = {...config};
 delete serializable.afterPack;
 fs.writeFileSync(configPath,'module.exports = '+JSON.stringify(serializable,null,2)+';\n');
-const targets = process.argv.includes('--dir') ? ['dir'] : process.argv.includes('--nsis') ? ['nsis'] : ['portable','nsis'];
+const targets = process.argv.includes('--dir') ? ['dir'] : process.argv.includes('--nsis') ? ['nsis'] : process.argv.includes('--portable') ? ['portable'] : ['portable','nsis'];
 const packaging = process.argv.includes('--verify-only')
   ? config.afterPack({appOutDir:path.join(config.directories.output,'win-unpacked')}).then(()=>[])
   : build({projectDir:stage,targets:Platform.WINDOWS.createTarget(targets,Arch.x64),config:{...serializable,extends:null,afterPack:config.afterPack},publish:'never'});

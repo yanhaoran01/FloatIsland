@@ -23,6 +23,7 @@ export interface EchoExternalCodexService {
   start: () => void;
   stop: () => void;
   getSnapshot: () => FusionEchoCodexSessionsSnapshot;
+  rescan?: () => Promise<void>;
   focusSession?: (source: string, sessionId: string) => Promise<boolean>;
   answerRequest?: (requestId: string, action: string, answer?: string) => Promise<boolean>;
   focusCodexApp: () => Promise<boolean>;
