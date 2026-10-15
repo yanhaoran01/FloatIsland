@@ -8,6 +8,7 @@
 import { app, ipcMain, BrowserWindow } from 'electron';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { createLocalSpeechService } from './localSpeechService';
 import { createDshAcpService } from './dshAcpService';
 import { createDshNativeService } from './dshNativeService';
 import { broadcastFusion, isFusionView } from './fusionWindows';
@@ -17,6 +18,8 @@ import type { FusionDshSnapshot } from '../../preload/types/fusion';
 
 /** Pins each controlled session to one transport and exposes only native Agent voice. */
 export function createDshService(options: { getMainWindow: () => BrowserWindow | null }) {
+  const localSpeech = createLocalSpeechService();
+  const speechStatus = async () => { const local = localSpeech.status(); return local.ready ? local : native.speechStatus(); };
   const owners = new Map<string, 'native' | 'acp'>();
   const publish = (): void => broadcastFusion('fusion:dsh:updated', getSnapshot());
   const acp = createDshAcpService({ ...options, onSnapshot: publish });
@@ -81,14 +84,15 @@ export function createDshService(options: { getMainWindow: () => BrowserWindow |
   });
   ipcMain.handle('fusion:speech:status', (event, provider: string) => {
     if (!isFusionView(event.sender)) throw new Error('untrusted-view');
-    return provider === 'dsh' ? native.speechStatus() : { available: false, ready: false, reason: 'agent-voice-unavailable', maxAudioBytes: 0, maxDurationSeconds: 0 };
+    return speechStatus();
   });
   ipcMain.handle('fusion:speech:transcribe', async (event, provider: string, id: string, audioBase64: string, selection: { providerId?: string; language?: string } = {}) => {
-    if (!isFusionView(event.sender) || provider !== 'dsh') throw new Error('agent-voice-unavailable');
+    if (!isFusionView(event.sender)) throw new Error('agent-voice-unavailable');
     if (typeof id !== 'string' || recordings.has(id) || typeof audioBase64 !== 'string' || audioBase64.length > 6 * 1024 * 1024) throw new Error('invalid-recording');
     const abort = new AbortController(); recordings.set(id, { owner: event.sender.id, abort });
     const close = (): void => abort.abort(); event.sender.once('destroyed', close);
     try {
+      if (selection.providerId === 'floatisland-local-sensevoice') return await localSpeech.transcribe(audioBase64, selection.language, AbortSignal.any([abort.signal, AbortSignal.timeout(180_000)]));
       const result = await native.rpc('speech/transcribe', {
         audioBase64, providerId: typeof selection.providerId === 'string' ? selection.providerId : undefined,
         language: typeof selection.language === 'string' ? selection.language : undefined,
@@ -131,6 +135,7 @@ export function createDshService(options: { getMainWindow: () => BrowserWindow |
     },
     answerQuestions: native.answerQuestions,
     stop: async (): Promise<void> => {
+      localSpeech.stop();
       if (discovery) clearInterval(discovery); discovery = null;
       for (const recording of recordings.values()) recording.abort.abort();
       await Promise.all([native.stop(), acp.stop()]);

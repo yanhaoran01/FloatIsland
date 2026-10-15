@@ -31,6 +31,7 @@ export function encodeVoiceWave(chunks: Int16Array[]): string {
 export function useFusionVoice(provider: FusionProvider, sessionKey: string, visible: boolean, text: string, draftVersion: number, insert: (text: string) => void) {
   const { t } = useTranslation();
   const [status, setStatus] = useState<SpeechStatus | null>(null);
+  const statusRef = useRef(status); statusRef.current = status;
   const [phase, setPhase] = useState<'idle' | 'permission' | 'recording' | 'transcribing'>('idle');
   const [error, setError] = useState('');
   const [pending, setPending] = useState('');
@@ -135,7 +136,7 @@ export function useFusionVoice(provider: FusionProvider, sessionKey: string, vis
     setStatus(null); setError('');
     if (visible) void window.api.fusionSpeechStatus(provider).then(value => { if (active) setStatus(value); }).catch(() => {});
     const unsubscribe = window.api.onFusionSpeechStatus(event => {
-      if (!active || event.provider !== provider) return;
+      if (!active || event.provider !== provider || statusRef.current?.providerId === 'floatisland-local-sensevoice') return;
       setStatus(event.status);
       // 首次识别按需加载模型时，准备状态会变化；不能取消自身触发的识别。
       if (!event.status.ready && capture.current && (!capture.current.transcribing || !event.status.available || event.status.reason === 'dsh-disconnected')) cancel();

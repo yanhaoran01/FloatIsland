@@ -14,7 +14,7 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'child_process';
 import { createInterface } from 'readline';
 import { createServer, type Server } from 'http';
 import { randomBytes, timingSafeEqual } from 'crypto';
-import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import type { BrowserWindow } from 'electron';
 import type { FusionEchoCodexSessionsSnapshot, FusionEchoCodexSession } from '../../preload/types/fusion';
@@ -76,7 +76,7 @@ export function createEchoRuntimeService(options: Options) {
   const sourceSequences = new Map<string, number>();
   const workbuddy=new WorkBuddyObserver();
   let workbuddySeenAt=0;
-  const combined=():FusionEchoCodexSessionsSnapshot=>({...snapshot,sessions:[...snapshot.sessions.filter(item=>item.source!=='workbuddy'&&item.source!=='codex'),...workbuddy.snapshot()].sort((a,b)=>(b.lastActivity??'').localeCompare(a.lastActivity??''))});
+  const combined=():FusionEchoCodexSessionsSnapshot=>({...snapshot,sessions:[...snapshot.sessions.filter(item=>item.source!=='workbuddy'),...workbuddy.snapshot()].sort((a,b)=>(b.lastActivity??'').localeCompare(a.lastActivity??''))});
   const publish = (): void => {
     broadcastFusion('fusion:echo:codex-sessions:updated', combined());
   };
@@ -91,7 +91,8 @@ export function createEchoRuntimeService(options: Options) {
     });
   });
   const refreshPreferences = (): void => {
-    const discover = false;
+    let discover = true;
+    try { discover = JSON.parse(readFileSync(options.preferencesPath, 'utf8')).autoDiscover !== false; } catch { /* Default to local status discovery. */ }
     if (enabled !== discover) {
       enabled = discover;
       void request('discover', { enabled: discover }).catch(() => { enabled = null; });
@@ -200,7 +201,7 @@ export function createEchoRuntimeService(options: Options) {
       child?.stdin.end();
     },
     getSnapshot: (): FusionEchoCodexSessionsSnapshot => structuredClone(combined()),
-    rescan: async (): Promise<void> => { workbuddy.restore(workBuddyHistory());publish();await request('discover', { enabled: false }); },
+    rescan: async (): Promise<void> => { workbuddy.restore(workBuddyHistory());publish();enabled=null;refreshPreferences(); },
     focusSession: async (source: string, sessionId: string): Promise<boolean> => source==='workbuddy' ? openWorkBuddy() : Boolean((await request('focus', { source, sessionId })).focused),
     focusCodexApp: async (): Promise<boolean> => {
       const session = snapshot.sessions.find((item) => item.source === 'codex');

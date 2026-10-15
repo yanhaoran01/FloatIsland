@@ -138,7 +138,7 @@ export function FusionChat({ compact = false, visible = true }: { compact?: bool
   const state = agent?.sessionStates?.[sessionId];
   const messages: FusionCodexMessage[] = state?.messages || (assistant?.key === key ? assistant.messages : []);
   const working = state?.working || (assistant?.key === key && assistant.working) || false;
-  const currentError = state?.error || (assistant?.key === key ? assistant.error : null);
+  const currentError = state?.error || agent?.error || (assistant?.key === key ? assistant.error : null);
   const hasSession = Boolean(sessionId);
   const sessions = provider === 'codex' ? codex?.threads.map(s => ({ id: s.id, title: s.name || s.preview || s.id })) :
     provider === 'dsh' ? dsh?.sessions.map(s => ({ id: s.id, title: s.title || s.cwd || s.id })) : localSessions;
@@ -147,7 +147,7 @@ export function FusionChat({ compact = false, visible = true }: { compact?: bool
   const productJobs=useProductStore(s=>s.jobs);
   const productWaiting=Object.values(productJobs).some(job=>job.state==='waiting');
   const productWorking=Object.values(productJobs).some(job=>job.state==='running');
-  const observed=echo?.sessions.filter(item=>item.source==='workbuddy')??[];
+  const observed=echo?.state==='ready' ? echo.sessions.filter(item=>item.source==='workbuddy'||item.source==='codex') : [];
   const observedWorking=observed.some(item=>['Running','Processing'].includes(item.status));
   const observedWaiting=observed.some(item=>item.status==='WaitingApproval');
   const observedError=observed.some(item=>item.status==='Error');
@@ -406,9 +406,9 @@ export function FusionChat({ compact = false, visible = true }: { compact?: bool
           {voice.phase === 'recording' ? <Square size={16} /> : <Mic size={16} />}
         </button>
         {voice.phase !== 'idle' ? <><span role="status">{t('fusion.voice.' + voice.phase)}</span><button onClick={voice.cancel}>{t('fusion.voice.cancel')}</button></> :
-          provider === 'dsh' ? <span className="fusion-voice-state" role="status">{t('fusion.voice.' + voiceStateKey)}
+          <span className="fusion-voice-state" role="status">{t('fusion.voice.' + voiceStateKey)}
             {!voice.status?.ready && <button className="fusion-voice-hint" title={voice.status?.reason}
-              onClick={() => void run(() => window.api.fusionIntegrationOpen('dsh'))}>{t('fusion.voice.dshSetup')}</button>}</span> : null}
+              onClick={() => void run(() => window.api.fusionIntegrationOpen('dsh'))}>{t('fusion.voice.dshSetup')}</button>}</span>}
         <div className="fusion-chat-spacer" />
         {!compact && provider !== 'codex' && provider !== 'dsh' && <button onClick={() => {
           localStorage.setItem('fusion.settings-model', provider); useIslandStore.getState().setMaxExpandTab('settings');

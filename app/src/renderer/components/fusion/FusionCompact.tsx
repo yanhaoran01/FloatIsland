@@ -18,7 +18,7 @@ import {useEffect,useState,useRef} from 'react';
 import './floatIsland.css';
 import './floatDesign.css';
 import useIslandStore from '../../store/slices';
-import { FusionPet, type FusionPetMood } from './FusionPet';
+import { FusionPet, usePetCompletion, type FusionPetMood } from './FusionPet';
 import { useFusionActivity } from './fusionActivity';
 import { useFusionPreferences } from './fusionPreferences';
 import {prepareIslandTransition} from './islandTransition';
@@ -38,18 +38,19 @@ export function FusionCompact({ overview = false }: { overview?: boolean }): JSX
   const productJobs=useProductStore(s=>s.jobs);
   const pendingJobs=Object.values(productJobs).filter(job=>job.state==='waiting').length;
   const workingJobs=Object.values(productJobs).filter(job=>job.state==='running').length;
-  const pending =pendingJobs+ (codex?.pendingRequests.length ?? 0) + (dsh?.pendingRequests.length ?? 0) + (echo?.pendingRequests?.length ?? 0)+(echo?.sessions.filter(item=>item.source==='workbuddy'&&item.status==='WaitingApproval').length??0);
+  const pending =pendingJobs+ (codex?.pendingRequests.length ?? 0) + (dsh?.pendingRequests.length ?? 0) + (echo?.pendingRequests?.length ?? 0)+(echo?.sessions.filter(item=>item.status==='WaitingApproval').length??0);
   const running = new Set<string>();
   for (const [id, value] of Object.entries(codex?.sessionStates || {})) if (value.working) running.add('codex:' + id);
   for (const [id, value] of Object.entries(dsh?.sessionStates || {})) if (value.working) running.add('dsh:' + id);
   for (const value of Object.values(assistants)) if (value.working) running.add(value.key);
   if (echo?.state === 'ready') for (const value of echo.sessions) if (['Running', 'Processing'].includes(value.status)) running.add(value.source + ':' + value.sessionId);
   const active = running.size+workingJobs;
-  const failed=echo?.sessions.some(item=>item.source==='workbuddy'&&item.status==='Error')||Object.values(codex?.sessionStates??{}).some(item=>item.error)||Object.values(dsh?.sessionStates??{}).some(item=>item.error);
-  const mood: FusionPetMood = failed ? 'error' : pending > 0 ? 'waiting' : active > 0 ? 'working' : 'idle';
+  const failed=Boolean(codex?.error||dsh?.error)||echo?.state==='ready'&&echo.sessions.some(item=>item.status==='Error')||Object.values(codex?.sessionStates??{}).some(item=>item.error)||Object.values(dsh?.sessionStates??{}).some(item=>item.error);
+  const completion=usePetCompletion(active>0,Boolean(failed)||pending>0,muted,'island-activity');
+  const mood: FusionPetMood = pending > 0 ? 'waiting' : active > 0 ? 'working' : failed ? 'error' : completion.finished ? 'finished' : 'idle';
   const latest = echo?.sessions[0];
   const summary = codex?.pendingRequests[0]?.command || dsh?.pendingRequests[0]?.description ||
-    echo?.pendingRequests?.[0]?.text || latest?.lastAssistantMessage || latest?.lastUserPrompt || t('fusion.compact.open');
+    echo?.pendingRequests?.[0]?.text || codex?.error || dsh?.error || latest?.currentTool || latest?.lastAssistantMessage || latest?.lastUserPrompt || t('fusion.compact.open');
   const open=(view:'chat'|'tools'|'search'|'settings'):void=>{
     if(view==='chat'||view==='tools')writeWorkspaceNavigation({islandPage:view==='tools'?'tools':'chat'});
     useProductStore.getState().set({target:'',searchOpen:view==='search',dropOpen:false});
@@ -64,7 +65,7 @@ export function FusionCompact({ overview = false }: { overview?: boolean }): JSX
   </div>;
   return <div className={'fusion-compact' + (overview ? ' fusion-compact--overview' : '')} data-mood={recording ? 'working' : mood} role="button" tabIndex={0} aria-label={t('fusion.compact.open')} onPointerDown={event=>{press.current={x:event.clientX,y:event.clientY};}} onPointerCancel={()=>{press.current=null;}} onClick={event=>{const origin=press.current;press.current=null;if((event.target as Element).closest('button')||document.documentElement.dataset.floatGesture||!origin||Math.hypot(event.clientX-origin.x,event.clientY-origin.y)>=6)return;useIslandStore.getState().setMaxExpand();}} onKeyDown={event=>{if(event.target!==event.currentTarget)return;if(event.key==='Enter'||event.key===' '){event.preventDefault();useIslandStore.getState().setMaxExpand();}}}>
     <FusionPet mood={mood} muted={muted} label={t('fusion.pet.' + mood)} />
-    <div className="fusion-compact-copy"><strong>{recording?Math.floor(record.elapsed/60).toString().padStart(2,'0')+':'+Math.floor(record.elapsed%60).toString().padStart(2,'0'):pending ? t('fusion.compact.pending', { count: pending }) : active ? t('fusion.compact.active', { count: active }) : t('fusion.compact.idle')}</strong>
+    <div className="fusion-compact-copy"><strong>{recording?Math.floor(record.elapsed/60).toString().padStart(2,'0')+':'+Math.floor(record.elapsed%60).toString().padStart(2,'0'):pending ? t('fusion.compact.pending', { count: pending }) : active ? t('fusion.compact.active', { count: active }) : failed ? t('fusion.pet.error') : completion.finished ? t('fusion.pet.finished') : t('fusion.compact.idle')}</strong>
       {overview && <p title={summary}>{summary}</p>}
     </div>
     {recording&&<button type="button" className="fusion-icon-button" aria-label={t("fusion.product.record.stop")} onClick={event=>{event.stopPropagation();void window.api.fusionProductRecordControl("stop").then(value=>useProductStore.getState().set({record:value}));}}><Square size={13}/></button>}

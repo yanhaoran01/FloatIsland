@@ -18,6 +18,8 @@
 import { broadcastFusion } from './fusionWindows';
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process';
 import { createInterface, type Interface as ReadlineInterface } from 'readline';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import type { BrowserWindow } from 'electron';
 import type {
   FusionCodexDecision,
@@ -309,7 +311,11 @@ export function createCodexAppServerService(_options: CodexAppServerServiceOptio
     let child: ChildProcessWithoutNullStreams;
     if (process.platform === 'win32') {
       if (/[&|<>^%!\r\n"]/.test(executable)) throw new Error('FUSION_CODEX_EXECUTABLE contains unsupported command characters.');
-      child = spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `""${executable}" app-server --listen stdio://"`], spawnOptions);
+      const nativeExecutable = executable.toLowerCase().endsWith('.exe') ? executable :
+        executable === 'codex' ? (process.env.PATH || '').split(';').map(directory => join(directory.replace(/^"|"$/g, ''), 'codex.exe')).find(file => existsSync(file)) : undefined;
+      child = nativeExecutable
+        ? spawn(nativeExecutable, ['app-server', '--listen', 'stdio://'], { ...spawnOptions, windowsVerbatimArguments: false })
+        : spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `""${executable}" app-server --listen stdio://"`], spawnOptions);
     } else {
       child = spawn(executable, ['app-server', '--listen', 'stdio://'], spawnOptions);
     }
