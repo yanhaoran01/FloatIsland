@@ -247,8 +247,8 @@ export function createDshAcpService(options: DshAcpServiceOptions) {
     startPromise = (async () => {
       patch({ state: 'starting', error: null });
       const child = spawn(process.platform === 'win32' ? 'cmd.exe' : 'dsh',
-        process.platform === 'win32' ? ['/d', '/s', '/c', 'dsh --profile acp'] : ['--profile', 'acp'],
-        { windowsHide: true, stdio: 'pipe' });
+        process.platform === 'win32' ? ['/d', '/s', '/c', '"dsh --profile acp"'] : ['--profile', 'acp'],
+        { windowsHide: true, windowsVerbatimArguments: process.platform === 'win32', stdio: 'pipe' });
       processHandle = child;
       reader = createInterface({ input: child.stdout, crlfDelay: Infinity });
       reader.on('line', receive);
@@ -333,6 +333,10 @@ export function createDshAcpService(options: DshAcpServiceOptions) {
       if (snapshot.working) throw new Error('session-already-running');
       patch({ activeSessionId: sessionId, working: true, error: null, messages: [...snapshot.messages, { id: `dsh-user-${Date.now()}`, role: 'user', text }] });
       try { await request('session/prompt', { sessionId, prompt: [{ type: 'text', text }] }, 15 * 60 * 1000); }
+      catch (error) {
+        forSession(sessionId, () => patch({ error: error instanceof Error ? error.message : String(error) }));
+        throw error;
+      }
       finally { forSession(sessionId, () => patch({ working: false })); }
     },
     cancel: async (sessionId = snapshot.activeSessionId): Promise<void> => {

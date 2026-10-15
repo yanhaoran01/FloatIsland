@@ -102,7 +102,11 @@ export function createDshService(options: { getMainWindow: () => BrowserWindow |
   });
   return {
     getSnapshot, start,
-    loadModels: native.loadModels,
+    loadModels: async () => {
+      const adapter = await choose();
+      // ACP inherits the model configured in DeepSeek Harness; it has no catalog API.
+      return adapter === native ? native.loadModels() : [];
+    },
     ensureStarted: async (): Promise<void> => { await (await choose()).ensureStarted(); },
     loadSessions: async () => (await choose()).loadSessions(),
     createSession: async (cwd: string) => {

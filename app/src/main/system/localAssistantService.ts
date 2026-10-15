@@ -15,7 +15,7 @@
  * @author 鸡哥
  */
 
-import { app, safeStorage, type WebContents } from 'electron';
+import { app, net, safeStorage, type WebContents } from 'electron';
 import { mkdir, readFile, writeFile } from 'fs/promises';
 import path from 'path';
 import type {
@@ -172,7 +172,7 @@ export function createLocalAssistantService() {
         };
       }
 
-      const response = await fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: controller.signal });
+      const response = await net.fetch(endpoint, { method: 'POST', headers, body: JSON.stringify(body), signal: controller.signal });
       if (!response.ok) {
         const details = (await response.text()).slice(0, 600);
         throw new Error(`Provider returned ${response.status}${details ? `: ${details}` : ''}`);
@@ -225,8 +225,9 @@ export function createLocalAssistantService() {
     loadModels: async (provider: FusionAssistantProvider) => {
       const config = await readStoredConfig(provider);
       const key = decryptApiKey(config);
+      if (provider !== 'ollama' && !key) throw new Error('请先在设置中填写此 AI 服务的 API Key 和模型。');
       const headers: Record<string, string> = provider === 'anthropic' ? { 'x-api-key': key, 'anthropic-version': '2023-06-01' } : key ? { authorization: `Bearer ${key}` } : {};
-      const response = await fetch(config.baseUrl.replace(/\/+$/, '') + '/models', { headers, signal: AbortSignal.timeout(15_000) });
+      const response = await net.fetch(config.baseUrl.replace(/\/+$/, '') + '/models', { headers, signal: AbortSignal.timeout(15_000) });
       if (!response.ok) throw new Error('model-catalog-http-' + response.status);
       const data = await response.json() as { data?: Array<{ id: string; display_name?: string }> };
       const models = (data.data || []).filter(m => typeof m.id === 'string').map(m => ({ id: m.id, name: m.display_name || m.id }));

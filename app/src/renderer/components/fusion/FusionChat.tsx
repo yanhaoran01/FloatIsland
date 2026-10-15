@@ -247,6 +247,8 @@ export function FusionChat({ compact = false, visible = true }: { compact?: bool
   };
   const send = (): Promise<void> => run(async () => {
     if (!hasSession || working) return;
+    // A remembered selection survives app restarts, but the backend connection does not.
+    await adapter.resume(sessionId);
     const submission = await draft.consume();
     if (!submission) return;
     const sent = submission.value;

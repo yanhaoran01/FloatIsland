@@ -303,20 +303,23 @@ export function createCodexAppServerService(_options: CodexAppServerServiceOptio
     const spawnOptions = {
       cwd: process.cwd(),
       windowsHide: true,
+      windowsVerbatimArguments: process.platform === 'win32',
       stdio: 'pipe' as const,
     };
     let child: ChildProcessWithoutNullStreams;
     if (process.platform === 'win32') {
       if (/[&|<>^%!\r\n"]/.test(executable)) throw new Error('FUSION_CODEX_EXECUTABLE contains unsupported command characters.');
-      child = spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `"${executable}" app-server --listen stdio://`], spawnOptions);
+      child = spawn(process.env.ComSpec || 'cmd.exe', ['/d', '/s', '/c', `""${executable}" app-server --listen stdio://"`], spawnOptions);
     } else {
       child = spawn(executable, ['app-server', '--listen', 'stdio://'], spawnOptions);
     }
     processHandle = child;
+    let startupStderr = '';
     reader = createInterface({ input: child.stdout, crlfDelay: Infinity });
     reader.on('line', receive);
     child.stderr.on('data', (chunk: Buffer) => {
       const text = chunk.toString().trim();
+      startupStderr = (startupStderr + '\n' + text).slice(-2000);
       if (text) console.info('[FusionIsland:Codex]', text.slice(0, 500));
     });
     child.once('error', (error) => {
@@ -329,7 +332,7 @@ export function createCodexAppServerService(_options: CodexAppServerServiceOptio
       processHandle = null;
       reader?.close();
       reader = null;
-      const error = code === 0 ? null : `Codex App Server stopped (${signal || code || 'unknown'}).`;
+      const error = code === 0 ? null : `Codex App Server stopped (${signal || code || 'unknown'}).${startupStderr ? '\n' + startupStderr.trim() : ''}`;
       for (const state of threadStates.values()) { state.working = false; state.activeTurnId = null; }
       requestMethods.clear(); requestRpcIds.clear(); submittedRequests.clear();
       patch({ state: error ? 'error' : 'stopped', working: false, activeTurnId: null, pendingRequests: [], error });
@@ -417,7 +420,7 @@ export function createCodexAppServerService(_options: CodexAppServerServiceOptio
     loadThreads,
     createThread: async (cwd: string): Promise<FusionCodexThread> => {
       await ensureStarted();
-      const result = asRecord(await request('thread/start', { cwd, approvalPolicy: 'onRequest', sandbox: 'workspaceWrite' }));
+      const result = asRecord(await request('thread/start', { cwd, approvalPolicy: 'on-request', sandbox: 'workspace-write' }));
       const thread = parseThread(asRecord(result.thread));
       if (!thread) throw new Error('Codex did not return a session identifier.');
       selectThread(thread.id);
